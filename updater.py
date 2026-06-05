@@ -24,16 +24,14 @@ _update_info: dict = {
 
 
 def get_app_root() -> Path:
-    """Raíz del proyecto (donde está INICIAR_SISTEMA.bat)."""
+    """Raíz del proyecto (directorio del exe o del script)."""
     if getattr(sys, "frozen", False):
-        # Ejecutando como .exe compilado:
-        # sys.executable = .../dist/drunks_backend/drunks_backend.exe
-        return Path(sys.executable).parent.parent.parent
+        return Path(sys.executable).parent
     return Path(__file__).parent
 
 
 def get_current_version() -> str:
-    """Lee version.txt desde _MEIPASS (exe) o directorio del script."""
+    """Lee version.txt — usa utf-8-sig para ignorar el BOM si está presente."""
     candidates = [
         Path(getattr(sys, "_MEIPASS", "")) / "version.txt",
         get_app_root() / "version.txt",
@@ -42,7 +40,7 @@ def get_current_version() -> str:
     for path in candidates:
         try:
             if path.exists():
-                return path.read_text(encoding="utf-8").strip()
+                return path.read_text(encoding="utf-8-sig").strip()
         except Exception:
             pass
     return "0.0.0"
@@ -75,7 +73,6 @@ def check_for_update() -> None:
         latest = data.get("tag_name", "").lstrip("v")
         current = get_current_version()
 
-        # Buscar el asset .zip en los adjuntos del release
         asset_url = next(
             (a["browser_download_url"] for a in data.get("assets", [])
              if a["name"].endswith(".zip")),
@@ -112,7 +109,6 @@ def download_and_apply(url: str) -> None:
     try:
         import httpx
 
-        # Limpiar directorio temporal previo
         if TEMP_UPDATE_DIR.exists():
             import shutil
             shutil.rmtree(TEMP_UPDATE_DIR, ignore_errors=True)
@@ -120,14 +116,12 @@ def download_and_apply(url: str) -> None:
 
         zip_path = TEMP_UPDATE_DIR / "update.zip"
 
-        # Descargar con streaming
         with httpx.stream("GET", url, follow_redirects=True, timeout=60.0) as r:
             r.raise_for_status()
             with open(zip_path, "wb") as f:
                 for chunk in r.iter_bytes(chunk_size=65536):
                     f.write(chunk)
 
-        # Extraer ZIP al directorio temporal
         extract_dir = TEMP_UPDATE_DIR / "extracted"
         with zipfile.ZipFile(zip_path, "r") as z:
             z.extractall(extract_dir)
@@ -136,7 +130,13 @@ def download_and_apply(url: str) -> None:
         app_root = get_app_root()
         bat_path = app_root / "_apply_update.bat"
 
-        # Escribir script que aplicará la actualización tras cerrar la app
+        # El exe principal ahora es Drunks.exe (app unificada)
+        main_exe = app_root / "Drunks.exe"
+        restart_cmd = (
+            f'start "" "{main_exe}"' if main_exe.exists()
+            else f'start "" "{app_root}\\INICIAR_SISTEMA.bat"'
+        )
+
         bat_content = (
             "@echo off\n"
             "title Drunks POS - Aplicando actualizacion...\n"
@@ -146,12 +146,11 @@ def download_and_apply(url: str) -> None:
             f'if exist "{TEMP_UPDATE_DIR}" rmdir /S /Q "{TEMP_UPDATE_DIR}"\n'
             "echo Actualizacion aplicada. Reiniciando Drunks POS...\n"
             "timeout /t 1 /nobreak >nul\n"
-            f'start "" "{app_root}\\INICIAR_SISTEMA.bat"\n'
+            f'{restart_cmd}\n'
             'del "%~f0"\n'
         )
         bat_path.write_text(bat_content, encoding="utf-8")
 
-        # Lanzar el bat de forma desacoplada y cerrar la app
         subprocess.Popen(
             ["cmd", "/c", str(bat_path)],
             creationflags=(
@@ -165,5 +164,4 @@ def download_and_apply(url: str) -> None:
         _update_info["error"] = f"Error al aplicar actualización: {exc}"
         return
 
-    # Cerrar la app para que el bat pueda reemplazar los archivos
     os._exit(0)

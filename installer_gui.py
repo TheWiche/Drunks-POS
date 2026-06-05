@@ -204,7 +204,7 @@ class InstallerApp:
     def _create_shortcut(self, dest: Path):
         desktop = Path(os.path.expandvars("%USERPROFILE%")) / "Desktop"
         lnk     = str(desktop / "Drunks POS.lnk")
-        target  = str(dest / "INICIAR_SISTEMA.bat")
+        target  = str(dest / "Drunks.exe")
         wd      = str(dest)
         ps = (
             f"$s=New-Object -ComObject WScript.Shell;"
@@ -248,12 +248,9 @@ class InstallerApp:
             bg=ACCENT)
 
     def _launch(self, dest: Path):
-        bat = dest / "INICIAR_SISTEMA.bat"
-        if bat.exists():
-            subprocess.Popen(
-                ["cmd", "/c", str(bat)],
-                cwd=str(dest),
-                creationflags=subprocess.CREATE_NEW_CONSOLE)
+        exe = dest / "Drunks.exe"
+        if exe.exists():
+            subprocess.Popen([str(exe)], cwd=str(dest))
 
     def run(self):
         self.root.mainloop()
