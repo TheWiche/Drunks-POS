@@ -2,6 +2,9 @@
 title Drunks POS - Iniciando...
 color 0A
 
+:: Cambiar al directorio donde está este .bat (fix para accesos directos)
+cd /d "%~dp0"
+
 echo.
 echo  ==========================================
 echo    DRUNKS POS - SISTEMA DE VENTAS
@@ -15,7 +18,7 @@ set SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsIn
 echo  [1/2] Iniciando servidor...
 echo.
 
-start "" /B "dist\drunks_backend\drunks_backend.exe"
+start "" /B "%~dp0dist\drunks_backend\drunks_backend.exe"
 
 echo  [2/2] Abriendo sistema en el navegador...
 timeout /t 3 /nobreak >nul
