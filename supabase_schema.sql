@@ -35,8 +35,12 @@ CREATE TABLE IF NOT EXISTS pedidos (
   total           NUMERIC(12,2) NOT NULL,
   estado          TEXT NOT NULL DEFAULT 'pendiente' CHECK (estado IN ('pendiente','entregado')),
   fecha           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  sincronizado    BOOLEAN NOT NULL DEFAULT FALSE
+  sincronizado    BOOLEAN NOT NULL DEFAULT FALSE,
+  items_json      TEXT NOT NULL DEFAULT '[]'
 );
+
+-- Si la tabla ya existe, agrega la columna items_json (seguro si ya existe)
+ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS items_json TEXT NOT NULL DEFAULT '[]';
 
 -- Detalle de cada pedido
 CREATE TABLE IF NOT EXISTS detalle_pedidos (

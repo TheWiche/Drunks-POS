@@ -6,6 +6,7 @@ from typing import Optional, List
 from contextlib import asynccontextmanager
 
 import io
+import json
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException, Response
 from fastapi.responses import HTMLResponse
@@ -1378,6 +1379,25 @@ async def sync_to_supabase(pedido_id: int, payload: dict):
     except Exception:
         pass
 
+async def sync_deliver_to_supabase(pedido_id: int):
+    if not SUPABASE_URL or not SUPABASE_KEY or not HTTPX_AVAILABLE:
+        return
+    try:
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal",
+        }
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            await client.patch(
+                f"{SUPABASE_URL}/rest/v1/pedidos?id=eq.{pedido_id}",
+                headers=headers,
+                json={"estado": "entregado"},
+            )
+    except Exception:
+        pass
+
 async def sync_pending_loop():
     while True:
         await asyncio.sleep(300)
@@ -1539,11 +1559,17 @@ async def create_pedido(data: PedidoCreate, background_tasks: BackgroundTasks):
             conn.execute(
                 "INSERT INTO detalle_pedidos (pedido_id,producto_id,cantidad,observaciones) VALUES (?,?,?,?)",
                 (pedido_id, item.producto_id, item.cantidad, item.observaciones))
-            prod = conn.execute("SELECT nombre FROM productos WHERE id=?", (item.producto_id,)).fetchone()
+            prod = conn.execute("""
+                SELECT p.nombre, p.precio, COALESCE(c.nombre,'Sin Categoria') AS categoria
+                FROM productos p LEFT JOIN categorias c ON p.categoria_id=c.id
+                WHERE p.id=?
+            """, (item.producto_id,)).fetchone()
             items_detail.append({
                 "producto_id":   item.producto_id,
-                "nombre":        prod["nombre"] if prod else "Desconocido",
+                "nombre":        prod["nombre"]    if prod else "Desconocido",
                 "cantidad":      item.cantidad,
+                "precio":        prod["precio"]    if prod else 0,
+                "categoria":     prod["categoria"] if prod else "Sin Categoria",
                 "observaciones": item.observaciones,
             })
         conn.commit()
@@ -1557,6 +1583,7 @@ async def create_pedido(data: PedidoCreate, background_tasks: BackgroundTasks):
         "numero_factura": numero_factura, "cliente": data.cliente,
         "metodo_pago": data.metodo_pago, "total": data.total,
         "estado": "pendiente", "fecha": fecha,
+        "items_json": json.dumps(items_detail),
     })
     return payload
 
@@ -1593,10 +1620,11 @@ def get_pedido(id: int):
     return pd
 
 @app.put("/api/pedidos/{id}/entregar")
-def entregar_pedido(id: int):
+async def entregar_pedido(id: int, background_tasks: BackgroundTasks):
     with get_conn() as conn:
         conn.execute("UPDATE pedidos SET estado='entregado' WHERE id=?", (id,))
         conn.commit()
+    background_tasks.add_task(sync_deliver_to_supabase, id)
     return {"ok": True}
 
 @app.get("/api/dashboard")

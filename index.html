@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Drunks · Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  body{background:#06060f;font-family:'Segoe UI',system-ui,sans-serif}
+  ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#374151;border-radius:4px}
+  .kpi-card{transition:transform .15s ease,box-shadow .15s ease}
+  .kpi-card:hover{transform:translateY(-2px)}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .fade-in{animation:fadeIn .35s ease forwards}
+  .range-btn{transition:all .15s ease}
+</style>
+</head>
+<body class="min-h-screen text-white">
+
+<!-- HEADER -->
+<div class="sticky top-0 z-20 bg-gray-950/97 backdrop-blur border-b border-gray-800 px-6 py-3.5">
+  <div class="max-w-screen-2xl mx-auto flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-purple-600 flex items-center justify-center text-lg shadow-lg shadow-purple-900/60 shrink-0">🍹</div>
+      <div>
+        <h1 class="font-extrabold text-base leading-none">DRUNKS <span class="text-purple-400 font-light text-sm">· Dashboard</span></h1>
+        <p id="lastUpdate" class="text-gray-600 text-xs mt-0.5">Conectando a Supabase…</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="refreshBtn" onclick="refresh()"
+        class="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-lg shadow-purple-950/50">
+        ↻ Actualizar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- FILTRO DE RANGO -->
+<div class="bg-gray-950/80 border-b border-gray-800/50 px-6 py-2.5">
+  <div class="max-w-screen-2xl mx-auto flex items-center gap-2 flex-wrap">
+    <span class="text-gray-600 text-[10px] tracking-[0.2em] font-bold mr-1">PERIODO</span>
+    <button data-r="today" onclick="setRange('today')" class="range-btn px-4 py-1.5 rounded-full text-xs font-bold bg-gray-800 border border-gray-700 text-gray-400">Hoy</button>
+    <button data-r="week"  onclick="setRange('week')"  class="range-btn px-4 py-1.5 rounded-full text-xs font-bold bg-purple-600 text-white shadow-lg">Semana</button>
+    <button data-r="month" onclick="setRange('month')" class="range-btn px-4 py-1.5 rounded-full text-xs font-bold bg-gray-800 border border-gray-700 text-gray-400">Mes</button>
+    <button data-r="all"   onclick="setRange('all')"   class="range-btn px-4 py-1.5 rounded-full text-xs font-bold bg-gray-800 border border-gray-700 text-gray-400">Todo</button>
+    <div id="spinner" class="hidden ml-2 flex items-center gap-1.5 text-gray-500 text-xs">
+      <div class="w-2.5 h-2.5 rounded-full bg-purple-500 animate-ping"></div>cargando
+    </div>
+  </div>
+</div>
+
+<!-- CONTENIDO -->
+<div class="max-w-screen-2xl mx-auto px-6 py-5 space-y-5">
+
+  <!-- KPIs -->
+  <div id="kpiRow" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"></div>
+
+  <!-- Ingresos + Métodos de pago -->
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <div class="xl:col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-gray-400 text-[10px] tracking-[0.2em] font-bold">INGRESOS POR DIA</h3>
+        <span id="chartSubtitle" class="text-gray-600 text-xs"></span>
+      </div>
+      <div class="relative" style="height:240px">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex flex-col">
+      <h3 class="text-gray-400 text-[10px] tracking-[0.2em] font-bold mb-4">METODOS DE PAGO</h3>
+      <div class="flex-1 flex items-center justify-center">
+        <div class="relative w-48 h-48">
+          <canvas id="paymentChart"></canvas>
+          <div id="paymentCenter" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <div class="text-white font-extrabold text-lg tabular-nums" id="paymentTotal">—</div>
+            <div class="text-gray-500 text-xs">total</div>
+          </div>
+        </div>
+      </div>
+      <div id="paymentLegend" class="mt-3 space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- Top productos + Por hora -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+      <h3 class="text-gray-400 text-[10px] tracking-[0.2em] font-bold mb-4">TOP PRODUCTOS</h3>
+      <div class="relative" style="height:260px">
+        <canvas id="productsChart"></canvas>
+      </div>
+    </div>
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+      <h3 class="text-gray-400 text-[10px] tracking-[0.2em] font-bold mb-1">PEDIDOS POR HORA</h3>
+      <p class="text-gray-700 text-xs mb-4">Historico completo — pico de demanda</p>
+      <div class="relative" style="height:260px">
+        <canvas id="hourlyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Por categoría -->
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+    <h3 class="text-gray-400 text-[10px] tracking-[0.2em] font-bold mb-4">INGRESOS POR CATEGORIA</h3>
+    <div class="relative" style="height:180px">
+      <canvas id="categoryChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Tabla pedidos recientes -->
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-gray-400 text-[10px] tracking-[0.2em] font-bold">PEDIDOS RECIENTES</h3>
+      <span id="recCount" class="text-gray-600 text-xs"></span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm min-w-[520px]">
+        <thead>
+          <tr class="text-gray-600 text-[10px] tracking-widest border-b border-gray-800">
+            <th class="text-left py-2 pr-4">FACTURA</th>
+            <th class="text-left py-2 pr-4">CLIENTE</th>
+            <th class="text-left py-2 pr-4">METODO</th>
+            <th class="text-right py-2 pr-4">TOTAL</th>
+            <th class="text-center py-2 pr-4">ESTADO</th>
+            <th class="text-left py-2">FECHA / HORA</th>
+            <th class="text-center py-2">VER</th>
+          </tr>
+        </thead>
+        <tbody id="recTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FACTURA -->
+<div id="invModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+  <div class="bg-gray-900 border border-purple-700/30 rounded-3xl w-full max-w-md shadow-2xl shadow-purple-950/50 overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 px-6 pt-6 pb-5 shrink-0">
+      <div class="flex items-start justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-base">🍹</div>
+          <div>
+            <div class="text-purple-200 text-[10px] font-bold tracking-[0.2em]">DRUNKS POS</div>
+            <div class="text-white/50 text-[9px]">Sistema de Ventas</div>
+          </div>
+        </div>
+        <button onclick="closeInv()" class="text-purple-300 hover:text-white text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-all">x</button>
+      </div>
+      <div class="text-purple-300 text-[10px] tracking-[0.25em] font-bold mb-0.5">FACTURA</div>
+      <div id="inv-num" class="text-white font-extrabold text-3xl tracking-wider leading-none mb-3"></div>
+      <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+        <div><span class="text-purple-300/70 text-[10px]">CLIENTE</span><div id="inv-cli" class="text-white font-bold leading-snug"></div></div>
+        <div><span class="text-purple-300/70 text-[10px]">MÉTODO</span><div id="inv-met" class="font-bold leading-snug"></div></div>
+        <div><span class="text-purple-300/70 text-[10px]">FECHA Y HORA</span><div id="inv-dt" class="text-purple-100 text-xs leading-snug"></div></div>
+        <div><span class="text-purple-300/70 text-[10px]">ESTADO</span><div id="inv-est" class="font-bold text-xs leading-snug"></div></div>
+      </div>
+    </div>
+    <div class="flex-1 overflow-y-auto">
+      <div id="inv-loading" class="flex items-center justify-center py-12 text-gray-500 text-sm gap-2">
+        <div class="w-3 h-3 rounded-full bg-purple-500 animate-ping"></div>Cargando factura...
+      </div>
+      <div id="inv-body" class="hidden px-6 py-4">
+        <div class="text-gray-500 text-[10px] tracking-widest font-bold mb-3">PRODUCTOS PEDIDOS</div>
+        <div id="inv-items" class="space-y-0 divide-y divide-gray-800/60"></div>
+      </div>
+    </div>
+    <div id="inv-footer" class="hidden shrink-0 border-t border-gray-800 bg-gray-900/80 px-6 py-4">
+      <div class="flex justify-between items-center mb-3">
+        <span class="text-gray-400 text-sm font-semibold">TOTAL FACTURA</span>
+        <span id="inv-total" class="text-white font-extrabold text-2xl tabular-nums"></span>
+      </div>
+      <button onclick="closeInv()" class="w-full bg-purple-700 hover:bg-purple-600 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Supabase Config ──
+const SUPABASE_URL = 'https://crqfohuwvbebyugxodqe.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNycWZvaHV3dmJlYnl1Z3hvZHFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1ODgyMTgsImV4cCI6MjA5NjE2NDIxOH0.F5RAHHnBt722dm9-yfe8bZw6J0wAJWh01fJfh3pf4lM';
+
+async function supaFetch(path) {
+    const r = await fetch(SUPABASE_URL + path, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (!r.ok) throw new Error('Supabase ' + r.status);
+    return r.json();
+}
+
+// ── Globals ──
+let currentRange = 'week';
+const charts = {};
+Chart.defaults.color = '#6b7280';
+Chart.defaults.borderColor = '#1f2937';
+const PALETTE = ['#9333ea','#3b82f6','#22c55e','#f59e0b','#ef4444','#ec4899','#14b8a6','#8b5cf6'];
+const TOOLTIP = {
+    backgroundColor:'#111827', borderColor:'#374151', borderWidth:1,
+    titleColor:'#f9fafb', bodyColor:'#d1d5db', padding:10,
+};
+
+// ── Range selector ──
+function setRange(r) {
+    currentRange = r;
+    document.querySelectorAll('.range-btn').forEach(b => {
+        const active = b.dataset.r === r;
+        b.className = 'range-btn px-4 py-1.5 rounded-full text-xs font-bold ' +
+            (active ? 'bg-purple-600 text-white shadow-lg' : 'bg-gray-800 border border-gray-700 text-gray-400');
+    });
+    loadData();
+}
+
+function refresh() {
+    loadData();
+}
+
+// ── Filtros de fecha ──
+function getDateFilter(range) {
+    const now = new Date();
+    if (range === 'today') {
+        const s = new Date(now); s.setHours(0,0,0,0);
+        return p => new Date(p.fecha) >= s;
+    }
+    if (range === 'week') {
+        const s = new Date(now); s.setDate(s.getDate()-6); s.setHours(0,0,0,0);
+        return p => new Date(p.fecha) >= s;
+    }
+    if (range === 'month') {
+        const s = new Date(now); s.setDate(s.getDate()-29); s.setHours(0,0,0,0);
+        return p => new Date(p.fecha) >= s;
+    }
+    return () => true;
+}
+
+// ── Calcular métricas desde los datos crudos de Supabase ──
+function computeMetrics(pedidos, range) {
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const isToday     = p => new Date(p.fecha) >= todayStart;
+    const isEntregado = p => p.estado === 'entregado';
+    const isPeriod    = getDateFilter(range);
+
+    const ventas_hoy     = pedidos.filter(p => isToday(p) && isEntregado(p)).reduce((s,p) => s+p.total, 0);
+    const pedidos_hoy    = pedidos.filter(isToday).length;
+    const pendientes_now = pedidos.filter(p => p.estado === 'pendiente').length;
+
+    const periodOk    = pedidos.filter(p => isPeriod(p) && isEntregado(p));
+    const ventas_periodo  = periodOk.reduce((s,p) => s+p.total, 0);
+    const pedidos_periodo = periodOk.length;
+
+    const allOk      = pedidos.filter(isEntregado);
+    const ticket_prom = allOk.length ? allOk.reduce((s,p) => s+p.total,0) / allOk.length : 0;
+    const total_todo  = allOk.reduce((s,p) => s+p.total, 0);
+
+    // Daily
+    const dailyMap = {};
+    periodOk.forEach(p => {
+        const day = (p.fecha||'').substring(0,10);
+        if (!dailyMap[day]) dailyMap[day] = {dia:day, total:0, cnt:0};
+        dailyMap[day].total += p.total;
+        dailyMap[day].cnt++;
+    });
+    const daily = Object.values(dailyMap).sort((a,b) => a.dia.localeCompare(b.dia));
+
+    // Hourly (historico completo)
+    const hourlyMap = {};
+    allOk.forEach(p => {
+        const h = new Date(p.fecha).getHours();
+        if (!hourlyMap[h]) hourlyMap[h] = {hora:h, cnt:0, total:0};
+        hourlyMap[h].cnt++;
+        hourlyMap[h].total += p.total;
+    });
+    const hourly = Object.values(hourlyMap).sort((a,b) => a.hora-b.hora);
+
+    // Métodos de pago
+    const metodosMap = {};
+    periodOk.forEach(p => {
+        const m = p.metodo_pago;
+        if (!metodosMap[m]) metodosMap[m] = {metodo_pago:m, cnt:0, total:0};
+        metodosMap[m].cnt++;
+        metodosMap[m].total += p.total;
+    });
+    const metodos = Object.values(metodosMap).sort((a,b) => b.total-a.total);
+
+    // Top productos y por categoría (desde items_json)
+    const prodMap = {}, catMap = {};
+    periodOk.forEach(p => {
+        let items = [];
+        try { items = JSON.parse(p.items_json || '[]'); } catch(_) {}
+        items.forEach(it => {
+            const rev = (it.cantidad||0) * (it.precio||0);
+            const pn  = it.nombre || '?';
+            if (!prodMap[pn]) prodMap[pn] = {nombre:pn, vendidos:0, revenue:0};
+            prodMap[pn].vendidos += it.cantidad||0;
+            prodMap[pn].revenue  += rev;
+            const cat = it.categoria || 'Sin Categoria';
+            if (!catMap[cat]) catMap[cat] = {nombre:cat, vendidos:0, revenue:0};
+            catMap[cat].vendidos += it.cantidad||0;
+            catMap[cat].revenue  += rev;
+        });
+    });
+    const top_prods = Object.values(prodMap).sort((a,b) => b.vendidos-a.vendidos).slice(0,8);
+    const by_cat    = Object.values(catMap).sort((a,b) => b.revenue-a.revenue);
+
+    // Recientes
+    const recientes = pedidos.filter(isPeriod).slice(0,30).map(p => ({
+        id: p.id, numero_factura: p.numero_factura,
+        cliente: p.cliente, metodo_pago: p.metodo_pago,
+        total: p.total, estado: p.estado, fecha: p.fecha,
+    }));
+
+    return {
+        range, ventas_hoy, pedidos_hoy, pendientes_now,
+        ventas_periodo, pedidos_periodo, ticket_prom, total_todo,
+        daily, hourly, top_prods, metodos, by_cat, recientes,
+    };
+}
+
+// ── Cargar datos desde Supabase ──
+async function loadData() {
+    document.getElementById('spinner').classList.remove('hidden');
+    try {
+        const pedidos = await supaFetch('/rest/v1/pedidos?select=*&order=fecha.desc&limit=2000');
+        const data    = computeMetrics(pedidos, currentRange);
+        render(data);
+        document.getElementById('lastUpdate').textContent =
+            'Actualizado: ' + new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    } catch(e) {
+        document.getElementById('lastUpdate').textContent = 'Error al conectar con Supabase';
+        console.error(e);
+    } finally {
+        document.getElementById('spinner').classList.add('hidden');
+    }
+}
+
+// ── Formateadores ──
+function fmt(n)  { return '$' + Math.round(n||0).toLocaleString('es-CO'); }
+function fmtK(n) { return n>=1000000 ? '$'+(n/1000000).toFixed(1)+'M' : n>=1000 ? '$'+(n/1000).toFixed(0)+'k' : '$'+Math.round(n); }
+function fmtDay(s) {
+    return new Date(s+'T12:00:00').toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'});
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Chart helper ──
+function upsert(id, type, data, options) {
+    if (charts[id]) {
+        charts[id].data    = data;
+        charts[id].options = { ...charts[id].options, ...options };
+        charts[id].update('active');
+    } else {
+        charts[id] = new Chart(document.getElementById(id), { type, data, options });
+    }
+}
+
+function render(d) {
+    renderKPIs(d); renderRevenue(d); renderPayment(d);
+    renderProducts(d); renderHourly(d); renderCategory(d); renderTable(d);
+}
+
+// ── KPIs ──
+function renderKPIs(d) {
+    const rangeLabels = { today:'Hoy', week:'Esta semana', month:'Este mes', all:'Historico' };
+    const lbl = rangeLabels[d.range] || '';
+    const cards = [
+        { icon:'💰', label:'Ventas '+lbl,   value:fmt(d.ventas_periodo), sub:d.pedidos_periodo+' pedidos completados', color:'from-purple-900/40 to-purple-900/10 border-purple-700/30' },
+        { icon:'📅', label:'Ventas Hoy',    value:fmt(d.ventas_hoy),     sub:d.pedidos_hoy+' pedidos hoy',            color:'from-blue-900/40 to-blue-900/10 border-blue-700/30' },
+        { icon:'🧾', label:'Ticket Prom.',  value:fmt(d.ticket_prom),    sub:'Promedio por pedido',                   color:'from-green-900/40 to-green-900/10 border-green-700/30' },
+        { icon:'📦', label:'Total General', value:fmtK(d.total_todo),    sub:'Ingresos historicos',                   color:'from-amber-900/40 to-amber-900/10 border-amber-700/30' },
+        { icon:'⏳', label:'En Espera',     value:d.pendientes_now,      sub:'pedidos pendientes ahora',              color:'from-red-900/40 to-red-900/10 border-red-700/30', raw:true },
+    ];
+    document.getElementById('kpiRow').innerHTML = cards.map(c => `
+        <div class="kpi-card fade-in bg-gradient-to-br ${c.color} border rounded-2xl p-4">
+          <div class="text-2xl mb-2">${c.icon}</div>
+          <div class="text-gray-400 text-[10px] tracking-widest font-bold mb-1 leading-tight">${c.label.toUpperCase()}</div>
+          <div class="text-white font-extrabold ${c.raw?'text-3xl':'text-2xl'} tabular-nums leading-none">${c.value}</div>
+          <div class="text-gray-600 text-xs mt-1.5">${c.sub}</div>
+        </div>`).join('');
+}
+
+// ── Gráfico de ingresos diarios ──
+function renderRevenue(d) {
+    const labels   = d.daily.map(x => fmtDay(x.dia));
+    const values   = d.daily.map(x => x.total);
+    document.getElementById('chartSubtitle').textContent = d.daily.length ? d.daily.length+' dias con ventas' : 'Sin datos';
+    upsert('revenueChart','bar',{
+        labels,
+        datasets:[{ label:'Ingresos', data:values,
+            backgroundColor: ctx => {
+                const g = ctx.chart.ctx.createLinearGradient(0,0,0,240);
+                g.addColorStop(0,'rgba(147,51,234,.85)'); g.addColorStop(1,'rgba(147,51,234,.1)'); return g;
+            },
+            borderColor:'#9333ea', borderWidth:1, borderRadius:6, hoverBackgroundColor:'#a855f7',
+        }]
+    },{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ ...TOOLTIP, callbacks:{ label:c=>' '+fmt(c.raw) }}},
+        scales:{
+            x:{ ticks:{color:'#6b7280',maxRotation:40,font:{size:10}}, grid:{color:'#111827'} },
+            y:{ ticks:{color:'#6b7280',callback:v=>fmtK(v),font:{size:10}}, grid:{color:'#111827'} }
+        }
+    });
+}
+
+// ── Dona de métodos de pago ──
+function renderPayment(d) {
+    if (!d.metodos || !d.metodos.length) {
+        document.getElementById('paymentTotal').textContent = '—';
+        document.getElementById('paymentLegend').innerHTML = '<p class="text-gray-700 text-xs text-center">Sin datos</p>';
+        return;
+    }
+    const labels = d.metodos.map(m => m.metodo_pago);
+    const counts = d.metodos.map(m => m.cnt);
+    const totals = d.metodos.map(m => m.total);
+    const colors = [d.metodos[0]?.metodo_pago==='Efectivo'?'#22c55e':'#3b82f6','#3b82f6','#9333ea'];
+    const grandTotal = totals.reduce((a,b)=>a+b,0);
+    document.getElementById('paymentTotal').textContent = fmtK(grandTotal);
+    upsert('paymentChart','doughnut',{
+        labels,
+        datasets:[{ data:counts, backgroundColor:colors, borderColor:'#06060f', borderWidth:3, hoverOffset:6 }]
+    },{
+        responsive:true, maintainAspectRatio:false, cutout:'68%',
+        plugins:{ legend:{display:false}, tooltip:{ ...TOOLTIP, callbacks:{ label:c=>' '+c.label+': '+c.raw+' pedidos' }}}
+    });
+    const grandCount = counts.reduce((a,b)=>a+b,0)||1;
+    document.getElementById('paymentLegend').innerHTML = d.metodos.map((m,i) => `
+        <div class="flex items-center justify-between text-xs py-1">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${colors[i]}"></span>
+            <span class="text-gray-300">${m.metodo_pago==='Efectivo'?'💵':'📱'} ${m.metodo_pago}</span>
+          </div>
+          <div class="text-right">
+            <span class="text-white font-bold tabular-nums">${Math.round(m.cnt/grandCount*100)}%</span>
+            <span class="text-gray-600 ml-2 tabular-nums">${fmt(m.total)}</span>
+          </div>
+        </div>`).join('');
+}
+
+// ── Top productos ──
+function renderProducts(d) {
+    if (!d.top_prods || !d.top_prods.length) return;
+    upsert('productsChart','bar',{
+        labels: d.top_prods.map(p => p.nombre),
+        datasets:[
+            { label:'Unidades', data:d.top_prods.map(p=>p.vendidos), backgroundColor:'rgba(147,51,234,.75)', borderColor:'#9333ea', borderWidth:1, borderRadius:4, yAxisID:'y' },
+            { label:'Ingresos', data:d.top_prods.map(p=>p.revenue),  backgroundColor:'rgba(59,130,246,.35)',  borderColor:'#3b82f6', borderWidth:1, borderRadius:4, yAxisID:'y2', type:'line', tension:0.4, pointRadius:3, pointBackgroundColor:'#3b82f6' },
+        ]
+    },{
+        indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{
+            legend:{ labels:{color:'#9ca3af',boxWidth:10,padding:12}, position:'top' },
+            tooltip:{ ...TOOLTIP, callbacks:{ label:c => c.datasetIndex===0 ? ' '+c.raw+' uds' : ' '+fmt(c.raw) }}
+        },
+        scales:{
+            x:{ ticks:{color:'#6b7280',font:{size:10}}, grid:{color:'#111827'} },
+            y:{ ticks:{color:'#9ca3af',font:{size:10}}, grid:{display:false} },
+            y2:{display:false}
+        }
+    });
+}
+
+// ── Pedidos por hora ──
+function renderHourly(d) {
+    const cnts = new Array(24).fill(0), tots = new Array(24).fill(0);
+    (d.hourly||[]).forEach(h => { cnts[h.hora]=h.cnt; tots[h.hora]=h.total; });
+    const labels = Array.from({length:24},(_,i)=>(i<10?'0':'')+i+'h');
+    upsert('hourlyChart','bar',{
+        labels,
+        datasets:[{ label:'Pedidos', data:cnts,
+            backgroundColor: cnts.map(v => {
+                const m = Math.max(...cnts,1), pct = v/m;
+                if (pct>0.8) return 'rgba(239,68,68,.85)';
+                if (pct>0.5) return 'rgba(245,158,11,.75)';
+                return 'rgba(147,51,234,.6)';
+            }),
+            borderRadius:4,
+        }]
+    },{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ ...TOOLTIP, callbacks:{ label:c=>` ${c.raw} pedidos · ${fmt(tots[c.dataIndex])}` }}},
+        scales:{
+            x:{ticks:{color:'#6b7280',font:{size:9},maxRotation:0}, grid:{display:false}},
+            y:{ticks:{color:'#6b7280',font:{size:10},stepSize:1}, grid:{color:'#111827'}}
+        }
+    });
+}
+
+// ── Por categoría ──
+function renderCategory(d) {
+    if (!d.by_cat || !d.by_cat.length) return;
+    upsert('categoryChart','bar',{
+        labels: d.by_cat.map(c=>c.nombre),
+        datasets:[
+            { label:'Ingresos', data:d.by_cat.map(c=>c.revenue),  backgroundColor:PALETTE.map(c=>c+'cc'), borderColor:PALETTE, borderWidth:1, borderRadius:6 },
+            { label:'Unidades', data:d.by_cat.map(c=>c.vendidos), backgroundColor:'transparent', borderColor:PALETTE, borderWidth:2, borderRadius:6, type:'line', tension:0.4, pointRadius:5, pointBackgroundColor:PALETTE, yAxisID:'y2' },
+        ]
+    },{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+            legend:{labels:{color:'#9ca3af',boxWidth:10,padding:14}, position:'top'},
+            tooltip:{ ...TOOLTIP, callbacks:{ label:c => c.datasetIndex===0 ? ' '+fmt(c.raw) : ' '+c.raw+' uds' }}
+        },
+        scales:{
+            x:{ticks:{color:'#9ca3af',font:{size:11}}, grid:{display:false}},
+            y:{ticks:{color:'#6b7280',callback:v=>fmtK(v),font:{size:10}}, grid:{color:'#111827'}},
+            y2:{position:'right', ticks:{color:'#6b7280',font:{size:10}}, grid:{display:false}}
+        }
+    });
+}
+
+// ── Tabla de pedidos recientes ──
+function renderTable(d) {
+    const tbody = document.getElementById('recTable');
+    document.getElementById('recCount').textContent = d.recientes.length + ' pedidos';
+    if (!d.recientes.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-10 text-center text-gray-700 text-sm">Sin pedidos en este periodo</td></tr>';
+        return;
+    }
+    tbody.innerHTML = d.recientes.map(r => {
+        const isPend  = r.estado === 'pendiente';
+        const dt      = new Date(r.fecha);
+        const fecha   = dt.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'2-digit'});
+        const hora    = dt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+        const factura = r.numero_factura || ('#'+String(r.id).padStart(5,'0'));
+        return `<tr class="border-b border-gray-800/30 hover:bg-purple-900/10 transition-colors cursor-pointer" onclick="openInv(${r.id})">
+          <td class="py-2.5 pr-4"><span class="text-purple-400 text-xs font-extrabold tabular-nums tracking-wide font-mono">${factura}</span></td>
+          <td class="py-2.5 pr-4 text-white text-sm font-semibold">${esc(r.cliente)}</td>
+          <td class="py-2.5 pr-4 text-gray-400 text-xs whitespace-nowrap">${r.metodo_pago==='Efectivo'?'💵':'📱'} ${r.metodo_pago}</td>
+          <td class="py-2.5 pr-4 text-right"><span class="text-green-400 text-sm font-extrabold tabular-nums">${fmt(r.total)}</span></td>
+          <td class="py-2.5 pr-4 text-center">
+            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full ${isPend?'bg-yellow-900/50 text-yellow-400':'bg-green-900/50 text-green-400'}">
+              ${isPend?'Pendiente':'Entregado'}
+            </span>
+          </td>
+          <td class="py-2.5 pr-4 text-gray-500 text-xs tabular-nums whitespace-nowrap">${fecha} ${hora}</td>
+          <td class="py-2.5 text-center"><span class="text-purple-500 hover:text-purple-300 text-sm transition-colors">👁</span></td>
+        </tr>`;
+    }).join('');
+}
+
+// ── Modal de factura ──
+let currentInvData = null;
+
+async function openInv(id) {
+    document.getElementById('inv-loading').classList.remove('hidden');
+    document.getElementById('inv-body').classList.add('hidden');
+    document.getElementById('inv-footer').classList.add('hidden');
+    document.getElementById('inv-num').textContent = '...';
+    document.getElementById('invModal').classList.remove('hidden');
+    document.getElementById('invModal').classList.add('flex');
+
+    try {
+        const arr = await supaFetch(`/rest/v1/pedidos?id=eq.${id}&select=*`);
+        if (!arr || !arr.length) throw new Error('Not found');
+        const o = arr[0];
+
+        let rawItems = [];
+        try { rawItems = JSON.parse(o.items_json || '[]'); } catch(_) {}
+        o.items = rawItems.map(it => ({ ...it, subtotal: (it.cantidad||0)*(it.precio||0) }));
+        currentInvData = o;
+
+        const factura  = o.numero_factura || ('#'+String(o.id).padStart(5,'0'));
+        const dt       = new Date(o.fecha);
+        const entregado = o.estado === 'entregado';
+
+        document.getElementById('inv-num').textContent = factura;
+        document.getElementById('inv-cli').textContent = o.cliente;
+        const metEl = document.getElementById('inv-met');
+        metEl.textContent = (o.metodo_pago==='Efectivo'?'💵 ':'📱 ') + o.metodo_pago;
+        metEl.className   = 'font-bold leading-snug ' + (o.metodo_pago==='Efectivo'?'text-green-400':'text-blue-400');
+        document.getElementById('inv-dt').textContent =
+            dt.toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'}) +
+            '  ' + dt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+        const estEl = document.getElementById('inv-est');
+        estEl.textContent = entregado ? '✓ Entregado' : '⏳ Pendiente';
+        estEl.className   = 'font-bold text-xs leading-snug ' + (entregado?'text-green-400':'text-yellow-400');
+
+        document.getElementById('inv-items').innerHTML = (o.items||[]).map(item => {
+            const parts = (item.observaciones||'').split(' | ');
+            const isBase = s => s && (s.startsWith('Gaseosa:') || s.startsWith('Cerveza:'));
+            const base  = isBase(parts[0]) ? parts[0] : null;
+            const notas = base ? parts.slice(1).join(' | ') : (item.observaciones||'');
+            return `<div class="flex items-start gap-3 py-3">
+              <span class="bg-purple-800/60 text-purple-200 text-xs font-extrabold px-2.5 py-1 rounded-xl shrink-0 min-w-[2.5rem] text-center">${item.cantidad}x</span>
+              <div class="flex-1 min-w-0">
+                <div class="text-white font-semibold text-sm leading-snug">${esc(item.nombre)}</div>
+                ${base  ? '<div class="text-amber-400 text-xs mt-0.5 font-bold">📌 '+base+'</div>' : ''}
+                ${notas ? '<div class="text-yellow-300 text-xs mt-0.5">📝 '+esc(notas)+'</div>' : ''}
+                <div class="text-gray-600 text-xs mt-1 tabular-nums">${fmt(item.precio||0)} por unidad</div>
+              </div>
+              <div class="text-right shrink-0">
+                <div class="text-green-400 font-extrabold text-sm tabular-nums">${fmt(item.subtotal||0)}</div>
+              </div>
+            </div>`;
+        }).join('');
+
+        document.getElementById('inv-total').textContent = fmt(o.total);
+        document.getElementById('inv-loading').classList.add('hidden');
+        document.getElementById('inv-body').classList.remove('hidden');
+        document.getElementById('inv-footer').classList.remove('hidden');
+    } catch(e) {
+        document.getElementById('inv-loading').textContent = 'Error al cargar la factura';
+    }
+}
+
+function closeInv() {
+    document.getElementById('invModal').classList.add('hidden');
+    document.getElementById('invModal').classList.remove('flex');
+    currentInvData = null;
+}
+
+document.addEventListener('click', e => { if (e.target.id === 'invModal') closeInv(); });
+
+loadData();
+setInterval(loadData, 60000);
+</script>
+</body>
+</html>
