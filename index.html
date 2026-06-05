@@ -244,21 +244,21 @@ function computeMetrics(pedidos, range) {
     const isEntregado = p => p.estado === 'entregado';
     const isPeriod    = getDateFilter(range);
 
-    const ventas_hoy     = pedidos.filter(p => isToday(p) && isEntregado(p)).reduce((s,p) => s+p.total, 0);
+    // Usamos TODOS los pedidos del periodo (no solo entregados)
+    // El estado en la nube puede no estar actualizado aún
+    const periodAll   = pedidos.filter(isPeriod);
+
+    const ventas_hoy     = pedidos.filter(isToday).reduce((s,p) => s+p.total, 0);
     const pedidos_hoy    = pedidos.filter(isToday).length;
     const pendientes_now = pedidos.filter(p => p.estado === 'pendiente').length;
+    const ventas_periodo  = periodAll.reduce((s,p) => s+p.total, 0);
+    const pedidos_periodo = periodAll.length;
+    const ticket_prom     = pedidos.length ? pedidos.reduce((s,p) => s+p.total,0) / pedidos.length : 0;
+    const total_todo      = pedidos.reduce((s,p) => s+p.total, 0);
 
-    const periodOk    = pedidos.filter(p => isPeriod(p) && isEntregado(p));
-    const ventas_periodo  = periodOk.reduce((s,p) => s+p.total, 0);
-    const pedidos_periodo = periodOk.length;
-
-    const allOk      = pedidos.filter(isEntregado);
-    const ticket_prom = allOk.length ? allOk.reduce((s,p) => s+p.total,0) / allOk.length : 0;
-    const total_todo  = allOk.reduce((s,p) => s+p.total, 0);
-
-    // Daily
+    // Daily — todos los pedidos del periodo
     const dailyMap = {};
-    periodOk.forEach(p => {
+    periodAll.forEach(p => {
         const day = (p.fecha||'').substring(0,10);
         if (!dailyMap[day]) dailyMap[day] = {dia:day, total:0, cnt:0};
         dailyMap[day].total += p.total;
@@ -266,9 +266,9 @@ function computeMetrics(pedidos, range) {
     });
     const daily = Object.values(dailyMap).sort((a,b) => a.dia.localeCompare(b.dia));
 
-    // Hourly (historico completo)
+    // Hourly — historico completo, todos los pedidos
     const hourlyMap = {};
-    allOk.forEach(p => {
+    pedidos.forEach(p => {
         const h = new Date(p.fecha).getHours();
         if (!hourlyMap[h]) hourlyMap[h] = {hora:h, cnt:0, total:0};
         hourlyMap[h].cnt++;
@@ -276,9 +276,9 @@ function computeMetrics(pedidos, range) {
     });
     const hourly = Object.values(hourlyMap).sort((a,b) => a.hora-b.hora);
 
-    // Métodos de pago
+    // Métodos de pago — todos del periodo
     const metodosMap = {};
-    periodOk.forEach(p => {
+    periodAll.forEach(p => {
         const m = p.metodo_pago;
         if (!metodosMap[m]) metodosMap[m] = {metodo_pago:m, cnt:0, total:0};
         metodosMap[m].cnt++;
@@ -286,9 +286,9 @@ function computeMetrics(pedidos, range) {
     });
     const metodos = Object.values(metodosMap).sort((a,b) => b.total-a.total);
 
-    // Top productos y por categoría (desde items_json)
+    // Top productos y por categoría — todos del periodo
     const prodMap = {}, catMap = {};
-    periodOk.forEach(p => {
+    periodAll.forEach(p => {
         let items = [];
         try { items = JSON.parse(p.items_json || '[]'); } catch(_) {}
         items.forEach(it => {
@@ -306,8 +306,8 @@ function computeMetrics(pedidos, range) {
     const top_prods = Object.values(prodMap).sort((a,b) => b.vendidos-a.vendidos).slice(0,8);
     const by_cat    = Object.values(catMap).sort((a,b) => b.revenue-a.revenue);
 
-    // Recientes
-    const recientes = pedidos.filter(isPeriod).slice(0,30).map(p => ({
+    // Recientes — todos del periodo
+    const recientes = periodAll.slice(0,30).map(p => ({
         id: p.id, numero_factura: p.numero_factura,
         cliente: p.cliente, metodo_pago: p.metodo_pago,
         total: p.total, estado: p.estado, fecha: p.fecha,

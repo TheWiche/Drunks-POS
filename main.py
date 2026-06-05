@@ -1462,12 +1462,67 @@ async def sync_pending_loop():
         except Exception:
             pass
 
+async def download_from_supabase():
+    """Al arrancar, descarga de Supabase los pedidos que no existen localmente."""
+    if not SUPABASE_URL or not SUPABASE_KEY or not HTTPX_AVAILABLE:
+        return
+    try:
+        headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.get(
+                f"{SUPABASE_URL}/rest/v1/pedidos?select=*&order=fecha.asc",
+                headers=headers,
+            )
+            if r.status_code != 200:
+                return
+            cloud_pedidos = r.json()
+
+        with get_conn() as conn:
+            for p in cloud_pedidos:
+                sid = p.get("sync_id") or ""
+                if not sid:
+                    continue
+                existing = conn.execute("SELECT id, estado FROM pedidos WHERE sync_id=?", (sid,)).fetchone()
+                if existing:
+                    # Actualiza estado si en la nube ya está entregado
+                    if p.get("estado") == "entregado" and existing["estado"] != "entregado":
+                        conn.execute("UPDATE pedidos SET estado='entregado' WHERE sync_id=?", (sid,))
+                    continue
+                # Inserta el pedido que no existe localmente
+                cur = conn.execute(
+                    "INSERT INTO pedidos (cliente,metodo_pago,total,estado,fecha,sincronizado,numero_factura,sync_id) "
+                    "VALUES (?,?,?,?,?,1,?,?)",
+                    (p["cliente"], p["metodo_pago"], float(p["total"]),
+                     p.get("estado", "pendiente"), p["fecha"],
+                     p.get("numero_factura", ""), sid),
+                )
+                pedido_id = cur.lastrowid
+                # Inserta el detalle desde items_json
+                items = []
+                try:
+                    items = json.loads(p.get("items_json") or "[]")
+                except Exception:
+                    pass
+                for it in items:
+                    prod = conn.execute(
+                        "SELECT id FROM productos WHERE nombre=?", (it.get("nombre", ""),)
+                    ).fetchone()
+                    if prod:
+                        conn.execute(
+                            "INSERT INTO detalle_pedidos (pedido_id,producto_id,cantidad,observaciones) VALUES (?,?,?,?)",
+                            (pedido_id, prod["id"], it.get("cantidad", 1), it.get("observaciones", "")),
+                        )
+            conn.commit()
+    except Exception:
+        pass
+
 # ─────────────────────────────────────────────
 # APP
 # ─────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    asyncio.create_task(download_from_supabase())
     asyncio.create_task(sync_pending_loop())
     yield
 
