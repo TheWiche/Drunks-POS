@@ -2811,6 +2811,106 @@ async def sync_deliver_to_supabase(pedido_id: int):
     except Exception:
         pass
 
+# ─────────────────────────────────────────────────────────────────────────────
+# CONFIG SYNC — push/pull de configuración (catálogo, bases, notas, settings)
+# Tabla Supabase requerida (ejecutar una sola vez en el dashboard):
+#   create table config (clave text primary key, valor jsonb not null,
+#     actualizado_en timestamptz default now());
+#   alter table config enable row level security;
+#   create policy "allow_all" on config for all using (true) with check (true);
+# ─────────────────────────────────────────────────────────────────────────────
+
+_CFG_COLS = {
+    "categorias":    ("id", "nombre"),
+    "tipos_base":    ("id", "nombre", "icono"),
+    "productos":     ("id", "categoria_id", "nombre", "precio", "disponible", "tiene_base"),
+    "bases":         ("id", "nombre", "tipo", "tipo_id", "disponible"),
+    "notas_rapidas": ("id", "texto", "categoria_id"),
+    "producto_bases":("producto_id", "base_id"),
+    "settings":      ("key", "value"),
+}
+# Orden de inserción respetando FK (categorias antes que productos, etc.)
+_CFG_INSERT_ORDER = ["categorias", "tipos_base", "productos",
+                     "bases", "notas_rapidas", "producto_bases", "settings"]
+
+
+def _push_config_bg(tabla: str) -> None:
+    """Sube el contenido de una tabla de config a Supabase (hilo daemon)."""
+    if not SUPABASE_URL or not SUPABASE_KEY or not HTTPX_AVAILABLE:
+        return
+    try:
+        import httpx as _hx
+        cols = _CFG_COLS.get(tabla)
+        if not cols:
+            return
+        with get_conn() as conn:
+            rows = [dict(zip(cols, row)) for row in
+                    conn.execute(f"SELECT {','.join(cols)} FROM {tabla}").fetchall()]
+        _hx.post(
+            f"{SUPABASE_URL}/rest/v1/config",
+            headers={
+                "apikey": SUPABASE_KEY,
+                "Authorization": f"Bearer {SUPABASE_KEY}",
+                "Content-Type": "application/json",
+                "Prefer": "resolution=merge-duplicates",
+            },
+            json={"clave": tabla, "valor": rows},
+            timeout=10.0,
+        )
+    except Exception:
+        pass
+
+
+def push_config(tabla: str) -> None:
+    """Dispara _push_config_bg en hilo daemon (no bloquea al endpoint)."""
+    import threading as _th
+    _th.Thread(target=_push_config_bg, args=(tabla,), daemon=True).start()
+
+
+async def pull_config_from_supabase() -> None:
+    """Al arrancar: descarga toda la config de Supabase y reemplaza el SQLite local."""
+    if not SUPABASE_URL or not SUPABASE_KEY or not HTTPX_AVAILABLE:
+        return
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.get(
+                f"{SUPABASE_URL}/rest/v1/config",
+                headers={
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": f"Bearer {SUPABASE_KEY}",
+                    "Accept": "application/json",
+                },
+            )
+        if r.status_code != 200 or not r.json():
+            return
+
+        # Supabase devuelve lista de {clave, valor, actualizado_en}
+        # valor es JSONB → ya viene como lista Python
+        cloud = {row["clave"]: row["valor"] for row in r.json()
+                 if row.get("clave") in _CFG_COLS}
+        if not cloud:
+            return
+
+        with get_conn() as conn:
+            # Borrar en orden inverso para respetar FK implícitas
+            for tabla in reversed(_CFG_INSERT_ORDER):
+                if tabla in cloud:
+                    conn.execute(f"DELETE FROM {tabla}")
+            # Insertar en orden de dependencias
+            for tabla in _CFG_INSERT_ORDER:
+                if tabla not in cloud or not cloud[tabla]:
+                    continue
+                cols = _CFG_COLS[tabla]
+                conn.executemany(
+                    f"INSERT OR IGNORE INTO {tabla} ({','.join(cols)}) "
+                    f"VALUES ({','.join('?' * len(cols))})",
+                    [[row.get(c) for c in cols] for row in cloud[tabla]],
+                )
+            conn.commit()
+    except Exception:
+        pass
+
+
 async def sync_pending_loop():
     while True:
         await asyncio.sleep(300)
@@ -2914,6 +3014,7 @@ async def download_from_supabase():
 async def lifespan(app: FastAPI):
     init_db()
     asyncio.create_task(download_from_supabase())
+    asyncio.create_task(pull_config_from_supabase())
     asyncio.create_task(sync_pending_loop())
     yield
 
@@ -2940,6 +3041,7 @@ async def set_setting(key: str, req: Request):
     with get_conn() as conn:
         conn.execute("INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)", (key, value))
         conn.commit()
+    push_config("settings")
     return {"ok": True}
 
 # ── Auto-Update ──
@@ -2970,7 +3072,9 @@ def create_categoria(data: CategoriaBody):
     with get_conn() as conn:
         cur = conn.execute("INSERT INTO categorias (nombre) VALUES (?)", (data.nombre,))
         conn.commit()
-        return to_dict(conn.execute("SELECT * FROM categorias WHERE id=?", (cur.lastrowid,)).fetchone())
+        result = to_dict(conn.execute("SELECT * FROM categorias WHERE id=?", (cur.lastrowid,)).fetchone())
+    push_config("categorias")
+    return result
 
 @app.put("/api/categorias/{id}")
 def update_categoria(id: int, data: CategoriaBody):
@@ -2979,7 +3083,9 @@ def update_categoria(id: int, data: CategoriaBody):
             raise HTTPException(404, "No encontrada")
         conn.execute("UPDATE categorias SET nombre=? WHERE id=?", (data.nombre, id))
         conn.commit()
-        return to_dict(conn.execute("SELECT * FROM categorias WHERE id=?", (id,)).fetchone())
+        result = to_dict(conn.execute("SELECT * FROM categorias WHERE id=?", (id,)).fetchone())
+    push_config("categorias")
+    return result
 
 @app.delete("/api/categorias/{id}")
 def delete_categoria(id: int):
@@ -2988,6 +3094,9 @@ def delete_categoria(id: int):
         conn.execute("UPDATE notas_rapidas SET categoria_id=NULL WHERE categoria_id=?", (id,))
         conn.execute("DELETE FROM categorias WHERE id=?", (id,))
         conn.commit()
+    push_config("categorias")
+    push_config("productos")
+    push_config("notas_rapidas")
     return {"ok": True}
 
 # ── Productos ──
@@ -3017,7 +3126,9 @@ def create_producto(data: ProductoCreate):
             "INSERT INTO productos (categoria_id, nombre, precio, disponible, tiene_base) VALUES (?,?,?,?,?)",
             (data.categoria_id, data.nombre, data.precio, 1 if data.disponible else 0, 1 if data.tiene_base else 0))
         conn.commit()
-        return to_dict(conn.execute(PROD_Q + " WHERE p.id=?", (cur.lastrowid,)).fetchone())
+        result = to_dict(conn.execute(PROD_Q + " WHERE p.id=?", (cur.lastrowid,)).fetchone())
+    push_config("productos")
+    return result
 
 @app.put("/api/productos/{id}")
 def update_producto(id: int, data: ProductoUpdate):
@@ -3033,13 +3144,16 @@ def update_producto(id: int, data: ProductoUpdate):
         if u:
             conn.execute(f"UPDATE productos SET {', '.join(k+'=?' for k in u)} WHERE id=?", [*u.values(), id])
             conn.commit()
-        return to_dict(conn.execute(PROD_Q + " WHERE p.id=?", (id,)).fetchone())
+        result = to_dict(conn.execute(PROD_Q + " WHERE p.id=?", (id,)).fetchone())
+    push_config("productos")
+    return result
 
 @app.delete("/api/productos/{id}")
 def delete_producto(id: int):
     with get_conn() as conn:
         conn.execute("DELETE FROM productos WHERE id=?", (id,))
         conn.commit()
+    push_config("productos")
     return {"ok": True}
 
 @app.patch("/api/productos/{id}/toggle")
@@ -3050,7 +3164,9 @@ def toggle_producto(id: int):
             raise HTTPException(404, "No encontrado")
         conn.execute("UPDATE productos SET disponible=? WHERE id=?", (0 if row["disponible"] else 1, id))
         conn.commit()
-        return to_dict(conn.execute(PROD_Q + " WHERE p.id=?", (id,)).fetchone())
+        result = to_dict(conn.execute(PROD_Q + " WHERE p.id=?", (id,)).fetchone())
+    push_config("productos")
+    return result
 
 @app.patch("/api/productos/{id}/toggle-base")
 def toggle_base_producto(id: int):
@@ -3060,7 +3176,9 @@ def toggle_base_producto(id: int):
             raise HTTPException(404, "No encontrado")
         conn.execute("UPDATE productos SET tiene_base=? WHERE id=?", (0 if row["tiene_base"] else 1, id))
         conn.commit()
-        return to_dict(conn.execute(PROD_Q + " WHERE p.id=?", (id,)).fetchone())
+        result = to_dict(conn.execute(PROD_Q + " WHERE p.id=?", (id,)).fetchone())
+    push_config("productos")
+    return result
 
 # ── Tipos de Base ──
 BASE_JOIN = """
@@ -3088,7 +3206,9 @@ def create_tipo_base(data: TipoBaseCreate):
         cur = conn.execute("INSERT INTO tipos_base (nombre, icono) VALUES (?,?)",
                            (nombre, data.icono.strip() or "🍹"))
         conn.commit()
-        return to_dict(conn.execute("SELECT * FROM tipos_base WHERE id=?", (cur.lastrowid,)).fetchone())
+        result = to_dict(conn.execute("SELECT * FROM tipos_base WHERE id=?", (cur.lastrowid,)).fetchone())
+    push_config("tipos_base")
+    return result
 
 @app.put("/api/tipos-base/{id}")
 def update_tipo_base(id: int, data: TipoBaseUpdate):
@@ -3104,7 +3224,9 @@ def update_tipo_base(id: int, data: TipoBaseUpdate):
         conn.execute("UPDATE tipos_base SET nombre=?, icono=? WHERE id=?",
                      (nombre, data.icono.strip() or "🍹", id))
         conn.commit()
-        return to_dict(conn.execute("SELECT * FROM tipos_base WHERE id=?", (id,)).fetchone())
+        result = to_dict(conn.execute("SELECT * FROM tipos_base WHERE id=?", (id,)).fetchone())
+    push_config("tipos_base")
+    return result
 
 @app.delete("/api/tipos-base/{id}")
 def delete_tipo_base(id: int):
@@ -3114,6 +3236,7 @@ def delete_tipo_base(id: int):
             raise HTTPException(409, f"Este tipo tiene {count} base(s). Elimínalas primero.")
         conn.execute("DELETE FROM tipos_base WHERE id=?", (id,))
         conn.commit()
+    push_config("tipos_base")
     return {"ok": True}
 
 # ── Bases ──
@@ -3135,7 +3258,9 @@ def create_base(data: BaseCreate):
         cur = conn.execute("INSERT INTO bases (nombre, tipo, tipo_id) VALUES (?,?,?)",
                            (nombre, tipo_text, data.tipo_id))
         conn.commit()
-        return to_dict(conn.execute(BASE_JOIN + " WHERE b.id=?", (cur.lastrowid,)).fetchone())
+        result = to_dict(conn.execute(BASE_JOIN + " WHERE b.id=?", (cur.lastrowid,)).fetchone())
+    push_config("bases")
+    return result
 
 @app.put("/api/bases/{id}")
 def update_base(id: int, data: BaseUpdate):
@@ -3151,13 +3276,16 @@ def update_base(id: int, data: BaseUpdate):
         conn.execute("UPDATE bases SET nombre=?, tipo=?, tipo_id=? WHERE id=?",
                      (nombre, tipo_text, data.tipo_id, id))
         conn.commit()
-        return to_dict(conn.execute(BASE_JOIN + " WHERE b.id=?", (id,)).fetchone())
+        result = to_dict(conn.execute(BASE_JOIN + " WHERE b.id=?", (id,)).fetchone())
+    push_config("bases")
+    return result
 
 @app.delete("/api/bases/{id}")
 def delete_base(id: int):
     with get_conn() as conn:
         conn.execute("DELETE FROM bases WHERE id=?", (id,))
         conn.commit()
+    push_config("bases")
     return {"ok": True}
 
 @app.patch("/api/bases/{id}/toggle")
@@ -3169,7 +3297,9 @@ def toggle_base_disponible(id: int):
         conn.execute("UPDATE bases SET disponible=? WHERE id=?",
                      (0 if row["disponible"] else 1, id))
         conn.commit()
-        return to_dict(conn.execute(BASE_JOIN + " WHERE b.id=?", (id,)).fetchone())
+        result = to_dict(conn.execute(BASE_JOIN + " WHERE b.id=?", (id,)).fetchone())
+    push_config("bases")
+    return result
 
 @app.get("/api/productos/{id}/bases")
 def get_producto_bases(id: int):
@@ -3194,6 +3324,7 @@ def set_producto_bases(id: int, data: ProductoBasesUpdate):
                 "INSERT INTO producto_bases (producto_id, base_id) VALUES (?,?)",
                 [(id, bid) for bid in data.base_ids])
         conn.commit()
+    push_config("producto_bases")
     return {"ok": True, "count": len(data.base_ids)}
 
 @app.get("/api/productos/bases-bulk")
@@ -3216,13 +3347,16 @@ def create_nota(data: NotaBody):
     with get_conn() as conn:
         cur = conn.execute("INSERT INTO notas_rapidas (texto, categoria_id) VALUES (?,?)", (data.texto, data.categoria_id))
         conn.commit()
-        return to_dict(conn.execute("SELECT * FROM notas_rapidas WHERE id=?", (cur.lastrowid,)).fetchone())
+        result = to_dict(conn.execute("SELECT * FROM notas_rapidas WHERE id=?", (cur.lastrowid,)).fetchone())
+    push_config("notas_rapidas")
+    return result
 
 @app.delete("/api/notas_rapidas/{id}")
 def delete_nota(id: int):
     with get_conn() as conn:
         conn.execute("DELETE FROM notas_rapidas WHERE id=?", (id,))
         conn.commit()
+    push_config("notas_rapidas")
     return {"ok": True}
 
 # ── Pedidos ──
