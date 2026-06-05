@@ -619,9 +619,12 @@ COCINA_HTML = """<!DOCTYPE html>
     <div class="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-xl shadow-lg shadow-purple-900/60 shrink-0">🍹</div>
     <div>
       <h1 class="font-extrabold text-lg tracking-wider leading-none">DRUNKS <span class="text-purple-400 font-light text-sm">· COCINA</span></h1>
-      <div class="flex items-center gap-2 mt-0.5">
+      <div class="flex items-center gap-2 mt-0.5 flex-wrap">
         <div id="wsDot" class="w-2 h-2 rounded-full bg-red-500 shrink-0"></div>
         <span id="wsTxt" class="text-xs text-gray-500">Conectando...</span>
+        <span class="text-gray-700 text-xs">·</span>
+        <div id="sbDot" class="w-2 h-2 rounded-full bg-gray-600 shrink-0"></div>
+        <span id="sbTxt" class="text-xs text-gray-600">Nube...</span>
       </div>
     </div>
   </div>
@@ -1153,9 +1156,38 @@ async function deleteNote(id) {
 // ─── DASHBOARD ───  (ahora en ruta /dashboard)
 
 
+// ─── ESTADO SUPABASE ───
+async function checkSupabase() {
+  const dot = document.getElementById('sbDot');
+  const txt = document.getElementById('sbTxt');
+  try {
+    const r = await fetch('/api/sync/status');
+    const d = await r.json();
+    if (!d.configured) {
+      dot.className = 'w-2 h-2 rounded-full bg-gray-600 shrink-0';
+      txt.textContent = 'Nube no configurada';
+      txt.style.color = '#4b5563';
+    } else if (!d.reachable) {
+      dot.className = 'w-2 h-2 rounded-full bg-red-500 shrink-0';
+      txt.textContent = d.pending > 0 ? `Sin nube · ${d.pending} sin subir` : 'Sin conexión a la nube';
+      txt.style.color = '#f87171';
+    } else if (d.pending > 0) {
+      dot.className = 'w-2 h-2 rounded-full bg-yellow-400 shrink-0';
+      txt.textContent = `Subiendo ${d.pending} pedido${d.pending !== 1 ? 's' : ''}...`;
+      txt.style.color = '#fbbf24';
+    } else {
+      dot.className = 'w-2 h-2 rounded-full bg-green-500 shrink-0';
+      txt.textContent = 'Nube sincronizada';
+      txt.style.color = '#4ade80';
+    }
+  } catch(_) {}
+}
+
 // ─── INIT ───
 loadPending();
 connectWS();
+checkSupabase();
+setInterval(checkSupabase, 30000);
 </script>
 </body>
 </html>"""
@@ -1646,6 +1678,23 @@ async def entregar_pedido(id: int, background_tasks: BackgroundTasks):
         conn.commit()
     background_tasks.add_task(sync_deliver_to_supabase, id)
     return {"ok": True}
+
+@app.get("/api/sync/status")
+async def sync_status():
+    with get_conn() as conn:
+        pending = conn.execute("SELECT COUNT(*) FROM pedidos WHERE sincronizado=0").fetchone()[0]
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return {"configured": False, "reachable": False, "pending": pending}
+    reachable = False
+    if HTTPX_AVAILABLE:
+        try:
+            headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+            async with httpx.AsyncClient(timeout=3.0) as client:
+                r = await client.get(f"{SUPABASE_URL}/rest/v1/pedidos?select=id&limit=1", headers=headers)
+                reachable = r.status_code == 200
+        except Exception:
+            reachable = False
+    return {"configured": True, "reachable": reachable, "pending": pending}
 
 @app.get("/api/dashboard")
 def get_dashboard(range: str = "week"):
