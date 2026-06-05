@@ -25,7 +25,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Drunks POS", lifespan=lifespan)
 
-app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR / "static")), name="static")
+_static_dir = FRONTEND_DIR / "static"
+_static_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(_static_dir)), name="static")
 
 app.include_router(pedidos.router,   prefix="/api")
 app.include_router(productos.router, prefix="/api")

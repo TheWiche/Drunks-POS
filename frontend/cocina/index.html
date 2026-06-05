@@ -6,6 +6,16 @@
 <title>Drunks · Cocina</title>
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('drunksPalette')||'dark')</script>
 <style>
+:root{--acc-hex:#9333ea;--acc-light:#c4b5fd;--acc-muted:rgba(147,51,234,.18);--acc-border:rgba(147,51,234,.45);--acc-glow:rgba(147,51,234,.4)}
+[data-theme=light]{--acc-hex:#7c3aed;--acc-light:#a78bfa;--acc-muted:rgba(124,58,237,.15);--acc-border:rgba(124,58,237,.4);--acc-glow:rgba(124,58,237,.3)}
+[data-theme=ocean]{--acc-hex:#2563eb;--acc-light:#93c5fd;--acc-muted:rgba(37,99,235,.18);--acc-border:rgba(37,99,235,.45);--acc-glow:rgba(37,99,235,.4)}
+[data-theme=emerald]{--acc-hex:#0d9488;--acc-light:#5eead4;--acc-muted:rgba(13,148,136,.18);--acc-border:rgba(13,148,136,.45);--acc-glow:rgba(13,148,136,.4)}
+[data-theme=amber]{--acc-hex:#d97706;--acc-light:#fbbf24;--acc-muted:rgba(217,119,6,.18);--acc-border:rgba(217,119,6,.45);--acc-glow:rgba(217,119,6,.4)}
+[data-theme=neon]{--acc-hex:#16a34a;--acc-light:#4ade80;--acc-muted:rgba(22,163,74,.18);--acc-border:rgba(22,163,74,.45);--acc-glow:rgba(74,222,128,.4)}
+[data-theme=rose]{--acc-hex:#e11d48;--acc-light:#fb7185;--acc-muted:rgba(225,29,72,.18);--acc-border:rgba(225,29,72,.45);--acc-glow:rgba(244,63,94,.4)}
+[data-theme=violet]{--acc-hex:#6d28d9;--acc-light:#a78bfa;--acc-muted:rgba(109,40,217,.18);--acc-border:rgba(109,40,217,.45);--acc-glow:rgba(124,58,237,.5)}
+[data-theme=slate]{--acc-hex:#64748b;--acc-light:#94a3b8;--acc-muted:rgba(100,116,139,.18);--acc-border:rgba(100,116,139,.4);--acc-glow:rgba(100,116,139,.3)}
+[data-theme=gold]{--acc-hex:#ca8a04;--acc-light:#fde047;--acc-muted:rgba(202,138,4,.18);--acc-border:rgba(202,138,4,.45);--acc-glow:rgba(234,179,8,.4)}
 html[data-theme=light] body{background:#f0ebff!important;color:#1e1b4b!important}
 html[data-theme=light] [class*=bg-gray-95]{background:#eee9ff!important}
 html[data-theme=light] [class*=bg-gray-90]{background:#fff!important}
@@ -63,27 +73,51 @@ html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[dat
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   body{background:#06060f;font-family:'Segoe UI',system-ui,sans-serif}
+  /* ── Animaciones core ── */
   @keyframes heroIn{from{transform:translateY(-30px) scale(.95);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
-  .hero-in{animation:heroIn .42s cubic-bezier(.175,.885,.32,1.275)}
+  .hero-in{animation:heroIn .42s cubic-bezier(.175,.885,.32,1.275) both}
+  /* Ascenso desde la cola: empieza pequeño y abajo, sube y se expande */
+  @keyframes promoteHero{0%{transform:translateY(72px) scale(.76);opacity:0}55%{transform:translateY(-6px) scale(1.015);opacity:1}100%{transform:none;opacity:1}}
+  .promote-hero{animation:promoteHero .52s cubic-bezier(.175,.885,.32,1.275) both}
   @keyframes cardIn{from{transform:translateY(-18px) scale(.93);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
-  .card-in{animation:cardIn .32s cubic-bezier(.175,.885,.32,1.275)}
-  @keyframes fadeOut{to{transform:scale(.85) translateY(12px);opacity:0;max-height:0;padding:0;margin:0;overflow:hidden}}
-  .fade-out{animation:fadeOut .36s ease forwards}
+  .card-in{animation:cardIn .32s cubic-bezier(.175,.885,.32,1.275) both}
+  /* Entrada lateral de tarjetas en cola cuando suben posición */
+  @keyframes queueIn{from{transform:translateX(18px) scale(.95);opacity:0}to{transform:none;opacity:1}}
+  .queue-in{animation:queueIn .26s cubic-bezier(.175,.885,.32,1.275) both}
+  #queueGrid>.queue-in:nth-child(2){animation-delay:.04s}
+  #queueGrid>.queue-in:nth-child(3){animation-delay:.08s}
+  #queueGrid>.queue-in:nth-child(4){animation-delay:.12s}
+  #queueGrid>.queue-in:nth-child(5){animation-delay:.16s}
+  #queueGrid>.queue-in:nth-child(n+6){animation-delay:.20s}
+  /* Flash de éxito al completar */
+  @keyframes completeFlash{0%{box-shadow:none}35%{box-shadow:0 0 0 16px rgba(74,222,128,.28),0 0 50px rgba(74,222,128,.18),inset 0 0 24px rgba(74,222,128,.06)}80%{box-shadow:0 0 0 4px rgba(74,222,128,.1)}100%{box-shadow:none;opacity:.75}}
+  .completing-flash{animation:completeFlash .3s ease-out both;pointer-events:none}
+  /* Salida del hero completado */
+  @keyframes completeExit{0%{transform:scale(1);opacity:1}12%{transform:scale(1.02)}100%{transform:translateY(-36px) scale(.88);opacity:0;max-height:0;padding:0;margin:0;overflow:hidden}}
+  .completing-exit{animation:completeExit .42s cubic-bezier(.55,0,1,.45) both;overflow:hidden}
+  /* Estación multi-preparador */
+  @keyframes stationDone{0%{transform:scale(1);opacity:1}12%{transform:scale(1.02)}100%{transform:translateY(-20px) scale(.9);opacity:0}}
+  .station-done{animation:stationDone .35s cubic-bezier(.55,0,1,.45) both}
+  @keyframes stationPromote{0%{transform:translateY(36px) scale(.88);opacity:0}60%{transform:translateY(-4px) scale(1.01)}100%{transform:none;opacity:1}}
+  .station-promote{animation:stationPromote .4s cubic-bezier(.175,.885,.32,1.275) both}
   @keyframes pulseGreen{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.45)}60%{box-shadow:0 0 0 10px rgba(74,222,128,0)}}
   .pulse-green{animation:pulseGreen 2s infinite}
   @keyframes badgePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
   .priority-badge{animation:badgePulse 2.5s ease infinite}
   @keyframes activeCardIn{from{opacity:0;transform:translateY(-10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
   .active-card-in{animation:activeCardIn .35s cubic-bezier(.175,.885,.32,1.275)}
+  /* ── Clases temáticas con CSS vars ── */
+  .hero-glow{box-shadow:0 20px 52px var(--acc-glow,rgba(147,51,234,.4)),0 0 0 2px var(--acc-border,rgba(147,51,234,.35))}
+  .view-btn.active{background:var(--acc-muted,rgba(147,51,234,.18));color:var(--acc-light,#c4b5fd);box-shadow:0 0 14px var(--acc-glow,rgba(147,51,234,.45))}
+  .tab-active{border-bottom-color:var(--acc-hex,#9333ea)!important;color:var(--acc-light,#c4b5fd)!important}
+  ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--acc-hex,#374151);border-radius:4px;opacity:.6}
+  /* ── Fijos ── */
   .queue-mini-card{min-width:148px;max-width:172px;flex-shrink:0}
   .station-col{display:flex;flex-direction:column;border-right:1px solid rgba(31,41,55,.6);min-width:300px;flex:1;height:100%}
-  ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#374151;border-radius:4px}
   input:focus,select:focus{outline:none}
-  .tab-active{border-bottom-color:#9333ea!important;color:#c084fc!important}
   .dirty-input{border-color:#eab308!important}
   .dirty-row{background:rgba(234,179,8,.04)!important}
   .view-btn{color:#4b5563;transition:all .15s ease;width:2.25rem;height:2.25rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center}
-  .view-btn.active{background:rgba(147,51,234,.85);color:#fff;box-shadow:0 0 14px rgba(147,51,234,.45)}
   .view-btn:not(.active):hover{background:rgba(75,85,99,.45);color:#d1d5db}
 </style>
 </head>
@@ -335,6 +369,7 @@ html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[dat
 // ─── STATE ───
 let ws = null, wsTimer = null;
 let orders = {};
+let _promoting = false;  // true durante la transición hero→cola→nuevo-hero
 let viewMode = localStorage.getItem('kitchenView') || 'priority';
 const dirty = { prods: new Set(), cats: new Set() };
 let adminCats = [];
@@ -456,7 +491,7 @@ function buildItemRow(it, big) {
 function buildHeroCard(o) {
   const div = document.createElement('div');
   div.id = 'order-' + o.id;
-  div.className = 'hero-in';
+  div.className = _promoting ? 'promote-hero' : 'hero-in';
   const efect = o.metodo_pago === 'Efectivo';
   const hBg   = efect ? 'from-green-700 to-green-800' : 'from-blue-700 to-blue-800';
   const icon  = efect ? '💵' : '📱';
@@ -467,7 +502,7 @@ function buildHeroCard(o) {
       <div class="priority-badge bg-red-500 text-white text-xs font-extrabold px-3 py-1 rounded-full tracking-wider shadow-lg shadow-red-900/50">#1 PRIORIDAD</div>
       <div class="h-px flex-1 bg-gray-800"></div>
     </div>
-    <div class="bg-gray-900 border-2 border-purple-500/40 rounded-3xl overflow-hidden shadow-2xl shadow-purple-950/30">
+    <div class="bg-gray-900 border-2 border-purple-500/40 rounded-3xl overflow-hidden hero-glow">
       <div class="bg-gradient-to-r ${hBg} px-6 py-5 flex items-start justify-between">
         <div>
           <div class="flex items-center gap-2 mb-1.5">
@@ -492,7 +527,7 @@ function buildHeroCard(o) {
 function buildQueueCard(o) {
   const div = document.createElement('div');
   div.id = 'order-' + o.id;
-  div.className = 'card-in bg-gray-900 border border-gray-700 rounded-2xl overflow-hidden flex flex-col';
+  div.className = (_promoting ? 'queue-in ' : 'card-in ') + 'bg-gray-900 border border-gray-700 rounded-2xl overflow-hidden flex flex-col';
   const efect = o.metodo_pago === 'Efectivo';
   const hBg   = efect ? 'from-green-800/60 to-green-900/60' : 'from-blue-800/60 to-blue-900/60';
   const icon  = efect ? '💵' : '📱';
@@ -522,7 +557,7 @@ function buildQueueCard(o) {
 function buildMediumCard(o, priority) {
   const div   = document.createElement('div');
   div.id      = 'order-' + o.id;
-  div.className = 'hero-in';
+  div.className = _promoting ? 'promote-hero' : 'hero-in';
   const efect = o.metodo_pago === 'Efectivo';
   const hBg   = efect ? 'from-green-700 to-green-800' : 'from-blue-700 to-blue-800';
   const icon  = efect ? '💵' : '📱';
@@ -562,7 +597,7 @@ function buildMediumCard(o, priority) {
 function buildCompactCard(o) {
   const div   = document.createElement('div');
   div.id      = 'order-' + o.id;
-  div.className = 'card-in bg-gray-900 border border-gray-700/60 rounded-xl overflow-hidden';
+  div.className = (_promoting ? 'queue-in ' : 'card-in ') + 'bg-gray-900 border border-gray-700/60 rounded-xl overflow-hidden';
   const efect = o.metodo_pago === 'Efectivo';
   const hBg   = efect ? 'from-green-800/55 to-green-900/55' : 'from-blue-800/55 to-blue-900/55';
   const icon  = efect ? '💵' : '📱';
@@ -606,18 +641,33 @@ function setView(mode) {
 }
 
 async function completeOrder(id) {
+  const card = document.getElementById('order-' + id);
+  // 1. Flash verde de éxito
+  if (card) { card.classList.add('completing-flash'); card.style.pointerEvents = 'none'; }
+  // 2. Llamada a la API
   try {
-    const r = await fetch('/api/pedidos/'+id+'/entregar', {method:'PUT'});
-    if (r.ok) {
-      const card = document.getElementById('order-'+id);
-      if (card) {
-        card.classList.add('fade-out');
-        setTimeout(() => { delete orders[id]; renderKitchen(); }, 370);
-      } else {
-        delete orders[id]; renderKitchen();
-      }
+    const r = await fetch('/api/pedidos/' + id + '/entregar', { method: 'PUT' });
+    if (!r.ok) {
+      card?.classList.remove('completing-flash');
+      if (card) card.style.pointerEvents = '';
+      return;
     }
-  } catch(e) {}
+  } catch(e) {
+    card?.classList.remove('completing-flash');
+    if (card) card.style.pointerEvents = '';
+    return;
+  }
+  // 3. Determinar si el hero fue completado (el siguiente debe "ascender desde la cola")
+  const heroSec = document.getElementById('heroSection');
+  const isHero = !!(heroSec && card && heroSec.contains(card));
+  const remaining = Object.values(orders).filter(o => o.id !== id).length;
+  _promoting = isHero && remaining > 0;
+  // 4. Animar salida del hero completado
+  if (card) { card.classList.remove('completing-flash'); card.classList.add('completing-exit'); }
+  // 5. Reset flag después de que la animación de entrada termina
+  if (_promoting) setTimeout(() => { _promoting = false; }, 700);
+  // 6. Re-render cuando termina la salida
+  setTimeout(() => { delete orders[id]; renderKitchen(); }, 430);
 }
 
 function updateCount(n) {
@@ -1365,7 +1415,7 @@ function buildActiveCard(order, stationItems, si) {
   const icon  = efect ? '💵' : '📱';
   const tStr  = new Date(order.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   const rows  = stationItems.map(it => buildItemRow(it, true)).join('');
-  div.className = 'active-card-in bg-gray-900 border border-purple-500/50 rounded-2xl overflow-hidden flex-shrink-0 shadow-lg shadow-purple-900/20';
+  div.className = 'station-promote bg-gray-900 border border-purple-500/50 rounded-2xl overflow-hidden flex-shrink-0 hero-glow';
   div.innerHTML = `
     <div class="flex items-center gap-2 px-4 pt-3 pb-1">
       <div class="priority-badge bg-purple-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full tracking-wider">PREPARANDO</div>
@@ -1502,21 +1552,21 @@ async function completeStationOrder(orderId, si) {
   const order = orders[orderId];
   if (!order) return;
 
-  // Liberar la estación
+  const card = document.getElementById('active-order-' + orderId + '-' + si);
+  // 1. Flash de éxito
+  if (card) { card.classList.add('completing-flash'); card.style.pointerEvents = 'none'; }
+  // 2. API
+  try {
+    const r = await fetch('/api/pedidos/' + orderId + '/entregar', { method: 'PUT' });
+    if (!r.ok) { card?.classList.remove('completing-flash'); if(card) card.style.pointerEvents=''; return; }
+  } catch(e) { card?.classList.remove('completing-flash'); if(card) card.style.pointerEvents=''; return; }
+  // 3. Liberar estación y animar salida
   delete stationActive[String(si)];
   saveSetting('stationActive', JSON.stringify(stationActive));
   saveSetting('station_active', JSON.stringify(stationActive));
-
-  // Animar salida
-  const card = document.getElementById('active-order-'+orderId+'-'+si);
-  if (card) card.classList.add('fade-out');
-
-  try {
-    const r = await fetch('/api/pedidos/'+orderId+'/entregar', {method:'PUT'});
-    if (r.ok) {
-      setTimeout(() => { delete orders[orderId]; renderKitchen(); }, 350);
-    }
-  } catch(e) { renderKitchen(); }
+  if (card) { card.classList.remove('completing-flash'); card.classList.add('station-done'); }
+  // 4. Re-render — el nuevo activeCard usa station-promote (viene desde la cola)
+  setTimeout(() => { delete orders[orderId]; renderKitchen(); }, 390);
 }
 
 // ─── INIT ───
