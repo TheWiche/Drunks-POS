@@ -6,7 +6,7 @@
 <title>Drunks · Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
 <style>
   body{background:#06060f;font-family:'Segoe UI',system-ui,sans-serif}
   ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#374151;border-radius:4px}
@@ -614,18 +614,52 @@ function closeInv() {
 
 document.addEventListener('click', e => { if (e.target.id === 'invModal') closeInv(); });
 
-// ── Exportar Excel (cliente, vía SheetJS + Supabase) ──
+// ── Exportar Excel (ExcelJS en navegador — formato idéntico al local) ──
 async function exportExcel() {
     const btn = document.getElementById('exportBtn');
     btn.innerHTML = '<span>⏳</span><span>Generando...</span>';
     btn.disabled = true;
     try {
         const pedidos = await supaFetch('/rest/v1/pedidos?select=*&order=fecha.desc&limit=5000');
-        const wb = XLSX.utils.book_new();
         const now = new Date();
+        const wb  = new ExcelJS.Workbook();
 
-        // ── Hoja 1: Resumen ──
-        const entregados = pedidos.filter(p => p.estado === 'entregado');
+        // Colores (ARGB)
+        const CP  = 'FF4C1D95'; // encabezado morado oscuro
+        const CPL = 'FFF0EBFF'; // fila par — lila claro
+        const CPM = 'FF7C3AED'; // títulos sección — morado medio
+        const CG  = 'FF166534'; // dinero — verde oscuro
+        const CA  = 'FF92400E'; // advertencia — ámbar oscuro
+        const CW  = 'FFFFFFFF';
+        const CGR = 'FF374151'; // texto gris
+        const CGL = 'FFF9FAFB'; // fondo gris claro
+
+        const hFont  = () => ({ bold:true, color:{argb:CW}, size:11, name:'Calibri' });
+        const hFill  = () => ({ type:'pattern', pattern:'solid', fgColor:{argb:CP} });
+        const hAlign = () => ({ horizontal:'center', vertical:'middle', wrapText:true });
+        const rFill  = i  => ({ type:'pattern', pattern:'solid', fgColor:{argb: i%2===0 ? CPL : CW} });
+
+        function applyHeader(ws, cols, rowNum) {
+            const row = ws.getRow(rowNum);
+            cols.forEach((c, i) => {
+                const cell = row.getCell(i+1);
+                cell.value = c; cell.font = hFont(); cell.fill = hFill(); cell.alignment = hAlign();
+            });
+            row.height = 22;
+        }
+        function autoCol(ws, mn=10, mx=55) {
+            ws.columns.forEach(col => {
+                let w = mn;
+                col.eachCell({ includeEmpty:false }, cell => {
+                    const l = cell.value ? String(cell.value).length + 4 : 0;
+                    if (l > w) w = Math.min(l, mx);
+                });
+                col.width = w;
+            });
+        }
+
+        // ── Datos ──
+        const entregados    = pedidos.filter(p => p.estado === 'entregado');
         const totalIngresos = entregados.reduce((s,p) => s+p.total, 0);
         const ticketProm    = entregados.length ? totalIngresos/entregados.length : 0;
         const pendientes    = pedidos.filter(p => p.estado === 'pendiente').length;
@@ -633,100 +667,183 @@ async function exportExcel() {
         const metodosMap = {};
         entregados.forEach(p => {
             if (!metodosMap[p.metodo_pago]) metodosMap[p.metodo_pago] = {cnt:0, total:0};
-            metodosMap[p.metodo_pago].cnt++;
-            metodosMap[p.metodo_pago].total += p.total;
+            metodosMap[p.metodo_pago].cnt++; metodosMap[p.metodo_pago].total += p.total;
         });
+        const byMetodo = Object.entries(metodosMap).sort((a,b) => b[1].total-a[1].total);
 
         const prodMap = {}, catMap = {};
         entregados.forEach(p => {
-            let items = [];
-            try { items = JSON.parse(p.items_json || '[]'); } catch(_) {}
+            let items = []; try { items = JSON.parse(p.items_json||'[]'); } catch(_) {}
+            const catsSeen = new Set();
             items.forEach(it => {
                 const rev = (it.cantidad||0)*(it.precio||0);
-                const pn = it.nombre||'?';
-                if (!prodMap[pn]) prodMap[pn] = {nombre:pn, uds:0, rev:0};
+                const pn = it.nombre||'?', cat = it.categoria||'Sin Categoria';
+                if (!prodMap[pn]) prodMap[pn] = {nombre:pn, cat, uds:0, rev:0};
                 prodMap[pn].uds += it.cantidad||0; prodMap[pn].rev += rev;
-                const cat = it.categoria||'Sin Categoria';
-                if (!catMap[cat]) catMap[cat] = {cat, pedidos:0, uds:0, rev:0};
+                if (!catMap[cat]) catMap[cat] = {cat, pedSet:new Set(), uds:0, rev:0};
                 catMap[cat].uds += it.cantidad||0; catMap[cat].rev += rev;
+                catsSeen.add(cat);
             });
+            catsSeen.forEach(cat => catMap[cat]?.pedSet.add(p.id));
         });
-        entregados.forEach(p => {
-            let items = [];
-            try { items = JSON.parse(p.items_json || '[]'); } catch(_) {}
-            const cats = [...new Set(items.map(it => it.categoria||'Sin Categoria'))];
-            cats.forEach(cat => { if (catMap[cat]) catMap[cat].pedidos++; });
+        const byCat = Object.values(catMap).sort((a,b) => b.rev-a.rev);
+        const top5  = Object.values(prodMap).sort((a,b) => b.rev-a.rev).slice(0,5);
+
+        // ══════════════════════════════════
+        // HOJA 1 — RESUMEN
+        // ══════════════════════════════════
+        const ws1 = wb.addWorksheet('Resumen');
+        ws1.views = [{ showGridLines:false }];
+
+        ws1.mergeCells('A1:G1');
+        const t = ws1.getCell('A1');
+        t.value = 'DRUNKS POS  —  REPORTE DE VENTAS';
+        t.font  = { bold:true, size:20, color:{argb:CPM}, name:'Calibri' };
+        t.alignment = { horizontal:'center', vertical:'middle' };
+        t.fill  = { type:'pattern', pattern:'solid', fgColor:{argb:'FFFAF5FF'} };
+        ws1.getRow(1).height = 46;
+
+        ws1.mergeCells('A2:G2');
+        const s = ws1.getCell('A2');
+        s.value = `Generado el ${now.toLocaleDateString('es-CO')} a las ${now.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+        s.font  = { italic:true, size:10, color:{argb:'FF9CA3AF'}, name:'Calibri' };
+        s.alignment = { horizontal:'center' };
+        ws1.getRow(2).height = 18;
+
+        let r = 4;
+        ws1.getCell(`A${r}`).value = 'ESTADÍSTICAS GENERALES';
+        ws1.getCell(`A${r}`).font  = { bold:true, size:13, color:{argb:CPM}, name:'Calibri' };
+        ws1.getRow(r).height = 22; r++;
+
+        [
+            ['Total de Pedidos Registrados',   pedidos.length,             false, CP ],
+            ['Ingresos Totales (entregados)',   Math.round(totalIngresos),  true,  CG ],
+            ['Ticket Promedio',                  Math.round(ticketProm),     true,  CPM],
+            ['Pedidos Pendientes Actualmente',  pendientes,                 false, CA ],
+        ].forEach(([label, value, money, color], i) => {
+            const cl = ws1.getCell(`A${r+i}`);
+            cl.value = label; cl.font = { size:11, color:{argb:CGR}, name:'Calibri' };
+            cl.fill  = { type:'pattern', pattern:'solid', fgColor:{argb:CGL} };
+            const cv = ws1.getCell(`B${r+i}`);
+            cv.value = value; cv.font = { bold:true, size:13, color:{argb:color}, name:'Calibri' };
+            cv.numFmt = money ? '#,##0' : '0'; cv.alignment = { horizontal:'right' };
+            ws1.getRow(r+i).height = 22;
         });
+        r += 5;
 
-        const resumenRows = [
-            ['DRUNKS POS — REPORTE DE VENTAS'],
-            [`Generado el ${now.toLocaleDateString('es-CO')} a las ${now.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})}`],
-            [],
-            ['ESTADÍSTICAS GENERALES'],
-            ['Total de Pedidos Registrados', pedidos.length],
-            ['Ingresos Totales (entregados)', Math.round(totalIngresos)],
-            ['Ticket Promedio', Math.round(ticketProm)],
-            ['Pedidos Pendientes Actualmente', pendientes],
-            [],
-            ['VENTAS POR MÉTODO DE PAGO'],
-            ['Método de Pago', '# Pedidos', 'Total Ingresos'],
-            ...Object.entries(metodosMap).map(([m,v]) => [m, v.cnt, Math.round(v.total)]),
-            [],
-            ['INGRESOS POR CATEGORÍA'],
-            ['Categoría', 'Pedidos', 'Unidades', 'Ingresos'],
-            ...Object.values(catMap).sort((a,b)=>b.rev-a.rev).map(c => [c.cat, c.pedidos, c.uds, Math.round(c.rev)]),
-            [],
-            ['TOP PRODUCTOS MÁS VENDIDOS'],
-            ['Producto', 'Unidades Vendidas', 'Ingresos Generados'],
-            ...Object.values(prodMap).sort((a,b)=>b.uds-a.uds).slice(0,10).map(p => [p.nombre, p.uds, Math.round(p.rev)]),
-        ];
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resumenRows), 'Resumen');
+        ws1.getCell(`A${r}`).value = 'VENTAS POR MÉTODO DE PAGO';
+        ws1.getCell(`A${r}`).font  = { bold:true, size:12, color:{argb:CPM}, name:'Calibri' };
+        ws1.getRow(r).height = 20; r++;
+        applyHeader(ws1, ['Método de Pago','# Pedidos','Total Ingresos'], r); r++;
+        byMetodo.forEach(([m, v], i) => {
+            ws1.getCell(`A${r+i}`).value = m;            ws1.getCell(`A${r+i}`).fill = rFill(i);
+            ws1.getCell(`B${r+i}`).value = v.cnt;        ws1.getCell(`B${r+i}`).fill = rFill(i);
+            const tc = ws1.getCell(`C${r+i}`);
+            tc.value = Math.round(v.total); tc.numFmt = '#,##0';
+            tc.font = {bold:true, color:{argb:CG}}; tc.fill = rFill(i);
+        });
+        r += byMetodo.length + 2;
 
-        // ── Hoja 2: Pedidos ──
-        const pedidosRows = [
-            ['#', 'Factura', 'Cliente', 'Método de Pago', 'Total (COP)', 'Estado', 'Fecha', 'Hora'],
-            ...pedidos.map(p => {
-                const dt = new Date(p.fecha);
-                return [
-                    p.id,
-                    p.numero_factura || ('#'+String(p.id).padStart(5,'0')),
-                    p.cliente,
-                    p.metodo_pago,
-                    Math.round(p.total),
-                    p.estado === 'entregado' ? 'Entregado' : 'Pendiente',
-                    dt.toLocaleDateString('es-CO'),
-                    dt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),
-                ];
-            }),
-        ];
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(pedidosRows), 'Pedidos');
+        ws1.getCell(`A${r}`).value = 'INGRESOS POR CATEGORÍA';
+        ws1.getCell(`A${r}`).font  = { bold:true, size:12, color:{argb:CPM}, name:'Calibri' }; r++;
+        applyHeader(ws1, ['Categoría','Pedidos','Unidades','Ingresos'], r); r++;
+        byCat.forEach((c, i) => {
+            ws1.getCell(`A${r+i}`).value = c.cat;           ws1.getCell(`A${r+i}`).fill = rFill(i);
+            ws1.getCell(`B${r+i}`).value = c.pedSet.size;   ws1.getCell(`B${r+i}`).fill = rFill(i);
+            ws1.getCell(`C${r+i}`).value = c.uds;           ws1.getCell(`C${r+i}`).fill = rFill(i);
+            const rc = ws1.getCell(`D${r+i}`);
+            rc.value = Math.round(c.rev); rc.numFmt = '#,##0';
+            rc.font = {bold:true, color:{argb:CG}}; rc.fill = rFill(i);
+        });
+        r += byCat.length + 2;
 
-        // ── Hoja 3: Detalle de Pedidos ──
-        const detalleRows = [
-            ['Pedido #', 'Factura', 'Cliente', 'Método', 'Fecha y Hora', 'Producto', 'Categoría', 'Cantidad', 'Precio Unit.', 'Subtotal', 'Base / Notas'],
-        ];
-        pedidos.forEach(p => {
-            let items = [];
-            try { items = JSON.parse(p.items_json || '[]'); } catch(_) {}
+        ws1.getCell(`A${r}`).value = 'TOP 5 PRODUCTOS MÁS VENDIDOS';
+        ws1.getCell(`A${r}`).font  = { bold:true, size:12, color:{argb:CPM}, name:'Calibri' }; r++;
+        applyHeader(ws1, ['Producto','Categoría','Unidades Vendidas','Ingresos Generados'], r); r++;
+        top5.forEach((p, i) => {
+            ws1.getCell(`A${r+i}`).value = p.nombre; ws1.getCell(`A${r+i}`).fill = rFill(i);
+            ws1.getCell(`B${r+i}`).value = p.cat;    ws1.getCell(`B${r+i}`).fill = rFill(i);
+            ws1.getCell(`C${r+i}`).value = p.uds;    ws1.getCell(`C${r+i}`).fill = rFill(i);
+            const ri = ws1.getCell(`D${r+i}`);
+            ri.value = Math.round(p.rev); ri.numFmt = '#,##0';
+            ri.font = {bold:true, color:{argb:CG}}; ri.fill = rFill(i);
+        });
+        autoCol(ws1);
+
+        // ══════════════════════════════════
+        // HOJA 2 — PEDIDOS
+        // ══════════════════════════════════
+        const ws2 = wb.addWorksheet('Pedidos');
+        ws2.views = [{ state:'frozen', ySplit:1, showGridLines:false }];
+        const cols2 = ['#','Cliente','Método de Pago','Total (COP)','Estado','Fecha','Hora'];
+        applyHeader(ws2, cols2, 1);
+        ws2.autoFilter = { from:'A1', to:String.fromCharCode(64+cols2.length)+'1' };
+
+        pedidos.forEach((p, i) => {
             const dt = new Date(p.fecha);
+            const entregado = p.estado === 'entregado';
+            const bg = rFill(i);
+            const row = ws2.addRow([
+                p.id, p.cliente, p.metodo_pago, Math.round(p.total),
+                entregado ? 'Entregado' : 'Pendiente',
+                dt.toLocaleDateString('es-CO'),
+                dt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),
+            ]);
+            [1,2,3,6,7].forEach(c => row.getCell(c).fill = bg);
+            const tc = row.getCell(4);
+            tc.numFmt = '#,##0'; tc.font = {bold:true, color:{argb:CG}}; tc.fill = bg;
+            const ec = row.getCell(5);
+            ec.font = {bold:true, color:{argb: entregado ? CG : CA}};
+            ec.fill = {type:'pattern', pattern:'solid', fgColor:{argb: entregado ? 'FFD1FAE5':'FFFEF3C7'}};
+            ec.alignment = {horizontal:'center'};
+            row.height = 18;
+        });
+        autoCol(ws2);
+
+        // ══════════════════════════════════
+        // HOJA 3 — DETALLE DE PEDIDOS
+        // ══════════════════════════════════
+        const ws3 = wb.addWorksheet('Detalle de Pedidos');
+        ws3.views = [{ state:'frozen', ySplit:1, showGridLines:false }];
+        const cols3 = ['Pedido #','Cliente','Método','Fecha y Hora','Producto','Categoría','Cantidad','Precio Unit.','Subtotal','Base / Notas'];
+        applyHeader(ws3, cols3, 1);
+        ws3.autoFilter = { from:'A1', to:String.fromCharCode(64+cols3.length)+'1' };
+
+        let di = 0;
+        pedidos.forEach(p => {
+            let items = []; try { items = JSON.parse(p.items_json||'[]'); } catch(_) {}
+            const dt    = new Date(p.fecha);
             const dtStr = dt.toLocaleDateString('es-CO') + ' ' + dt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
-            const factura = p.numero_factura || ('#'+String(p.id).padStart(5,'0'));
             items.forEach(it => {
-                detalleRows.push([
-                    p.id, factura, p.cliente, p.metodo_pago, dtStr,
+                const bg  = rFill(di++);
+                const row = ws3.addRow([
+                    p.id, p.cliente, p.metodo_pago, dtStr,
                     it.nombre||'', it.categoria||'Sin Categoria',
                     it.cantidad||0, Math.round(it.precio||0),
                     Math.round((it.cantidad||0)*(it.precio||0)),
                     it.observaciones||'',
                 ]);
+                [1,2,3,4,5,6,7,10].forEach(c => row.getCell(c).fill = bg);
+                const pu = row.getCell(8); pu.numFmt = '#,##0'; pu.fill = bg;
+                const sb = row.getCell(9); sb.numFmt = '#,##0';
+                sb.font = {bold:true, color:{argb:CG}}; sb.fill = bg;
+                row.height = 18;
             });
         });
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(detalleRows), 'Detalle de Pedidos');
+        autoCol(ws3);
 
-        const fname = `Drunks_Reporte_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
-        XLSX.writeFile(wb, fname);
+        // ── Descargar ──
+        const buffer = await wb.xlsx.writeBuffer();
+        const blob   = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        const url    = URL.createObjectURL(blob);
+        const a      = document.createElement('a');
+        const fname  = `Drunks_Reporte_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.xlsx`;
+        a.href = url; a.download = fname; a.click();
+        URL.revokeObjectURL(url);
+
     } catch(e) {
         alert('Error al generar el Excel: ' + e.message);
+        console.error(e);
     } finally {
         btn.innerHTML = '<span>📥</span><span>Exportar Excel</span>';
         btn.disabled = false;
