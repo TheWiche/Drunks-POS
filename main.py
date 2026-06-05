@@ -4544,8 +4544,53 @@ def page_cocina(): return HTMLResponse(COCINA_HTML)
 @app.get("/dashboard", response_class=HTMLResponse)
 def page_dashboard(): return HTMLResponse(DASHBOARD_HTML)
 
+LAUNCHER_HTML = """<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Drunks POS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0d1a;font-family:'Segoe UI',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;color:#fff}
+h1{font-size:2.2rem;font-weight:800;margin-bottom:.4rem;letter-spacing:-1px}
+.sub{color:#8b8ba8;margin-bottom:3rem;font-size:1rem}
+.cards{display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center}
+.card{background:#1a1a2e;border:1px solid #2d2d4a;border-radius:1.25rem;padding:2.2rem 2.8rem;cursor:pointer;text-decoration:none;color:#fff;transition:.18s;text-align:center;min-width:180px}
+.card:hover{background:#2d2d4a;border-color:#7c3aed;transform:translateY(-3px);box-shadow:0 8px 32px rgba(124,58,237,.3)}
+.card .icon{font-size:2.6rem;margin-bottom:.8rem}
+.card .name{font-size:1.1rem;font-weight:700}
+.card .desc{font-size:.8rem;color:#8b8ba8;margin-top:.3rem}
+.badge{display:inline-block;background:#7c3aed22;color:#a78bfa;font-size:.7rem;font-weight:600;padding:.2rem .7rem;border-radius:99px;margin-top:.5rem;border:1px solid #7c3aed44}
+</style>
+</head>
+<body>
+<h1>🍺 Drunks POS</h1>
+<p class="sub">¿A dónde quieres ir?</p>
+<div class="cards">
+  <a class="card" href="/vendedor">
+    <div class="icon">🛒</div>
+    <div class="name">Vendedor</div>
+    <div class="desc">Tomar pedidos y cobrar</div>
+    <span class="badge">Caja</span>
+  </a>
+  <a class="card" href="/cocina">
+    <div class="icon">👨‍🍳</div>
+    <div class="name">Cocina</div>
+    <div class="desc">Ver y gestionar pedidos</div>
+    <span class="badge">Producción</span>
+  </a>
+  <a class="card" href="/dashboard">
+    <div class="icon">📊</div>
+    <div class="name">Dashboard</div>
+    <div class="desc">Reportes y estadísticas</div>
+    <span class="badge">Admin</span>
+  </a>
+</div>
+</body>
+</html>"""
+
 @app.get("/")
-def root(): return HTMLResponse('<meta http-equiv="refresh" content="0;url=/cocina">')
+def root(): return HTMLResponse(LAUNCHER_HTML)
 
 # ─────────────────────────────────────────────
 if __name__ == "__main__":
