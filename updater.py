@@ -4,6 +4,7 @@ Consulta GitHub Releases y aplica la actualización sin intervención técnica.
 """
 import os
 import sys
+import time
 import zipfile
 import threading
 import tempfile
@@ -101,11 +102,19 @@ def start_background_check() -> None:
     t.start()
 
 
-def download_and_apply(url: str) -> None:
+def download_and_apply(url: str, progress_cb=None) -> None:
     """
     Descarga el ZIP de la nueva versión, lo extrae y lanza un .bat
     que reemplaza los archivos mientras la app está cerrada.
+    progress_cb(pct: int, msg: str) se llama con 0-100 durante el proceso.
     """
+    def _prog(pct: int, msg: str = "") -> None:
+        if progress_cb:
+            try:
+                progress_cb(pct, msg)
+            except Exception:
+                pass
+
     try:
         import httpx
 
@@ -116,17 +125,26 @@ def download_and_apply(url: str) -> None:
 
         zip_path = TEMP_UPDATE_DIR / "update.zip"
 
+        _prog(5, "Conectando con el servidor...")
         with httpx.stream("GET", url, follow_redirects=True, timeout=60.0) as r:
             r.raise_for_status()
+            total = int(r.headers.get("content-length", 0))
+            downloaded = 0
             with open(zip_path, "wb") as f:
                 for chunk in r.iter_bytes(chunk_size=65536):
                     f.write(chunk)
+                    downloaded += len(chunk)
+                    if total:
+                        pct = 5 + int(downloaded * 70 / total)  # 5-75%
+                        _prog(pct, f"Descargando... {downloaded // (1024*1024)} MB")
 
+        _prog(76, "Extrayendo archivos...")
         extract_dir = TEMP_UPDATE_DIR / "extracted"
         with zipfile.ZipFile(zip_path, "r") as z:
             z.extractall(extract_dir)
         zip_path.unlink(missing_ok=True)
 
+        _prog(88, "Preparando instalación...")
         app_root = get_app_root()
         bat_path = app_root / "_apply_update.bat"
 
@@ -151,6 +169,7 @@ def download_and_apply(url: str) -> None:
         )
         bat_path.write_text(bat_content, encoding="utf-8")
 
+        _prog(96, "Aplicando actualización...")
         subprocess.Popen(
             ["cmd", "/c", str(bat_path)],
             creationflags=(
@@ -159,9 +178,11 @@ def download_and_apply(url: str) -> None:
                 | subprocess.CREATE_NO_WINDOW
             ),
         )
+        _prog(100, "Reiniciando...")
 
     except Exception as exc:
         _update_info["error"] = f"Error al aplicar actualización: {exc}"
-        return
+        raise
 
+    time.sleep(1)
     os._exit(0)

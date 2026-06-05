@@ -991,8 +991,6 @@ html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[dat
       class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">👥</button>
     <button onclick="toggleThemePicker()" title="Paleta de colores"
       class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">🎨</button>
-    <a href="/dashboard" title="Dashboard"
-      class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">📊</a>
     <button onclick="openAdmin()" title="Administracion"
       class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">⚙️</button>
   </div>
@@ -3806,8 +3804,6 @@ html[data-theme=gold] body{background:#0d0900!important}html[data-theme=gold] [c
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <a href="/cocina"   class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-3 py-2 rounded-xl text-xs font-medium transition-colors hidden sm:block">Cocina</a>
-      <a href="/vendedor" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-3 py-2 rounded-xl text-xs font-medium transition-colors hidden sm:block">Vendedor</a>
       <button onclick="toggleThemePicker()" title="Paleta de colores"
         class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-3 py-2 rounded-xl text-sm transition-colors">🎨</button>
       <button id="exportBtn" onclick="exportExcel()"
@@ -4588,6 +4584,98 @@ h1{font-size:2.2rem;font-weight:800;margin-bottom:.4rem;letter-spacing:-1px}
 </div>
 </body>
 </html>"""
+
+APP_SHELL_HTML = """<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Drunks POS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#0d0d1a}
+.shell{display:flex;flex-direction:column;height:100vh}
+.topbar{
+  background:#0d0d1a;border-bottom:1px solid #1e1e35;
+  height:46px;display:flex;align-items:center;padding:0 14px;gap:6px;
+  flex-shrink:0;user-select:none;-webkit-user-select:none
+}
+.logo{font-family:'Segoe UI',sans-serif;font-weight:800;font-size:.95rem;
+  color:#fff;display:flex;align-items:center;gap:6px;margin-right:14px;white-space:nowrap}
+.nav-btn{
+  font-family:'Segoe UI',sans-serif;font-size:.8rem;font-weight:600;
+  color:#8b8ba8;background:transparent;border:1px solid transparent;
+  border-radius:8px;padding:5px 13px;cursor:pointer;transition:.15s;
+  display:flex;align-items:center;gap:5px;white-space:nowrap
+}
+.nav-btn:hover{background:#1e1e35;color:#fff}
+.nav-btn.active{background:#2d1f6e;color:#c4b5fd;border-color:#7c3aed55}
+.spacer{flex:1}
+.upd-pill{
+  display:none;align-items:center;gap:7px;
+  background:#7c3aed22;border:1px solid #7c3aed55;border-radius:99px;
+  padding:4px 13px 4px 9px;cursor:pointer;
+  animation:pulse 2s infinite
+}
+.upd-pill:hover{background:#7c3aed44}
+.upd-dot{width:8px;height:8px;background:#7c3aed;border-radius:50%;flex-shrink:0}
+.upd-txt{font-size:.75rem;font-weight:700;color:#c4b5fd;font-family:'Segoe UI',sans-serif}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.4)}
+  50%{box-shadow:0 0 0 6px rgba(124,58,237,0)}
+}
+iframe{flex:1;border:none;width:100%}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="logo">🍺 Drunks POS</div>
+    <button class="nav-btn active" id="btn-vendedor" onclick="go('/vendedor','vendedor')">🛒 Vendedor</button>
+    <button class="nav-btn" id="btn-cocina"   onclick="go('/cocina','cocina')">👨‍🍳 Cocina</button>
+    <button class="nav-btn" id="btn-dashboard" onclick="go('/dashboard','dashboard')">📊 Dashboard</button>
+    <div class="spacer"></div>
+    <div class="upd-pill" id="upd-pill" onclick="reqUpdate()">
+      <div class="upd-dot"></div>
+      <span class="upd-txt" id="upd-txt">Actualización disponible</span>
+    </div>
+  </div>
+  <iframe id="frame" src="/vendedor"></iframe>
+</div>
+<script>
+var _cur = 'vendedor';
+function go(url, name) {
+  if (_cur === name) return;
+  _cur = name;
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
+  document.getElementById('btn-' + name).classList.add('active');
+  document.getElementById('frame').src = url;
+}
+// Sync active tab when iframe navigates internally
+document.getElementById('frame').addEventListener('load', function() {
+  try {
+    var p = this.contentWindow.location.pathname;
+    if (p.includes('vendedor')) { _cur='vendedor'; }
+    else if (p.includes('cocina')) { _cur='cocina'; }
+    else if (p.includes('dashboard')) { _cur='dashboard'; }
+    else return;
+    document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
+    document.getElementById('btn-' + _cur).classList.add('active');
+  } catch(e) {}
+});
+function showUpdate(ver) {
+  document.getElementById('upd-txt').textContent = 'v' + ver + ' disponible';
+  document.getElementById('upd-pill').style.display = 'flex';
+}
+function reqUpdate() {
+  if (window.pywebview && window.pywebview.api)
+    window.pywebview.api.open_update_window();
+}
+</script>
+</body>
+</html>"""
+
+@app.get("/app", response_class=HTMLResponse)
+def page_app(): return HTMLResponse(APP_SHELL_HTML)
 
 @app.get("/")
 def root(): return HTMLResponse(LAUNCHER_HTML)
