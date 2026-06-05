@@ -298,8 +298,7 @@ const CAT_CFG = {
 };
 const DEF_CFG = { icon:'🍾', bg:'bg-gray-800/50 border-gray-700/20', active:'bg-gray-700/70 border-purple-400/60 glow-purple', pill:'bg-purple-700 text-purple-100' };
 
-const BASES_GASEOSA = ['Ginger', 'Bretana', 'Quatro', 'Sprite'];
-const BASES_CERVEZA  = ['Costena', 'Aguila', 'Corona'];
+let availBases = [];  // cargadas dinámicamente desde /api/productos/{id}/bases
 
 // ── Estado ──
 let products = [], categories = [], quickNotes = [];
@@ -411,21 +410,76 @@ function tapProd(id) {
 }
 
 // ── Selector de Base ──
-function openBase(product) {
+async function openBase(product) {
   pendingProd = product;
   document.getElementById('baseProdName').textContent = product.nombre;
-  document.getElementById('gasGrid').innerHTML = BASES_GASEOSA.map(b =>
-    `<button data-base="Gaseosa: ${b}" onclick="selectBase(this.dataset.base)"
-      class="card-tap bg-amber-900/30 border border-amber-700/30 hover:bg-amber-800/50 rounded-2xl py-4 text-white font-bold text-sm transition-colors leading-tight">
-      🧃<br>${b}
-    </button>`).join('');
-  document.getElementById('cervGrid').innerHTML = BASES_CERVEZA.map(b =>
-    `<button data-base="Cerveza: ${b}" onclick="selectBase(this.dataset.base)"
-      class="card-tap bg-yellow-900/30 border border-yellow-700/30 hover:bg-yellow-800/50 rounded-2xl py-4 text-white font-bold text-sm transition-colors leading-tight">
-      🍺<br>${b}
-    </button>`).join('');
+  // Limpiar contenido previo y mostrar loading
+  document.getElementById('gasGrid').innerHTML  = '<div class="col-span-2 text-gray-500 text-xs text-center py-3">Cargando...</div>';
+  document.getElementById('cervGrid').innerHTML = '';
+  document.querySelectorAll('.dyn-base-section').forEach(el => el.remove());
   const s = document.getElementById('baseSheet');
   s.classList.remove('hidden'); s.classList.add('flex');
+  try {
+    const r = await fetch('/api/productos/'+product.id+'/bases');
+    availBases = await r.json();
+  } catch(e) { availBases = []; }
+  renderBaseSheet();
+}
+
+function renderBaseSheet() {
+  // Agrupar por tipo, solo disponibles
+  const byTipo = {};
+  availBases.filter(b => b.disponible).forEach(b => {
+    (byTipo[b.tipo] = byTipo[b.tipo]||[]).push(b);
+  });
+
+  const gasGrid  = document.getElementById('gasGrid');
+  const cervGrid = document.getElementById('cervGrid');
+  gasGrid.innerHTML = cervGrid.innerHTML = '';
+  document.querySelectorAll('.dyn-base-section').forEach(el => el.remove());
+
+  const makeBtn = (b, icon, bgCls, bdCls) =>
+    `<button data-base="${b.tipo}: ${b.nombre}" onclick="selectBase(this.dataset.base)"
+      class="card-tap ${bgCls} border ${bdCls} hover:opacity-80 rounded-2xl py-4 text-white font-bold text-sm transition-colors leading-tight">
+      ${icon}<br>${b.nombre}
+    </button>`;
+
+  // Gaseosa → gasGrid
+  const gasItems = byTipo['Gaseosa'] || [];
+  if (gasItems.length) {
+    gasGrid.className = 'grid gap-2 grid-cols-'+Math.min(gasItems.length, 3);
+    gasItems.forEach(b => gasGrid.insertAdjacentHTML('beforeend',
+      makeBtn(b, '🧃', 'bg-amber-900/30', 'border-amber-700/30')));
+  } else {
+    gasGrid.innerHTML = '<span class="text-gray-600 text-xs col-span-2 py-2">Sin bases disponibles</span>';
+  }
+
+  // Cerveza → cervGrid
+  const cervItems = byTipo['Cerveza'] || [];
+  if (cervItems.length) {
+    cervGrid.className = 'grid gap-2 grid-cols-'+Math.min(cervItems.length, 3);
+    cervItems.forEach(b => cervGrid.insertAdjacentHTML('beforeend',
+      makeBtn(b, '🍺', 'bg-yellow-900/30', 'border-yellow-700/30')));
+  }
+
+  // Tipos custom → secciones dinámicas
+  const customTipos = Object.keys(byTipo).filter(t => t !== 'Gaseosa' && t !== 'Cerveza');
+  const sheetContent = document.querySelector('#baseSheet .sheet-in .px-5');
+  const cancelBtn = sheetContent?.querySelector('button[onclick="closeBase()"]');
+  customTipos.forEach(tipo => {
+    const items = byTipo[tipo];
+    const sec = document.createElement('div');
+    sec.className = 'dyn-base-section mb-5';
+    sec.innerHTML = `
+      <div class="flex items-center gap-2 text-gray-400 text-[10px] tracking-widest font-bold mb-2.5">
+        <span class="text-lg">🍹</span> ${tipo.toUpperCase()}
+      </div>
+      <div class="grid grid-cols-${Math.min(items.length,3)} gap-2">
+        ${items.map(b => makeBtn(b,'🍹','bg-purple-900/30','border-purple-700/30')).join('')}
+      </div>`;
+    if (cancelBtn) sheetContent.insertBefore(sec, cancelBtn);
+    else sheetContent?.appendChild(sec);
+  });
 }
 
 function closeBase() {
@@ -795,7 +849,7 @@ html[data-theme=amber] .view-btn.active{background:rgba(217,119,6,.85)!important
       <div class="text-3xl font-extrabold text-purple-400 tabular-nums leading-none" id="orderCount">0</div>
       <div class="text-[10px] text-gray-600 tracking-widest mt-0.5">ACTIVOS</div>
     </div>
-    <div class="flex items-center bg-gray-800/60 border border-gray-700 rounded-xl p-1 gap-0.5">
+    <div id="viewModeBar" class="flex items-center bg-gray-800/60 border border-gray-700 rounded-xl p-1 gap-0.5">
       <button class="view-btn" id="vBtn-priority" onclick="setView('priority')" title="Prioridad — #1 destacado">
         <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0" width="16" height="8" rx="1.5"/><rect x="0" y="9.5" width="7.5" height="6.5" rx="1.2"/><rect x="8.5" y="9.5" width="7.5" height="6.5" rx="1.2"/></svg>
       </button>
@@ -809,6 +863,8 @@ html[data-theme=amber] .view-btn.active{background:rgba(217,119,6,.85)!important
         <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0.5" width="16" height="3" rx="1"/><rect x="0" y="4.5" width="16" height="3" rx="1"/><rect x="0" y="8.5" width="16" height="3" rx="1"/><rect x="0" y="12.5" width="16" height="3" rx="1"/></svg>
       </button>
     </div>
+    <button onclick="toggleStationPanel()" title="Configurar Preparadores"
+      class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">👥</button>
     <button onclick="toggleThemePicker()" title="Paleta de colores"
       class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">🎨</button>
     <a href="/dashboard" title="Dashboard"
@@ -819,22 +875,46 @@ html[data-theme=amber] .view-btn.active{background:rgba(217,119,6,.85)!important
 </div>
 
 <!-- ═══ KITCHEN VIEW ═══ -->
-<div class="p-5">
-  <!-- Hero: pedido #1 (más antiguo = más urgente) -->
+<!-- Modo una estacion (comportamiento actual) -->
+<div id="singleView" class="p-5">
   <div id="heroSection" class="mb-5"></div>
-  <!-- Queue label -->
   <div id="queueLabel" class="hidden flex items-center gap-3 mb-3">
     <div class="h-px flex-1 bg-gray-800"></div>
     <span id="queueTitle" class="text-gray-600 text-[10px] tracking-[0.2em] font-bold shrink-0">EN FILA</span>
     <div class="h-px flex-1 bg-gray-800"></div>
   </div>
-  <!-- Queue: resto de pedidos -->
   <div id="queueGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
-  <!-- Empty state -->
-  <div id="emptyState" class="flex flex-col items-center justify-center py-40 text-gray-800">
-    <div class="text-8xl mb-6 opacity-15">🍹</div>
-    <p class="text-2xl font-bold">Todo listo</p>
-    <p class="text-sm mt-2 text-gray-700">Los pedidos aparecen aqui en tiempo real</p>
+</div>
+<!-- Modo multi-estacion (columnas) -->
+<div id="multiView" class="hidden flex gap-0 overflow-x-auto" style="height:calc(100vh - 5rem)"></div>
+<!-- Empty state (compartido) -->
+<div id="emptyState" class="hidden flex flex-col items-center justify-center py-40 text-gray-800">
+  <div class="text-8xl mb-6 opacity-15">🍹</div>
+  <p class="text-2xl font-bold">Todo listo</p>
+  <p class="text-sm mt-2 text-gray-700">Los pedidos aparecen aqui en tiempo real</p>
+</div>
+
+<!-- ═══ STATION PANEL ═══ -->
+<div id="stationPanel" class="hidden fixed z-[91]" style="top:4.5rem;right:1rem">
+  <div class="bg-gray-900 border border-gray-700 rounded-2xl p-5 shadow-2xl shadow-black/70 w-80">
+    <div class="flex items-center justify-between mb-4">
+      <div class="text-gray-400 text-[10px] tracking-[.2em] font-bold">PREPARADORES / ESTACIONES</div>
+      <button onclick="toggleStationPanel()" class="text-gray-500 hover:text-white text-xl leading-none">x</button>
+    </div>
+    <div class="mb-4">
+      <div class="text-gray-400 text-xs font-semibold mb-2">Numero de estaciones</div>
+      <div class="flex gap-2">
+        <button onclick="setStationCount(1)" id="sCnt-1" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-gray-700 bg-gray-800 text-gray-400 transition-colors">1</button>
+        <button onclick="setStationCount(2)" id="sCnt-2" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-gray-700 bg-gray-800 text-gray-400 transition-colors">2</button>
+        <button onclick="setStationCount(3)" id="sCnt-3" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-gray-700 bg-gray-800 text-gray-400 transition-colors">3</button>
+        <button onclick="setStationCount(4)" id="sCnt-4" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-gray-700 bg-gray-800 text-gray-400 transition-colors">4</button>
+      </div>
+    </div>
+    <div id="stationFormBlock" class="space-y-3 mb-4 max-h-64 overflow-y-auto pr-1"></div>
+    <button onclick="saveStationConfig()"
+      class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">
+      Aplicar configuracion
+    </button>
   </div>
 </div>
 
@@ -880,6 +960,7 @@ html[data-theme=amber] .view-btn.active{background:rgba(217,119,6,.85)!important
       <button id="tab-prods" onclick="showTab('prods')" class="tab-active tab-btn px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors mr-1">Productos</button>
       <button id="tab-cats"  onclick="showTab('cats')"  class="tab-btn px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors mr-1">Categorias</button>
       <button id="tab-notes" onclick="showTab('notes')" class="tab-btn px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">Notas Rapidas</button>
+      <button id="tab-bases" onclick="showTab('bases')" class="tab-btn px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors ml-1">Bases</button>
     </div>
     <!-- Toast -->
     <div id="adminMsg" class="hidden mx-6 mt-4 text-sm px-4 py-2 rounded-xl shrink-0"></div>
@@ -932,6 +1013,26 @@ html[data-theme=amber] .view-btn.active{background:rgba(217,119,6,.85)!important
         <div id="notesList" class="flex flex-wrap gap-2.5"></div>
       </div>
 
+      <!-- ── Bases ── -->
+      <div id="pane-bases" class="hidden">
+        <p class="text-gray-500 text-sm mb-4">Ingredientes base para productos con selector de base. Sin asignacion especifica, el vendedor muestra todas las bases activas.</p>
+        <div class="flex gap-2 mb-5 flex-wrap sm:flex-nowrap">
+          <input id="newBaseNombre" type="text" placeholder="Nombre de la base..."
+            class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm min-w-0 transition-colors">
+          <select id="newBaseTipo" class="bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm shrink-0 transition-colors">
+            <option value="Gaseosa">Gaseosa</option>
+            <option value="Cerveza">Cerveza</option>
+          </select>
+          <button onclick="addBase()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
+        </div>
+        <div id="basesList" class="space-y-1 mb-6"></div>
+        <div class="border-t border-gray-800 pt-5">
+          <div class="text-gray-400 text-xs tracking-widest font-bold mb-1">ASIGNACION A PRODUCTOS</div>
+          <p class="text-gray-600 text-xs mb-4">Elige que bases muestra el vendedor para cada producto. Sin seleccion = todas las activas.</p>
+          <div id="basesAssignList" class="space-y-3"></div>
+        </div>
+      </div>
+
     </div>
     <!-- ── SAVE BAR (single-save) ── -->
     <div id="saveBar" class="hidden shrink-0 border-t border-yellow-700/30 bg-gray-900/90 rounded-b-2xl px-6 py-3 flex items-center justify-between">
@@ -981,6 +1082,11 @@ function addOrder(order) {
 }
 
 function renderKitchen() {
+  // Prune stationsDone entries for orders no longer active
+  Object.keys(stationsDone).forEach(id => { if (!orders[id]) delete stationsDone[id]; });
+
+  if (stationCfg.count >= 2) { renderMultiStation(); return; }
+
   const list    = Object.values(orders).sort((a, b) => a.id - b.id); // FIFO
   const heroSec = document.getElementById('heroSection');
   const qLabel  = document.getElementById('queueLabel');
@@ -1053,7 +1159,7 @@ function renderKitchen() {
 
 function buildItemRow(it, big) {
   const parts = (it.observaciones||'').split(' | ');
-  const isBase = s => s && (s.startsWith('Gaseosa:') || s.startsWith('Cerveza:'));
+  const isBase = s => s && /^[^:]+: /.test(s);
   const base  = isBase(parts[0]) ? parts[0] : null;
   const notas = base ? parts.slice(1).join(' | ') : (it.observaciones||'');
   return `<div class="flex items-start gap-3 py-${big?3:2} border-b border-gray-800/70 last:border-0">
@@ -1182,7 +1288,7 @@ function buildCompactCard(o) {
   const tStr  = new Date(o.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   const itemRows = (o.items||[]).map(it => {
     const parts = (it.observaciones||'').split(' | ');
-    const isBase = s => s && (s.startsWith('Gaseosa:') || s.startsWith('Cerveza:'));
+    const isBase = s => s && /^[^:]+: /.test(s);
     const extra = isBase(parts[0]) ? parts[0] : (it.observaciones||'');
     return `<div class="flex items-center gap-1 py-0.5 min-w-0">
       <span class="text-purple-400 text-[10px] font-extrabold shrink-0">${it.cantidad}x</span>
@@ -1209,6 +1315,7 @@ function buildCompactCard(o) {
 }
 
 function setView(mode) {
+  if (stationCfg && stationCfg.count >= 2) return; // no-op en modo multi-estacion
   viewMode = mode;
   localStorage.setItem('kitchenView', mode);
   document.querySelectorAll('.view-btn').forEach(b =>
@@ -1260,7 +1367,7 @@ function closeAdmin() {
   document.getElementById('adminModal').classList.remove('flex');
 }
 function showTab(tab) {
-  ['prods','cats','notes'].forEach(t => {
+  ['prods','cats','notes','bases'].forEach(t => {
     document.getElementById('pane-'+t).classList.add('hidden');
     const b = document.getElementById('tab-'+t);
     b.classList.remove('tab-active'); b.style.borderBottomColor='transparent'; b.style.color='';
@@ -1270,6 +1377,7 @@ function showTab(tab) {
   if (tab === 'prods')  loadProds();
   if (tab === 'cats')   loadCats();
   if (tab === 'notes')  loadNotes();
+  if (tab === 'bases')  loadBases();
 }
 function adminToast(msg, ok=true) {
   const el = document.getElementById('adminMsg');
@@ -1480,6 +1588,144 @@ async function deleteNote(id) {
   catch(e) {}
 }
 
+// ─── BASES TAB ───
+async function loadBases() {
+  try {
+    const [br, pr] = await Promise.all([fetch('/api/bases'), fetch('/api/productos')]);
+    const bases = await br.json();
+    const prods = await pr.json();
+    renderBasesList(bases);
+    renderBasesAssign(bases, prods.filter(p => p.tiene_base));
+  } catch(e) { adminToast('Error cargando bases', false); }
+}
+
+function renderBasesList(bases) {
+  const el = document.getElementById('basesList');
+  if (!bases.length) {
+    el.innerHTML = '<div class="text-gray-600 text-sm text-center py-4">Sin bases configuradas.</div>';
+    return;
+  }
+  const byTipo = {};
+  bases.forEach(b => { (byTipo[b.tipo] = byTipo[b.tipo]||[]).push(b); });
+  el.innerHTML = Object.entries(byTipo).map(([tipo, list]) => {
+    const rows = list.map(b => {
+      const tipoCls = b.tipo==='Gaseosa'
+        ? 'bg-amber-900/40 text-amber-400'
+        : b.tipo==='Cerveza'
+        ? 'bg-yellow-900/40 text-yellow-400'
+        : 'bg-purple-900/40 text-purple-400';
+      return `<div class="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-xl px-3 py-2">
+        <input id="bn-${b.id}" data-tipo="${esc(b.tipo)}" type="text" value="${esc(b.nombre)}"
+          class="flex-1 bg-transparent text-white text-sm border-b border-transparent focus:border-purple-500 transition-colors outline-none">
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${tipoCls}">${esc(b.tipo)}</span>
+        <button data-id="${b.id}" onclick="toggleBaseItem(parseInt(this.dataset.id))"
+          class="${b.disponible?'bg-green-700 hover:bg-green-600':'bg-red-800 hover:bg-red-700'} text-white text-xs px-2.5 py-1 rounded-lg font-bold transition-colors w-20 shrink-0">
+          ${b.disponible?'Activo':'Agotado'}
+        </button>
+        <button data-id="${b.id}" onclick="saveBase(parseInt(this.dataset.id))"
+          class="bg-gray-700 hover:bg-purple-700 text-white text-xs px-2.5 py-1 rounded-lg transition-colors shrink-0">✓</button>
+        <button data-id="${b.id}" onclick="deleteBase(parseInt(this.dataset.id))"
+          class="bg-gray-700 hover:bg-red-800 text-white text-xs px-2.5 py-1 rounded-lg transition-colors shrink-0">x</button>
+      </div>`;
+    }).join('');
+    return `<div class="mb-4">
+      <div class="text-gray-500 text-[10px] tracking-widest font-bold mb-2">${tipo.toUpperCase()}</div>
+      <div class="space-y-1.5">${rows}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderBasesAssign(bases, prodsWithBase) {
+  const el = document.getElementById('basesAssignList');
+  if (!prodsWithBase.length) {
+    el.innerHTML = '<div class="text-gray-600 text-xs py-2">No hay productos con base configurados.</div>';
+    return;
+  }
+  el.innerHTML = prodsWithBase.map(p => `
+    <div class="bg-gray-800/40 border border-gray-700 rounded-xl p-3">
+      <div class="text-white text-sm font-bold mb-2">${esc(p.nombre)}</div>
+      <div class="flex flex-wrap gap-2 mb-2" id="bassign-${p.id}">
+        <span class="text-gray-600 text-xs">Cargando...</span>
+      </div>
+      <button data-prod="${p.id}" onclick="saveBaseAssign(parseInt(this.dataset.prod))"
+        class="bg-purple-700 hover:bg-purple-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition-colors">
+        Guardar asignacion
+      </button>
+    </div>`).join('');
+
+  prodsWithBase.forEach(async p => {
+    try {
+      const r = await fetch('/api/productos/'+p.id+'/bases');
+      const pBases = await r.json();
+      const hasExplicit = pBases.some(pb => pb.assigned);
+      const el2 = document.getElementById('bassign-'+p.id);
+      if (!el2) return;
+      el2.innerHTML = bases.map(b => {
+        const checked = hasExplicit && pBases.some(pb => pb.id===b.id && pb.assigned);
+        return `<label class="flex items-center gap-1.5 text-xs text-gray-300 cursor-pointer select-none">
+          <input type="checkbox" data-prod="${p.id}" data-base="${b.id}"
+            ${checked?'checked':''} class="rounded accent-purple-500">
+          <span>${esc(b.nombre)}</span>
+          <span class="text-[9px] text-gray-600">(${esc(b.tipo)})</span>
+        </label>`;
+      }).join('');
+    } catch(e) {}
+  });
+}
+
+async function addBase() {
+  const nombre = document.getElementById('newBaseNombre').value.trim();
+  const tipo   = document.getElementById('newBaseTipo').value;
+  if (!nombre) return;
+  try {
+    const r = await fetch('/api/bases', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({nombre, tipo})
+    });
+    if (r.ok) { document.getElementById('newBaseNombre').value=''; adminToast('Base agregada'); loadBases(); }
+    else adminToast('Error al agregar', false);
+  } catch(e) {}
+}
+
+async function saveBase(id) {
+  const inp   = document.getElementById('bn-'+id);
+  const nombre = inp?.value.trim();
+  const tipo   = inp?.dataset.tipo || 'Gaseosa';
+  if (!nombre) return;
+  try {
+    const r = await fetch('/api/bases/'+id, {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({nombre, tipo})
+    });
+    if (r.ok) adminToast('Guardado'); else adminToast('Error', false);
+    loadBases();
+  } catch(e) {}
+}
+
+async function toggleBaseItem(id) {
+  try { await fetch('/api/bases/'+id+'/toggle', {method:'PATCH'}); loadBases(); }
+  catch(e) {}
+}
+
+async function deleteBase(id) {
+  if (!confirm('Eliminar esta base? Se quitara de todos los productos.')) return;
+  try { await fetch('/api/bases/'+id, {method:'DELETE'}); adminToast('Eliminada'); loadBases(); }
+  catch(e) {}
+}
+
+async function saveBaseAssign(prodId) {
+  const cbs = document.querySelectorAll('#bassign-'+prodId+' input[type="checkbox"]');
+  const base_ids = [...cbs].filter(cb=>cb.checked).map(cb=>parseInt(cb.dataset.base));
+  try {
+    const r = await fetch('/api/productos/'+prodId+'/bases', {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({base_ids})
+    });
+    if (r.ok) adminToast('Asignacion guardada');
+  } catch(e) {}
+}
+
+
 // ─── DASHBOARD ───  (ahora en ruta /dashboard)
 
 
@@ -1528,9 +1774,242 @@ async function checkSupabase() {
   } catch(_) {}
 }
 
+// ─── STATION SYSTEM ───
+let stationCfg = JSON.parse(localStorage.getItem('stationCfg') || 'null') || {
+  count: 1,
+  stations: [{ name: 'Preparador 1', catIds: [] }]
+};
+let stationsDone = JSON.parse(localStorage.getItem('stationsDone') || '{}');
+let stationCats  = [];   // cached from /api/categorias
+
+function toggleStationPanel() {
+  const p = document.getElementById('stationPanel');
+  p.classList.toggle('hidden');
+  if (!p.classList.contains('hidden')) {
+    // Load cats and render form
+    if (!stationCats.length) {
+      fetch('/api/categorias').then(r=>r.json()).then(c=>{
+        stationCats = c; renderStationForm();
+      }).catch(()=>{ renderStationForm(); });
+    } else {
+      renderStationForm();
+    }
+    // Highlight active count button
+    for (let i=1;i<=4;i++) {
+      const btn = document.getElementById('sCnt-'+i);
+      if (btn) btn.className = 'station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border transition-colors '
+        + (i===stationCfg.count
+          ? 'border-purple-500 bg-purple-700 text-white'
+          : 'border-gray-700 bg-gray-800 text-gray-400');
+    }
+  }
+}
+
+function setStationCount(n) {
+  // Adjust stations array
+  while (stationCfg.stations.length < n)
+    stationCfg.stations.push({ name: 'Preparador '+(stationCfg.stations.length+1), catIds: [] });
+  stationCfg.stations = stationCfg.stations.slice(0, n);
+  stationCfg.count = n;
+  for (let i=1;i<=4;i++) {
+    const btn = document.getElementById('sCnt-'+i);
+    if (btn) btn.className = 'station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border transition-colors '
+      + (i===n
+        ? 'border-purple-500 bg-purple-700 text-white'
+        : 'border-gray-700 bg-gray-800 text-gray-400');
+  }
+  renderStationForm();
+}
+
+function renderStationForm() {
+  const block = document.getElementById('stationFormBlock');
+  block.innerHTML = stationCfg.stations.map((s, si) => {
+    const catChecks = stationCats.map(c =>
+      `<label class="flex items-center gap-1.5 text-xs text-gray-300 cursor-pointer">
+        <input type="checkbox" data-si="${si}" data-cat="${c.id}"
+          ${s.catIds.includes(c.id)?'checked':''} class="scat-chk rounded accent-purple-500">
+        <span>${c.nombre}</span>
+      </label>`).join('');
+    return `<div class="bg-gray-800/60 border border-gray-700 rounded-xl p-3">
+      <input data-si="${si}" type="text" value="${s.name.replace(/"/g,'&quot;')}"
+        placeholder="Nombre de la estacion"
+        class="sname-inp w-full bg-transparent text-white text-sm font-semibold border-b border-gray-700 focus:border-purple-500 outline-none mb-2 pb-1">
+      ${stationCats.length
+        ? '<div class="text-gray-500 text-[10px] tracking-widest font-bold mb-1.5">CATEGORIAS</div><div class="flex flex-wrap gap-2">'+catChecks+'</div>'
+        : '<div class="text-gray-600 text-xs">Sin categorias (atiende todos los pedidos)</div>'}
+    </div>`;
+  }).join('');
+}
+
+function saveStationConfig() {
+  // Read names and categories from form
+  document.querySelectorAll('.sname-inp').forEach(inp => {
+    const si = parseInt(inp.dataset.si);
+    if (stationCfg.stations[si]) stationCfg.stations[si].name = inp.value.trim() || ('Preparador '+(si+1));
+  });
+  document.querySelectorAll('.scat-chk').forEach(cb => {
+    const si = parseInt(cb.dataset.si), catId = parseInt(cb.dataset.cat);
+    if (!stationCfg.stations[si]) return;
+    const ids = stationCfg.stations[si].catIds;
+    if (cb.checked && !ids.includes(catId)) ids.push(catId);
+    else if (!cb.checked) stationCfg.stations[si].catIds = ids.filter(id=>id!==catId);
+  });
+  // Check for active orders before changing multi→single
+  if (stationCfg.count === 1 && Object.keys(stationsDone).length > 0) {
+    if (!confirm('Hay pedidos en progreso con asignacion de estacion. Cambiar ahora? El progreso parcial se perdera.')) return;
+    stationsDone = {};
+    localStorage.removeItem('stationsDone');
+  }
+  localStorage.setItem('stationCfg', JSON.stringify(stationCfg));
+  toggleStationPanel();
+  applyStationLayout();
+}
+
+function applyStationLayout() {
+  const multi = stationCfg.count >= 2;
+  const viewBar = document.getElementById('viewModeBar');
+  if (viewBar) viewBar.style.display = multi ? 'none' : '';
+  document.getElementById('singleView').classList.toggle('hidden', multi);
+  document.getElementById('multiView').classList.toggle('hidden', !multi);
+  renderKitchen();
+}
+
+// Assign order items to stations — returns { stationIdx: [items] }
+function assignOrderToStations(order) {
+  const result = {};
+  for (let si = 0; si < stationCfg.count; si++) {
+    const cfg = stationCfg.stations[si];
+    const catchAll = !cfg.catIds || cfg.catIds.length === 0;
+    const items = (order.items||[]).filter(it =>
+      catchAll || cfg.catIds.includes(it.categoria_id));
+    if (items.length) result[si] = items;
+  }
+  // Fallback: no station matched → station 0 gets everything
+  if (!Object.keys(result).length && (order.items||[]).length) {
+    result[0] = order.items;
+  }
+  return result;
+}
+
+// Build a card for a station column
+function buildColumnCard(order, stationItems, rank, si) {
+  const div = document.createElement('div');
+  div.id = 'col-order-'+order.id+'-'+si;
+  const efect   = order.metodo_pago === 'Efectivo';
+  const hBg     = efect ? 'from-green-700/80 to-green-800/80' : 'from-blue-700/80 to-blue-800/80';
+  const icon    = efect ? '💵' : '📱';
+  const tStr    = new Date(order.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  const rows    = stationItems.map(it => buildItemRow(it, false)).join('');
+  const doneSet = new Set(stationsDone[order.id] || []);
+  const isDone  = doneSet.has(si);
+  const allSiList = Object.keys(assignOrderToStations(order)).map(Number);
+  const doneCount = allSiList.filter(x => doneSet.has(x)).length;
+  const totalSt   = allSiList.length;
+  const progressLabel = totalSt > 1
+    ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ml-2 ${doneCount>0?'bg-yellow-700/60 text-yellow-300':'bg-gray-700/60 text-gray-400'}">${doneCount}/${totalSt}</span>`
+    : '';
+  div.className = 'card-in bg-gray-900 border '+(rank===0?'border-purple-500/40':'border-gray-700')+' rounded-2xl overflow-hidden mb-3 flex-shrink-0';
+  div.innerHTML = `
+    ${rank===0?'<div class="flex items-center gap-2 mb-2"><div class="priority-badge bg-red-500 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full tracking-wider shadow-lg shadow-red-900/50">#1 PRIORIDAD</div><div class="h-px flex-1 bg-gray-800"></div></div>':''}
+    <div class="bg-gradient-to-r ${hBg} px-4 py-3 flex items-start justify-between">
+      <div class="min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">${order.numero_factura||('#'+order.id)}</span>
+          <span class="text-white/60 text-xs">${icon} ${order.metodo_pago} · ${tStr}</span>
+          ${progressLabel}
+        </div>
+        <div class="text-white font-extrabold text-xl leading-tight truncate">${order.cliente}</div>
+      </div>
+      <div class="text-white font-extrabold text-lg tabular-nums ml-2 shrink-0">$${Math.round(order.total).toLocaleString('es-CO')}</div>
+    </div>
+    <div class="px-4 py-3">${rows||'<div class="text-gray-600 text-xs text-center py-2">Sin items para esta estacion</div>'}</div>
+    <div class="px-4 pb-4">
+      ${isDone
+        ? '<div class="w-full bg-gray-700 text-gray-400 font-bold py-2.5 rounded-xl text-sm text-center">✓ Esta estacion lista</div>'
+        : `<button data-oid="${order.id}" data-si="${si}" onclick="completeStationOrder(parseInt(this.dataset.oid),parseInt(this.dataset.si))"
+            class="w-full bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-extrabold py-2.5 rounded-xl text-sm transition-colors shadow-lg">
+            ✓ LISTO
+           </button>`
+      }
+    </div>`;
+  return div;
+}
+
+// Render one station column
+function renderStationColumn(si, allOrders) {
+  const cfg = stationCfg.stations[si];
+  const colOrders = allOrders.filter(o => assignOrderToStations(o)[si] !== undefined);
+  const col = document.createElement('div');
+  col.className = 'flex flex-col border-r border-gray-800/60 overflow-y-auto flex-1 min-w-[280px]';
+
+  // Column header
+  const badge = colOrders.length
+    ? `<span class="text-[10px] font-extrabold w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center ml-1">${colOrders.length}</span>`
+    : '';
+  const hdr = document.createElement('div');
+  hdr.className = 'sticky top-0 z-10 bg-gray-950/95 backdrop-blur border-b border-gray-800 px-4 py-3 flex items-center gap-2';
+  hdr.innerHTML = `<span class="text-white font-extrabold text-sm tracking-wide">${cfg.name.toUpperCase()}</span>${badge}`;
+  col.appendChild(hdr);
+
+  const body = document.createElement('div');
+  body.className = 'p-3 flex-1';
+  if (!colOrders.length) {
+    body.innerHTML = '<div class="flex flex-col items-center justify-center h-40 text-gray-700"><div class="text-4xl mb-3 opacity-30">🍹</div><p class="text-xs">Sin pedidos</p></div>';
+  } else {
+    colOrders.forEach((o, rank) => {
+      const stItems = assignOrderToStations(o)[si] || o.items || [];
+      body.appendChild(buildColumnCard(o, stItems, rank, si));
+    });
+  }
+  col.appendChild(body);
+  return col;
+}
+
+// Render all station columns
+function renderMultiStation() {
+  const list = Object.values(orders).sort((a,b) => a.id - b.id);
+  const container = document.getElementById('multiView');
+  container.innerHTML = '';
+  const empty = document.getElementById('emptyState');
+  if (!list.length) { empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  for (let si = 0; si < stationCfg.count; si++) {
+    container.appendChild(renderStationColumn(si, list));
+  }
+}
+
+// Station-aware completion
+async function completeStationOrder(orderId, si) {
+  const doneSet = new Set(stationsDone[orderId] || []);
+  doneSet.add(si);
+  stationsDone[orderId] = [...doneSet];
+  localStorage.setItem('stationsDone', JSON.stringify(stationsDone));
+
+  const order = orders[orderId];
+  if (!order) return;
+  const requiredStations = Object.keys(assignOrderToStations(order)).map(Number);
+  const allDone = requiredStations.every(x => doneSet.has(x));
+
+  if (allDone) {
+    delete stationsDone[orderId];
+    localStorage.setItem('stationsDone', JSON.stringify(stationsDone));
+    // Animate and complete
+    for (let s = 0; s < stationCfg.count; s++) {
+      const card = document.getElementById('col-order-'+orderId+'-'+s);
+      if (card) card.classList.add('fade-out');
+    }
+    try {
+      const r = await fetch('/api/pedidos/'+orderId+'/entregar', {method:'PUT'});
+      if (r.ok) { setTimeout(() => { delete orders[orderId]; renderKitchen(); }, 370); }
+    } catch(e) { renderKitchen(); }
+  } else {
+    renderKitchen();
+  }
+}
+
 // ─── INIT ───
 applyTheme(localStorage.getItem('drunksPalette') || 'dark');
-setView(viewMode);
+applyStationLayout();
 loadPending();
 connectWS();
 checkSupabase();
@@ -1638,7 +2117,30 @@ def init_db():
                 cantidad      INTEGER NOT NULL,
                 observaciones TEXT    DEFAULT ''
             )""")
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS bases (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre     TEXT    NOT NULL,
+                tipo       TEXT    NOT NULL DEFAULT 'Gaseosa',
+                disponible INTEGER NOT NULL DEFAULT 1
+            )""")
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS producto_bases (
+                producto_id INTEGER NOT NULL REFERENCES productos(id) ON DELETE CASCADE,
+                base_id     INTEGER NOT NULL REFERENCES bases(id)     ON DELETE CASCADE,
+                PRIMARY KEY (producto_id, base_id)
+            )""")
         conn.commit()
+
+        # Seed bases desde los valores originales hardcodeados
+        if conn.execute("SELECT COUNT(*) FROM bases").fetchone()[0] == 0:
+            conn.executemany("INSERT INTO bases (nombre, tipo) VALUES (?,?)", [
+                ("Ginger",  "Gaseosa"), ("Bretana", "Gaseosa"),
+                ("Quatro",  "Gaseosa"), ("Sprite",  "Gaseosa"),
+                ("Costena", "Cerveza"), ("Aguila",  "Cerveza"),
+                ("Corona",  "Cerveza"),
+            ])
+            conn.commit()
 
         # ── Seeding ──
         if conn.execute("SELECT COUNT(*) FROM categorias").fetchone()[0] == 0:
@@ -1746,6 +2248,17 @@ class OrderItem(BaseModel):
     producto_id:   int
     cantidad:      int
     observaciones: str = ""
+
+class BaseCreate(BaseModel):
+    nombre: str
+    tipo:   str = "Gaseosa"
+
+class BaseUpdate(BaseModel):
+    nombre: str
+    tipo:   str
+
+class ProductoBasesUpdate(BaseModel):
+    base_ids: List[int]
 
 class PedidoCreate(BaseModel):
     cliente:     str
@@ -2021,6 +2534,76 @@ def toggle_base_producto(id: int):
         conn.commit()
         return to_dict(conn.execute(PROD_Q + " WHERE p.id=?", (id,)).fetchone())
 
+# ── Bases ──
+@app.get("/api/bases")
+def get_bases():
+    with get_conn() as conn:
+        return [to_dict(r) for r in conn.execute(
+            "SELECT * FROM bases ORDER BY tipo, nombre").fetchall()]
+
+@app.post("/api/bases", status_code=201)
+def create_base(data: BaseCreate):
+    with get_conn() as conn:
+        cur = conn.execute("INSERT INTO bases (nombre, tipo) VALUES (?,?)",
+                           (data.nombre.strip(), data.tipo.strip()))
+        conn.commit()
+        return to_dict(conn.execute("SELECT * FROM bases WHERE id=?",
+                                    (cur.lastrowid,)).fetchone())
+
+@app.put("/api/bases/{id}")
+def update_base(id: int, data: BaseUpdate):
+    with get_conn() as conn:
+        if not conn.execute("SELECT id FROM bases WHERE id=?", (id,)).fetchone():
+            raise HTTPException(404, "Base no encontrada")
+        conn.execute("UPDATE bases SET nombre=?, tipo=? WHERE id=?",
+                     (data.nombre.strip(), data.tipo.strip(), id))
+        conn.commit()
+        return to_dict(conn.execute("SELECT * FROM bases WHERE id=?", (id,)).fetchone())
+
+@app.delete("/api/bases/{id}")
+def delete_base(id: int):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM bases WHERE id=?", (id,))
+        conn.commit()
+    return {"ok": True}
+
+@app.patch("/api/bases/{id}/toggle")
+def toggle_base_disponible(id: int):
+    with get_conn() as conn:
+        row = conn.execute("SELECT disponible FROM bases WHERE id=?", (id,)).fetchone()
+        if not row:
+            raise HTTPException(404, "Base no encontrada")
+        conn.execute("UPDATE bases SET disponible=? WHERE id=?",
+                     (0 if row["disponible"] else 1, id))
+        conn.commit()
+        return to_dict(conn.execute("SELECT * FROM bases WHERE id=?", (id,)).fetchone())
+
+@app.get("/api/productos/{id}/bases")
+def get_producto_bases(id: int):
+    with get_conn() as conn:
+        assigned_ids = {r["base_id"] for r in conn.execute(
+            "SELECT base_id FROM producto_bases WHERE producto_id=?", (id,)).fetchall()}
+        all_bases = [to_dict(r) for r in conn.execute(
+            "SELECT * FROM bases ORDER BY tipo, nombre").fetchall()]
+        if assigned_ids:
+            for b in all_bases:
+                b["assigned"] = b["id"] in assigned_ids
+        else:
+            # No specific assignment → return only available, all flagged as not explicitly assigned
+            all_bases = [dict(**b, assigned=False) for b in all_bases if b["disponible"]]
+        return all_bases
+
+@app.put("/api/productos/{id}/bases")
+def set_producto_bases(id: int, data: ProductoBasesUpdate):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM producto_bases WHERE producto_id=?", (id,))
+        if data.base_ids:
+            conn.executemany(
+                "INSERT INTO producto_bases (producto_id, base_id) VALUES (?,?)",
+                [(id, bid) for bid in data.base_ids])
+        conn.commit()
+    return {"ok": True, "count": len(data.base_ids)}
+
 # ── Notas Rápidas ──
 @app.get("/api/notas_rapidas")
 def get_notas():
@@ -2094,7 +2677,8 @@ def get_pendientes():
         for p in pedidos:
             pd = dict(p)
             pd["items"] = [dict(d) for d in conn.execute(
-                """SELECT dp.producto_id, dp.cantidad, dp.observaciones, pr.nombre
+                """SELECT dp.producto_id, dp.cantidad, dp.observaciones,
+                          pr.nombre, pr.categoria_id
                    FROM detalle_pedidos dp JOIN productos pr ON dp.producto_id=pr.id
                    WHERE dp.pedido_id=?""", (p["id"],)).fetchall()]
             result.append(pd)
@@ -3137,7 +3721,7 @@ async function openInv(id) {
     // Items
     document.getElementById('inv-items').innerHTML = (o.items||[]).map(item => {
       const parts = (item.observaciones||'').split(' | ');
-      const isBase = s => s && (s.startsWith('Gaseosa:') || s.startsWith('Cerveza:'));
+      const isBase = s => s && /^[^:]+: /.test(s);
       const base   = isBase(parts[0]) ? parts[0] : null;
       const notas  = base ? parts.slice(1).join(' | ') : (item.observaciones||'');
       return `<div class="flex items-start gap-3 py-3">
