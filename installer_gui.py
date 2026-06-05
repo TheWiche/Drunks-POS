@@ -1,7 +1,6 @@
 """
-Instalador gráfico de Drunks POS.
-Descarga la última versión desde GitHub Releases y la instala con una GUI.
-Solo usa stdlib + tkinter (incluido en Python). Sin dependencias externas.
+Instalador de Drunks POS.
+Descarga la última versión desde GitHub Releases.
 """
 import json
 import os
@@ -14,35 +13,29 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, ttk
 
-# ── Constantes ────────────────────────────────────────────────────────────────
 GITHUB_REPO     = "TheWiche/Drunks-POS"
 APP_NAME        = "Drunks POS"
 DEFAULT_INSTALL = r"C:\Drunks POS"
-WIN_W, WIN_H    = 520, 440
-
-BG       = "#0d0d1a"
-ACCENT   = "#7c3aed"
-FG       = "#ffffff"
-FG_DIM   = "#8b8ba8"
-SUCCESS  = "#10b981"
-DANGER   = "#ef4444"
-ENTRY_BG = "#1e1e35"
-BTN_SEC  = "#2d2d4a"
 
 
 class InstallerApp:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title(f"{APP_NAME} — Instalador")
-        self.root.geometry(f"{WIN_W}x{WIN_H}")
+        self.root.title(f"Instalador de {APP_NAME}")
+        self.root.geometry("500x310")
         self.root.resizable(False, False)
-        self.root.configure(bg=BG)
 
         # Centrar en pantalla
         self.root.update_idletasks()
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
-        self.root.geometry(f"{WIN_W}x{WIN_H}+{(sw-WIN_W)//2}+{(sh-WIN_H)//2}")
+        self.root.geometry(f"500x310+{(sw-500)//2}+{(sh-310)//2}")
+
+        style = ttk.Style()
+        try:
+            style.theme_use("vista")
+        except Exception:
+            style.theme_use("default")
 
         self.install_path  = tk.StringVar(value=DEFAULT_INSTALL)
         self.make_shortcut = tk.BooleanVar(value=True)
@@ -50,94 +43,57 @@ class InstallerApp:
 
         self._build()
 
-    # ── Construcción de UI ────────────────────────────────────────────────────
+    # ── UI ────────────────────────────────────────────────────────────────────
     def _build(self):
-        # Cabecera morada
-        hdr = tk.Frame(self.root, bg=ACCENT, height=76)
+        # Encabezado
+        hdr = ttk.Frame(self.root, padding=(16, 14, 16, 10))
         hdr.pack(fill=tk.X)
-        hdr.pack_propagate(False)
-        tk.Label(hdr, text="🍺  Drunks POS", font=("Segoe UI", 20, "bold"),
-                 fg=FG, bg=ACCENT).pack(side=tk.LEFT, padx=24, pady=(18, 0))
-        tk.Label(hdr, text="  Instalador", font=("Segoe UI", 11),
-                 fg="#c4b5fd", bg=ACCENT).pack(side=tk.LEFT, pady=(22, 0))
+        ttk.Label(hdr, text=f"Instalador de {APP_NAME}",
+                  font=("Segoe UI", 13, "bold")).pack(anchor=tk.W)
+        ttk.Label(hdr, text="Elige la carpeta donde se instalará el programa y haz clic en Instalar.",
+                  font=("Segoe UI", 9)).pack(anchor=tk.W, pady=(2, 0))
+
+        ttk.Separator(self.root).pack(fill=tk.X)
 
         # Cuerpo
-        body = tk.Frame(self.root, bg=BG, padx=28, pady=20)
+        body = ttk.Frame(self.root, padding=(16, 12, 16, 8))
         body.pack(fill=tk.BOTH, expand=True)
 
-        # Ruta de instalación
-        tk.Label(body, text="Carpeta de instalación:",
-                 font=("Segoe UI", 10), fg=FG_DIM, bg=BG).pack(anchor=tk.W)
+        ttk.Label(body, text="Carpeta de instalación:").pack(anchor=tk.W)
+        path_row = ttk.Frame(body)
+        path_row.pack(fill=tk.X, pady=(4, 10))
+        ttk.Entry(path_row, textvariable=self.install_path).pack(
+            side=tk.LEFT, fill=tk.X, expand=True, ipady=3)
+        ttk.Button(path_row, text="Examinar...", command=self._browse).pack(
+            side=tk.LEFT, padx=(6, 0))
 
-        path_row = tk.Frame(body, bg=BG)
-        path_row.pack(fill=tk.X, pady=(5, 16))
+        ttk.Checkbutton(body, text="Crear acceso directo en el Escritorio",
+                        variable=self.make_shortcut).pack(anchor=tk.W, pady=2)
+        ttk.Checkbutton(body, text="Abrir Drunks POS al terminar la instalación",
+                        variable=self.open_after).pack(anchor=tk.W, pady=2)
 
-        self.path_entry = tk.Entry(
-            path_row, textvariable=self.install_path,
-            font=("Segoe UI", 10), bg=ENTRY_BG, fg=FG,
-            insertbackground=FG, relief=tk.FLAT,
-            highlightthickness=1, highlightbackground="#2d2d4a",
-            highlightcolor=ACCENT)
-        self.path_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=9, ipadx=8)
+        # Estado y barra
+        status_frame = ttk.Frame(body)
+        status_frame.pack(fill=tk.X, pady=(10, 0))
+        self.status_var = tk.StringVar(value="")
+        ttk.Label(status_frame, textvariable=self.status_var,
+                  font=("Segoe UI", 9)).pack(anchor=tk.W)
+        self.progress = ttk.Progressbar(status_frame, mode="determinate",
+                                        maximum=100, length=450)
+        self.progress.pack(fill=tk.X, pady=(4, 0))
 
-        browse = tk.Button(
-            path_row, text="Examinar",
-            font=("Segoe UI", 9), bg=BTN_SEC, fg=FG,
-            activebackground="#3d3d5a", activeforeground=FG,
-            relief=tk.FLAT, cursor="hand2", padx=12, pady=8,
-            command=self._browse)
-        browse.pack(side=tk.LEFT, padx=(8, 0))
+        ttk.Separator(self.root).pack(fill=tk.X)
 
-        # Separador
-        tk.Frame(body, bg="#2d2d4a", height=1).pack(fill=tk.X, pady=(0, 14))
+        # Botones
+        btn_row = ttk.Frame(self.root, padding=(0, 8, 14, 8))
+        btn_row.pack(fill=tk.X)
+        self.cancel_btn = ttk.Button(btn_row, text="Cancelar", command=self.root.quit)
+        self.cancel_btn.pack(side=tk.RIGHT, padx=(6, 0))
+        self.install_btn = ttk.Button(btn_row, text="Instalar", command=self._start_install,
+                                      style="Accent.TButton")
+        self.install_btn.pack(side=tk.RIGHT)
 
-        # Opciones
-        tk.Label(body, text="Opciones:",
-                 font=("Segoe UI", 10), fg=FG_DIM, bg=BG).pack(anchor=tk.W, pady=(0, 6))
-
-        tk.Checkbutton(
-            body, text="Crear acceso directo en el Escritorio",
-            variable=self.make_shortcut,
-            font=("Segoe UI", 10), fg=FG, bg=BG,
-            selectcolor=ACCENT, activebackground=BG, activeforeground=FG
-        ).pack(anchor=tk.W, pady=3)
-
-        tk.Checkbutton(
-            body, text="Abrir Drunks POS al terminar la instalación",
-            variable=self.open_after,
-            font=("Segoe UI", 10), fg=FG, bg=BG,
-            selectcolor=ACCENT, activebackground=BG, activeforeground=FG
-        ).pack(anchor=tk.W, pady=3)
-
-        # Zona de estado y progreso
-        status_frame = tk.Frame(body, bg=BG)
-        status_frame.pack(fill=tk.X, pady=(18, 0))
-
-        self.status_lbl = tk.Label(
-            status_frame, text="",
-            font=("Segoe UI", 9), fg=FG_DIM, bg=BG, anchor=tk.W)
-        self.status_lbl.pack(fill=tk.X)
-
-        style = ttk.Style()
-        style.theme_use("default")
-        style.configure("D.Horizontal.TProgressbar",
-                        background=ACCENT, troughcolor=ENTRY_BG,
-                        borderwidth=0, thickness=5)
-        self.progress = ttk.Progressbar(
-            status_frame, style="D.Horizontal.TProgressbar",
-            mode="indeterminate", length=464)
-
-        # Botón principal
-        self.install_btn = tk.Button(
-            body, text="    Instalar ahora    ",
-            font=("Segoe UI", 12, "bold"),
-            bg=ACCENT, fg=FG,
-            activebackground="#6d28d9", activeforeground=FG,
-            relief=tk.FLAT, cursor="hand2", padx=28, pady=12,
-            command=self._start_install)
-        self.install_btn.pack(side=tk.BOTTOM, pady=(0, 4))
-
-    # ── Acciones ──────────────────────────────────────────────────────────────
+    # ── Acciones ─────────────────────────────────────────────────────────────
     def _browse(self):
         path = filedialog.askdirectory(
             initialdir=self.install_path.get(),
@@ -146,21 +102,24 @@ class InstallerApp:
             self.install_path.set(path.replace("/", "\\"))
 
     def _start_install(self):
-        self.install_btn.config(state=tk.DISABLED, text="  Instalando...  ")
-        self.progress.pack(fill=tk.X, pady=(6, 0))
-        self.progress.start(12)
+        self.install_btn.configure(state="disabled")
+        self.cancel_btn.configure(state="disabled")
+        self.progress["value"] = 0
         threading.Thread(target=self._install, daemon=True).start()
 
-    def _set_status(self, msg, color=None):
-        self.root.after(0, lambda: self.status_lbl.config(
-            text=msg, fg=color or FG_DIM))
+    def _set_status(self, msg: str, pct: int = None):
+        def _apply():
+            self.status_var.set(msg)
+            if pct is not None:
+                self.progress["value"] = pct
+        self.root.after(0, _apply)
 
     # ── Lógica de instalación ─────────────────────────────────────────────────
     def _install(self):
         dest = Path(self.install_path.get()) / "Drunks"
         try:
-            # 1. Consultar última versión
-            self._set_status("Consultando versión en GitHub...")
+            # 1. Consultar GitHub
+            self._set_status("Consultando versión en GitHub...", 0)
             req = urllib.request.Request(
                 f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest",
                 headers={"Accept": "application/vnd.github.v3+json",
@@ -172,20 +131,32 @@ class InstallerApp:
                 (a for a in data.get("assets", []) if a["name"].endswith(".zip")),
                 None)
             if not asset:
-                raise RuntimeError(
-                    "No se encontró el archivo en GitHub.\n"
-                    "Verifica tu conexión a internet.")
+                raise RuntimeError("No se encontró el archivo de descarga en GitHub.\n"
+                                   "Verifica tu conexión a internet.")
 
-            version = data.get("tag_name", "")
-            size_mb = asset["size"] // (1024 * 1024)
+            version    = data.get("tag_name", "")
+            total_size = asset["size"]
+            total_mb   = max(total_size // (1024 * 1024), 1)
 
-            # 2. Descargar ZIP
-            self._set_status(f"Descargando {asset['name']}  ({size_mb} MB)...")
+            # 2. Descargar con progreso real
+            self._set_status(f"Descargando {asset['name']} ({total_mb} MB)...", 5)
             tmp_zip = Path(tempfile.gettempdir()) / "drunks_install.zip"
-            urllib.request.urlretrieve(asset["browser_download_url"], tmp_zip)
+            downloaded = 0
+            with urllib.request.urlopen(asset["browser_download_url"], timeout=120) as resp:
+                with open(tmp_zip, "wb") as f:
+                    while True:
+                        chunk = resp.read(65536)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        if total_size:
+                            pct = 5 + int(downloaded * 70 / total_size)
+                            mb  = downloaded // (1024 * 1024)
+                            self._set_status(f"Descargando... {mb} / {total_mb} MB", pct)
 
             # 3. Extraer
-            self._set_status("Extrayendo archivos...")
+            self._set_status("Extrayendo archivos...", 76)
             dest.mkdir(parents=True, exist_ok=True)
             with zipfile.ZipFile(tmp_zip, "r") as z:
                 z.extractall(dest)
@@ -193,9 +164,10 @@ class InstallerApp:
 
             # 4. Acceso directo
             if self.make_shortcut.get():
-                self._set_status("Creando acceso directo...")
+                self._set_status("Creando acceso directo...", 92)
                 self._create_shortcut(dest)
 
+            self._set_status(f"Instalación completada  {version}", 100)
             self.root.after(0, self._done, dest, version)
 
         except Exception as exc:
@@ -211,7 +183,7 @@ class InstallerApp:
             f"$l=$s.CreateShortcut('{lnk}');"
             f"$l.TargetPath='{target}';"
             f"$l.WorkingDirectory='{wd}';"
-            f"$l.Description='Drunks POS - Sistema de Ventas';"
+            f"$l.Description='Drunks POS';"
             f"$l.Save()"
         )
         subprocess.run(
@@ -220,42 +192,30 @@ class InstallerApp:
 
     # ── Pantallas de resultado ────────────────────────────────────────────────
     def _done(self, dest: Path, version: str):
-        self.progress.stop()
-        self.progress.pack_forget()
-        self.status_lbl.config(
-            text=f"✓  Instalado correctamente  {version}",
-            fg=SUCCESS, font=("Segoe UI", 10, "bold"))
-        tk.Label(self.status_lbl.master, text=str(dest),
-                 font=("Segoe UI", 8), fg=FG_DIM, bg=BG,
-                 anchor=tk.W).pack(fill=tk.X)
-
+        self.install_btn.configure(state="normal", text="Cerrar",
+                                   command=self.root.quit)
+        self.cancel_btn.configure(state="disabled")
         if self.open_after.get():
             self._launch(dest)
-            self.root.after(1800, self.root.quit)
-        else:
-            self.install_btn.config(
-                state=tk.NORMAL, text="  Cerrar  ",
-                bg=SUCCESS, command=self.root.quit)
+            self.root.after(2500, self.root.quit)
 
     def _on_error(self, msg: str):
-        self.progress.stop()
-        self.progress.pack_forget()
-        self.status_lbl.config(
-            text=f"✗  {msg}",
-            fg=DANGER, font=("Segoe UI", 9))
-        self.install_btn.config(
-            state=tk.NORMAL, text="  Reintentar  ",
-            bg=ACCENT)
+        self.status_var.set(f"Error: {msg}")
+        self.progress["value"] = 0
+        self.install_btn.configure(state="normal", text="Reintentar",
+                                   command=self._start_install)
+        self.cancel_btn.configure(state="normal")
 
     def _launch(self, dest: Path):
         exe = dest / "Drunks.exe"
         if exe.exists():
             subprocess.Popen([str(exe)], cwd=str(dest))
+        else:
+            self.status_var.set(f"Instalado, pero no se encontró Drunks.exe en {dest}")
 
     def run(self):
         self.root.mainloop()
 
 
 if __name__ == "__main__":
-    app = InstallerApp()
-    app.run()
+    InstallerApp().run()

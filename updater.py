@@ -104,10 +104,12 @@ def start_background_check() -> None:
 
 def download_and_apply(url: str, progress_cb=None) -> None:
     """
-    Descarga el ZIP de la nueva versión, lo extrae y lanza un .bat
-    que reemplaza los archivos mientras la app está cerrada.
+    Descarga el ZIP, copia los archivos con shutil (más confiable que robocopy),
+    y usa un .bat mínimo solo para reemplazar Drunks.exe (que está bloqueado).
     progress_cb(pct: int, msg: str) se llama con 0-100 durante el proceso.
     """
+    import shutil
+
     def _prog(pct: int, msg: str = "") -> None:
         if progress_cb:
             try:
@@ -119,14 +121,14 @@ def download_and_apply(url: str, progress_cb=None) -> None:
         import httpx
 
         if TEMP_UPDATE_DIR.exists():
-            import shutil
             shutil.rmtree(TEMP_UPDATE_DIR, ignore_errors=True)
         TEMP_UPDATE_DIR.mkdir(parents=True, exist_ok=True)
 
         zip_path = TEMP_UPDATE_DIR / "update.zip"
 
+        # 1. Descargar
         _prog(5, "Conectando con el servidor...")
-        with httpx.stream("GET", url, follow_redirects=True, timeout=60.0) as r:
+        with httpx.stream("GET", url, follow_redirects=True, timeout=120.0) as r:
             r.raise_for_status()
             total = int(r.headers.get("content-length", 0))
             downloaded = 0
@@ -135,41 +137,59 @@ def download_and_apply(url: str, progress_cb=None) -> None:
                     f.write(chunk)
                     downloaded += len(chunk)
                     if total:
-                        pct = 5 + int(downloaded * 70 / total)  # 5-75%
+                        pct = 5 + int(downloaded * 65 / total)  # 5-70%
                         _prog(pct, f"Descargando... {downloaded // (1024*1024)} MB")
 
-        _prog(76, "Extrayendo archivos...")
+        # 2. Extraer
+        _prog(72, "Extrayendo archivos...")
         extract_dir = TEMP_UPDATE_DIR / "extracted"
         with zipfile.ZipFile(zip_path, "r") as z:
             z.extractall(extract_dir)
         zip_path.unlink(missing_ok=True)
 
-        _prog(88, "Preparando instalación...")
+        # 3. Copiar todos los archivos EXCEPTO Drunks.exe (está bloqueado mientras corre)
+        _prog(80, "Copiando archivos...")
         app_root = get_app_root()
-        bat_path = app_root / "_apply_update.bat"
+        exe_name = "Drunks.exe"
+        new_exe_src = None
 
-        # El exe principal ahora es Drunks.exe (app unificada)
-        main_exe = app_root / "Drunks.exe"
-        restart_cmd = (
-            f'start "" "{main_exe}"' if main_exe.exists()
-            else f'start "" "{app_root}\\INICIAR_SISTEMA.bat"'
-        )
+        for src_file in extract_dir.rglob("*"):
+            if not src_file.is_file():
+                continue
+            rel = src_file.relative_to(extract_dir)
+            dst_file = app_root / rel
+            if rel.parts[0].lower() == exe_name.lower() or rel.name.lower() == exe_name.lower():
+                new_exe_src = src_file  # se copiará con el bat
+                continue
+            dst_file.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                shutil.copy2(src_file, dst_file)
+            except Exception:
+                pass  # ignorar archivos bloqueados de _internal (raro)
 
-        bat_content = (
-            "@echo off\n"
-            "title Drunks POS - Aplicando actualizacion...\n"
-            "echo Aplicando actualizacion, espera un momento...\n"
-            "timeout /t 3 /nobreak >nul\n"
-            f'robocopy "{extract_dir}" "{app_root}" /E /IS /IT /NFL /NDL /NJH /NJS /nc /ns /np\n'
-            f'if exist "{TEMP_UPDATE_DIR}" rmdir /S /Q "{TEMP_UPDATE_DIR}"\n'
-            "echo Actualizacion aplicada. Reiniciando Drunks POS...\n"
-            "timeout /t 1 /nobreak >nul\n"
-            f'{restart_cmd}\n'
-            'del "%~f0"\n'
-        )
-        bat_path.write_text(bat_content, encoding="utf-8")
+        _prog(92, "Preparando reinicio...")
 
-        _prog(96, "Aplicando actualización...")
+        # 4. Bat mínimo: solo espera, copia el exe, reinicia
+        bat_path = app_root / "_update_exe.bat"
+        main_exe  = app_root / exe_name
+        new_exe_src = new_exe_src or (extract_dir / exe_name)
+
+        bat_lines = [
+            "@echo off",
+            # ping es el método más portable para esperar en bat sin stdin
+            "ping 127.0.0.1 -n 5 > nul",
+        ]
+        if new_exe_src and new_exe_src.exists():
+            bat_lines.append(f'copy /Y "{new_exe_src}" "{main_exe}"')
+        # Limpiar temp
+        bat_lines += [
+            f'if exist "{TEMP_UPDATE_DIR}" rmdir /S /Q "{TEMP_UPDATE_DIR}"',
+            f'start "" "{main_exe}"',
+            'del "%~f0"',
+        ]
+        bat_path.write_text("\n".join(bat_lines), encoding="utf-8")
+
+        _prog(98, "Reiniciando...")
         subprocess.Popen(
             ["cmd", "/c", str(bat_path)],
             creationflags=(
@@ -178,7 +198,7 @@ def download_and_apply(url: str, progress_cb=None) -> None:
                 | subprocess.CREATE_NO_WINDOW
             ),
         )
-        _prog(100, "Reiniciando...")
+        _prog(100, "Cerrando...")
 
     except Exception as exc:
         _update_info["error"] = f"Error al aplicar actualización: {exc}"

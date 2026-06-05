@@ -37,97 +37,113 @@ _main_window   = None
 _update_window = None
 _server_error  = ""
 
-# ── HTML de la ventana de actualización ──────────────────────────────────────
-UPDATE_HTML = """<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Actualizando Drunks POS</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0d0d1a;color:#fff;font-family:'Segoe UI',sans-serif;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  height:100vh;gap:1.1rem;text-align:center;padding:2rem}
-.emoji{font-size:2.8rem}
-h2{font-size:1.25rem;font-weight:700}
-.sub{color:#8b8ba8;font-size:.88rem;min-height:1.2em}
-.bar-wrap{width:100%;max-width:380px;background:#1e1e35;border-radius:99px;height:7px;overflow:hidden}
-.bar{height:100%;background:#7c3aed;border-radius:99px;width:0%;transition:width .4s ease}
-.pct{color:#8b8ba8;font-size:.78rem}
-.err{color:#f87171;font-size:.8rem;max-width:380px;word-break:break-word}
-</style>
-</head>
-<body>
-  <div class="emoji">🍺</div>
-  <h2>Instalando actualización...</h2>
-  <p class="sub" id="sub">Preparando descarga</p>
-  <div class="bar-wrap"><div class="bar" id="bar"></div></div>
-  <p class="pct" id="pct">0%</p>
-  <p class="err" id="err" style="display:none"></p>
-<script>
-function setProgress(pct, msg) {
-  document.getElementById('bar').style.width = pct + '%';
-  document.getElementById('pct').textContent  = pct + '%';
-  if (msg) document.getElementById('sub').textContent = msg;
-}
-function setDone() {
-  document.getElementById('bar').style.width = '100%';
-  document.getElementById('pct').textContent  = '100%';
-  document.getElementById('sub').textContent  = 'Reiniciando Drunks POS...';
-}
-function setError(msg) {
-  document.getElementById('bar').style.background = '#ef4444';
-  document.getElementById('sub').textContent = 'Error al actualizar';
-  var e = document.getElementById('err');
-  e.textContent = msg; e.style.display = 'block';
-}
-</script>
-</body>
-</html>"""
+# ── Ventana de progreso de actualización (tkinter, no webview) ────────────────
+class _UpdateProgressWindow:
+    """Ventana tkinter simple para mostrar el progreso de la actualización."""
+    def __init__(self):
+        import tkinter as tk
+        from tkinter import ttk
+        self._tk = tk
+        self._root = tk.Tk()
+        self._root.title("Drunks POS — Actualizando")
+        self._root.geometry("420x160")
+        self._root.resizable(False, False)
+        self._root.protocol("WM_DELETE_WINDOW", lambda: None)  # no cerrar manualmente
+
+        # Centrar
+        self._root.update_idletasks()
+        sw = self._root.winfo_screenwidth()
+        sh = self._root.winfo_screenheight()
+        self._root.geometry(f"420x160+{(sw-420)//2}+{(sh-160)//2}")
+
+        style = ttk.Style()
+        try:
+            style.theme_use("vista")
+        except Exception:
+            style.theme_use("default")
+
+        frame = ttk.Frame(self._root, padding=20)
+        frame.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(frame, text="Instalando actualización de Drunks POS...",
+                  font=("Segoe UI", 10, "bold")).pack(anchor=tk.W)
+
+        self._status_var = tk.StringVar(value="Preparando descarga...")
+        ttk.Label(frame, textvariable=self._status_var,
+                  font=("Segoe UI", 9)).pack(anchor=tk.W, pady=(6, 4))
+
+        self._progress = ttk.Progressbar(frame, mode="determinate", maximum=100, length=380)
+        self._progress.pack(fill=tk.X)
+
+        self._pct_var = tk.StringVar(value="0%")
+        ttk.Label(frame, textvariable=self._pct_var,
+                  font=("Segoe UI", 8)).pack(anchor=tk.E, pady=(2, 0))
+
+    def set_progress(self, pct: int, msg: str = ""):
+        def _apply():
+            self._progress["value"] = pct
+            self._pct_var.set(f"{pct}%")
+            if msg:
+                self._status_var.set(msg)
+        try:
+            self._root.after(0, _apply)
+        except Exception:
+            pass
+
+    def set_error(self, msg: str):
+        def _apply():
+            self._status_var.set(f"Error: {msg}")
+            self._progress["value"] = 0
+        try:
+            self._root.after(0, _apply)
+        except Exception:
+            pass
+
+    def run(self):
+        self._root.mainloop()
+
+    def close(self):
+        try:
+            self._root.after(0, self._root.destroy)
+        except Exception:
+            pass
 
 
 # ── API expuesta a JS vía window.pywebview.api ────────────────────────────────
 class AppAPI:
     def open_update_window(self):
-        global _update_window
-        if _update_window:
-            return
-        import webview as _wv
-        _update_window = _wv.create_window(
-            "Drunks POS — Actualizando",
-            html=UPDATE_HTML,
-            width=520, height=340,
-            resizable=False,
-        )
-        threading.Thread(target=_run_update, daemon=True, name="updater").start()
+        threading.Thread(target=_run_update_with_ui, daemon=True, name="updater").start()
 
 
-# ── Lógica de actualización con progreso ─────────────────────────────────────
-def _run_update():
+# ── Lógica de actualización con ventana tkinter ───────────────────────────────
+def _run_update_with_ui():
     global _update_window
-    try:
-        from updater import _update_info, download_and_apply
+    win = _UpdateProgressWindow()
+    _update_window = win
 
-        def on_progress(pct: int, msg: str = ""):
-            if _update_window:
-                safe = msg.replace("'", "\\'")
-                _update_window.evaluate_js(f"setProgress({pct},'{safe}')")
+    def do_update():
+        try:
+            from updater import _update_info, download_and_apply
 
-        url = _update_info.get("url")
-        if not url:
-            _log("update: URL no encontrada en _update_info")
-            return
+            url = _update_info.get("url")
+            if not url:
+                _log("update: URL no encontrada en _update_info")
+                win.set_error("No se encontró la URL de descarga.")
+                return
 
-        on_progress(5, "Iniciando descarga...")
-        download_and_apply(url, progress_cb=on_progress)  # llama os._exit(0) al terminar
+            download_and_apply(url, progress_cb=win.set_progress)
+            # download_and_apply llama os._exit(0) al terminar — no llega aquí
 
-    except Exception:
-        err = traceback.format_exc()
-        _log(f"update error:\n{err}")
-        if _update_window:
+        except Exception:
+            err = traceback.format_exc()
+            _log(f"update error:\n{err}")
             short = err.strip().splitlines()[-1]
-            _update_window.evaluate_js(f"setError('{short}')")
-        _update_window = None
+            win.set_error(short)
+            _update_window = None
+
+    threading.Thread(target=do_update, daemon=True, name="update-worker").start()
+    win.run()  # bloquea este hilo con el mainloop de tkinter
+    _update_window = None
 
 
 # ── Polling: notifica al main_window cuando hay update disponible ─────────────
