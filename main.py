@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 
 import io
 import json
+import uuid
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException, Response
 from fastapi.responses import HTMLResponse
@@ -1206,6 +1207,20 @@ def init_db():
             conn.commit()
         except Exception:
             pass
+        # Migración: sync_id (UUID único por pedido para identificación en Supabase)
+        try:
+            conn.execute("ALTER TABLE pedidos ADD COLUMN sync_id TEXT NOT NULL DEFAULT ''")
+            conn.commit()
+        except Exception:
+            pass
+        try:
+            rows = conn.execute("SELECT id FROM pedidos WHERE sync_id='' OR sync_id IS NULL").fetchall()
+            for row in rows:
+                conn.execute("UPDATE pedidos SET sync_id=? WHERE id=?", (str(uuid.uuid4()), row["id"]))
+            if rows:
+                conn.commit()
+        except Exception:
+            pass
         try:
             rows = conn.execute("SELECT id FROM pedidos WHERE numero_factura='' OR numero_factura IS NULL").fetchall()
             for row in rows:
@@ -1383,6 +1398,10 @@ async def sync_deliver_to_supabase(pedido_id: int):
     if not SUPABASE_URL or not SUPABASE_KEY or not HTTPX_AVAILABLE:
         return
     try:
+        with get_conn() as conn:
+            row = conn.execute("SELECT sync_id FROM pedidos WHERE id=?", (pedido_id,)).fetchone()
+        if not row or not row["sync_id"]:
+            return
         headers = {
             "apikey": SUPABASE_KEY,
             "Authorization": f"Bearer {SUPABASE_KEY}",
@@ -1391,7 +1410,7 @@ async def sync_deliver_to_supabase(pedido_id: int):
         }
         async with httpx.AsyncClient(timeout=3.0) as client:
             await client.patch(
-                f"{SUPABASE_URL}/rest/v1/pedidos?id=eq.{pedido_id}",
+                f"{SUPABASE_URL}/rest/v1/pedidos?sync_id=eq.{row['sync_id']}",
                 headers=headers,
                 json={"estado": "entregado"},
             )
@@ -1546,12 +1565,13 @@ def delete_nota(id: int):
 # ── Pedidos ──
 @app.post("/api/pedidos", status_code=201)
 async def create_pedido(data: PedidoCreate, background_tasks: BackgroundTasks):
-    fecha = datetime.now().isoformat()
+    fecha   = datetime.now().isoformat()
+    sync_id = str(uuid.uuid4())
     items_detail: list[dict] = []
     with get_conn() as conn:
         cur = conn.execute(
-            "INSERT INTO pedidos (cliente,metodo_pago,total,estado,fecha,sincronizado,numero_factura) VALUES (?,?,?,?,?,?,'')",
-            (data.cliente, data.metodo_pago, data.total, "pendiente", fecha, 0))
+            "INSERT INTO pedidos (cliente,metodo_pago,total,estado,fecha,sincronizado,numero_factura,sync_id) VALUES (?,?,?,?,?,?,'',?)",
+            (data.cliente, data.metodo_pago, data.total, "pendiente", fecha, 0, sync_id))
         pedido_id = cur.lastrowid
         numero_factura = f"DRK-{pedido_id:05d}"
         conn.execute("UPDATE pedidos SET numero_factura=? WHERE id=?", (numero_factura, pedido_id))
@@ -1580,9 +1600,9 @@ async def create_pedido(data: PedidoCreate, background_tasks: BackgroundTasks):
     }
     await manager.broadcast({"type": "new_order", "order": payload})
     background_tasks.add_task(sync_to_supabase, pedido_id, {
-        "numero_factura": numero_factura, "cliente": data.cliente,
-        "metodo_pago": data.metodo_pago, "total": data.total,
-        "estado": "pendiente", "fecha": fecha,
+        "sync_id": sync_id, "numero_factura": numero_factura,
+        "cliente": data.cliente, "metodo_pago": data.metodo_pago,
+        "total": data.total, "estado": "pendiente", "fecha": fecha,
         "items_json": json.dumps(items_detail),
     })
     return payload

@@ -39,8 +39,10 @@ CREATE TABLE IF NOT EXISTS pedidos (
   items_json      TEXT NOT NULL DEFAULT '[]'
 );
 
--- Si la tabla ya existe, agrega la columna items_json (seguro si ya existe)
+-- Si la tabla ya existe, agrega las columnas nuevas (seguro si ya existen)
 ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS items_json TEXT NOT NULL DEFAULT '[]';
+ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS sync_id    TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pedidos_sync_id ON pedidos(sync_id) WHERE sync_id IS NOT NULL;
 
 -- Detalle de cada pedido
 CREATE TABLE IF NOT EXISTS detalle_pedidos (
