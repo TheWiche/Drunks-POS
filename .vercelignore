@@ -1,0 +1,13 @@
+dist/
+build/
+__pycache__/
+*.pyc
+*.exe
+*.zip
+*.db
+*.db-shm
+*.db-wal
+*.log
+*.bat
+*.spec
+drunks_v*.zip
