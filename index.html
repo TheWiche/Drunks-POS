@@ -324,7 +324,9 @@ function computeMetrics(pedidos, range) {
 async function loadData() {
     document.getElementById('spinner').classList.remove('hidden');
     try {
-        const pedidos = await supaFetch('/rest/v1/pedidos?select=*&order=fecha.desc&limit=2000');
+        const raw     = await supaFetch('/rest/v1/pedidos?select=*&order=fecha.desc&limit=2000');
+        // Supabase devuelve NUMERIC como string — lo convertimos a número
+        const pedidos = raw.map(p => ({ ...p, total: parseFloat(p.total) || 0 }));
         const data    = computeMetrics(pedidos, currentRange);
         render(data);
         document.getElementById('lastUpdate').textContent =
@@ -620,7 +622,8 @@ async function exportExcel() {
     btn.innerHTML = '<span>⏳</span><span>Generando...</span>';
     btn.disabled = true;
     try {
-        const pedidos = await supaFetch('/rest/v1/pedidos?select=*&order=fecha.desc&limit=5000');
+        const rawP    = await supaFetch('/rest/v1/pedidos?select=*&order=fecha.desc&limit=5000');
+        const pedidos = rawP.map(p => ({ ...p, total: parseFloat(p.total) || 0 }));
         const now = new Date();
         const wb  = new ExcelJS.Workbook();
 

@@ -1418,8 +1418,23 @@ async def sync_to_supabase(pedido_id: int, payload: dict):
             "Content-Type": "application/json",
             "Prefer": "return=minimal",
         }
-        async with httpx.AsyncClient(timeout=3.0) as client:
-            await client.post(f"{SUPABASE_URL}/rest/v1/pedidos", headers=headers, json=payload)
+        # Filtrar solo los campos que Supabase conoce
+        campos = {"sync_id", "numero_factura", "cliente", "metodo_pago",
+                  "total", "estado", "fecha", "items_json"}
+        data = {k: v for k, v in payload.items() if k in campos}
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            r = await client.post(
+                f"{SUPABASE_URL}/rest/v1/pedidos", headers=headers, json=data
+            )
+            if r.status_code not in (200, 201):
+                # Fallback: intentar sin sync_id/items_json (columnas opcionales)
+                fallback = {k: v for k, v in data.items()
+                            if k not in ("sync_id", "items_json")}
+                r2 = await client.post(
+                    f"{SUPABASE_URL}/rest/v1/pedidos", headers=headers, json=fallback
+                )
+                if r2.status_code not in (200, 201):
+                    return  # No marcar como sincronizado si falló
         with get_conn() as conn:
             conn.execute("UPDATE pedidos SET sincronizado=1 WHERE id=?", (pedido_id,))
             conn.commit()
@@ -1463,41 +1478,68 @@ async def sync_pending_loop():
             pass
 
 async def download_from_supabase():
-    """Al arrancar, descarga de Supabase los pedidos que no existen localmente."""
+    """Al arrancar: descarga pedidos de Supabase y detecta los que fallaron al subir."""
     if not SUPABASE_URL or not SUPABASE_KEY or not HTTPX_AVAILABLE:
         return
     try:
         headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
         async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.get(
-                f"{SUPABASE_URL}/rest/v1/pedidos?select=*&order=fecha.asc",
+                f"{SUPABASE_URL}/rest/v1/pedidos?select=*&order=fecha.asc&limit=5000",
                 headers=headers,
             )
             if r.status_code != 200:
                 return
             cloud_pedidos = r.json()
 
+        cloud_sync_ids = {p.get("sync_id") for p in cloud_pedidos if p.get("sync_id")}
+
         with get_conn() as conn:
+            # ── Resetea sincronizado=0 para pedidos marcados como subidos pero que no están en la nube ──
+            local_synced = conn.execute(
+                "SELECT id, sync_id FROM pedidos WHERE sincronizado=1 AND sync_id != '' AND sync_id IS NOT NULL"
+            ).fetchall()
+            for row in local_synced:
+                if row["sync_id"] not in cloud_sync_ids:
+                    conn.execute("UPDATE pedidos SET sincronizado=0 WHERE id=?", (row["id"],))
+
+            # ── Descarga pedidos que no existen localmente ──
             for p in cloud_pedidos:
                 sid = p.get("sync_id") or ""
-                if not sid:
-                    continue
-                existing = conn.execute("SELECT id, estado FROM pedidos WHERE sync_id=?", (sid,)).fetchone()
+                nf  = p.get("numero_factura") or ""
+
+                # Buscar por sync_id primero, luego por numero_factura como fallback
+                existing = None
+                if sid:
+                    existing = conn.execute(
+                        "SELECT id, estado FROM pedidos WHERE sync_id=?", (sid,)
+                    ).fetchone()
+                if not existing and nf:
+                    existing = conn.execute(
+                        "SELECT id, estado FROM pedidos WHERE numero_factura=?", (nf,)
+                    ).fetchone()
+
                 if existing:
-                    # Actualiza estado si en la nube ya está entregado
                     if p.get("estado") == "entregado" and existing["estado"] != "entregado":
-                        conn.execute("UPDATE pedidos SET estado='entregado' WHERE sync_id=?", (sid,))
+                        conn.execute(
+                            "UPDATE pedidos SET estado='entregado', sincronizado=1 WHERE id=?",
+                            (existing["id"],)
+                        )
+                    elif sid and not conn.execute(
+                        "SELECT id FROM pedidos WHERE sync_id=?", (sid,)
+                    ).fetchone():
+                        conn.execute("UPDATE pedidos SET sync_id=? WHERE id=?", (sid, existing["id"]))
                     continue
-                # Inserta el pedido que no existe localmente
+
+                # Insertar pedido nuevo descargado de la nube
                 cur = conn.execute(
-                    "INSERT INTO pedidos (cliente,metodo_pago,total,estado,fecha,sincronizado,numero_factura,sync_id) "
+                    "INSERT INTO pedidos "
+                    "(cliente,metodo_pago,total,estado,fecha,sincronizado,numero_factura,sync_id) "
                     "VALUES (?,?,?,?,?,1,?,?)",
-                    (p["cliente"], p["metodo_pago"], float(p["total"]),
-                     p.get("estado", "pendiente"), p["fecha"],
-                     p.get("numero_factura", ""), sid),
+                    (p["cliente"], p["metodo_pago"], float(p.get("total") or 0),
+                     p.get("estado", "pendiente"), p["fecha"], nf, sid),
                 )
                 pedido_id = cur.lastrowid
-                # Inserta el detalle desde items_json
                 items = []
                 try:
                     items = json.loads(p.get("items_json") or "[]")
@@ -1509,8 +1551,10 @@ async def download_from_supabase():
                     ).fetchone()
                     if prod:
                         conn.execute(
-                            "INSERT INTO detalle_pedidos (pedido_id,producto_id,cantidad,observaciones) VALUES (?,?,?,?)",
-                            (pedido_id, prod["id"], it.get("cantidad", 1), it.get("observaciones", "")),
+                            "INSERT INTO detalle_pedidos "
+                            "(pedido_id,producto_id,cantidad,observaciones) VALUES (?,?,?,?)",
+                            (pedido_id, prod["id"],
+                             it.get("cantidad", 1), it.get("observaciones", "")),
                         )
             conn.commit()
     except Exception:
