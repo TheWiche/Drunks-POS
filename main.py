@@ -1273,14 +1273,15 @@ def init_db():
             pass
         conn.execute("""
             CREATE TABLE IF NOT EXISTS pedidos (
-                id           INTEGER PRIMARY KEY AUTOINCREMENT,
-                cliente      TEXT    NOT NULL,
-                metodo_pago  TEXT    NOT NULL,
-                total        REAL    NOT NULL,
-                estado           TEXT    NOT NULL DEFAULT 'pendiente',
-                fecha            TEXT    NOT NULL,
-                sincronizado     INTEGER NOT NULL DEFAULT 0,
-                numero_factura   TEXT    NOT NULL DEFAULT ''
+                id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                cliente        TEXT    NOT NULL,
+                metodo_pago    TEXT    NOT NULL,
+                total          REAL    NOT NULL,
+                estado         TEXT    NOT NULL DEFAULT 'pendiente',
+                fecha          TEXT    NOT NULL,
+                sincronizado   INTEGER NOT NULL DEFAULT 0,
+                numero_factura TEXT    NOT NULL DEFAULT '',
+                sync_id        TEXT    NOT NULL DEFAULT ''
             )""")
         conn.execute("""
             CREATE TABLE IF NOT EXISTS detalle_pedidos (
