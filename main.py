@@ -609,6 +609,9 @@ COCINA_HTML = """<!DOCTYPE html>
   .tab-active{border-bottom-color:#9333ea!important;color:#c084fc!important}
   .dirty-input{border-color:#eab308!important}
   .dirty-row{background:rgba(234,179,8,.04)!important}
+  .view-btn{color:#4b5563;transition:all .15s ease;width:2.25rem;height:2.25rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center}
+  .view-btn.active{background:rgba(147,51,234,.85);color:#fff;box-shadow:0 0 14px rgba(147,51,234,.45)}
+  .view-btn:not(.active):hover{background:rgba(75,85,99,.45);color:#d1d5db}
 </style>
 </head>
 <body class="min-h-screen text-white">
@@ -632,6 +635,20 @@ COCINA_HTML = """<!DOCTYPE html>
     <div class="text-center hidden sm:block">
       <div class="text-3xl font-extrabold text-purple-400 tabular-nums leading-none" id="orderCount">0</div>
       <div class="text-[10px] text-gray-600 tracking-widest mt-0.5">ACTIVOS</div>
+    </div>
+    <div class="flex items-center bg-gray-800/60 border border-gray-700 rounded-xl p-1 gap-0.5">
+      <button class="view-btn" id="vBtn-priority" onclick="setView('priority')" title="Prioridad — #1 destacado">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0" width="16" height="8" rx="1.5"/><rect x="0" y="9.5" width="7.5" height="6.5" rx="1.2"/><rect x="8.5" y="9.5" width="7.5" height="6.5" rx="1.2"/></svg>
+      </button>
+      <button class="view-btn" id="vBtn-duo" onclick="setView('duo')" title="Doble prioridad — #1 y #2">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0" width="7.5" height="8.5" rx="1.5"/><rect x="8.5" y="0" width="7.5" height="8.5" rx="1.5"/><rect x="0" y="10" width="4.5" height="6" rx="1"/><rect x="5.75" y="10" width="4.5" height="6" rx="1"/><rect x="11.5" y="10" width="4.5" height="6" rx="1"/></svg>
+      </button>
+      <button class="view-btn" id="vBtn-grid" onclick="setView('grid')" title="Parrilla — todos iguales">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0" width="7.5" height="7.5" rx="1.5"/><rect x="8.5" y="0" width="7.5" height="7.5" rx="1.5"/><rect x="0" y="8.5" width="7.5" height="7.5" rx="1.5"/><rect x="8.5" y="8.5" width="7.5" height="7.5" rx="1.5"/></svg>
+      </button>
+      <button class="view-btn" id="vBtn-compact" onclick="setView('compact')" title="Compacto — máxima densidad">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0.5" width="16" height="3" rx="1"/><rect x="0" y="4.5" width="16" height="3" rx="1"/><rect x="0" y="8.5" width="16" height="3" rx="1"/><rect x="0" y="12.5" width="16" height="3" rx="1"/></svg>
+      </button>
     </div>
     <a href="/dashboard" title="Dashboard"
       class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">📊</a>
@@ -744,6 +761,7 @@ COCINA_HTML = """<!DOCTYPE html>
 // ─── STATE ───
 let ws = null, wsTimer = null;
 let orders = {};
+let viewMode = localStorage.getItem('kitchenView') || 'priority';
 const dirty = { prods: new Set(), cats: new Set() };
 let adminCats = [];
 
@@ -773,12 +791,12 @@ function addOrder(order) {
 }
 
 function renderKitchen() {
-  const list = Object.values(orders).sort((a, b) => a.id - b.id); // FIFO
-  const heroSec  = document.getElementById('heroSection');
-  const qLabel   = document.getElementById('queueLabel');
-  const qTitle   = document.getElementById('queueTitle');
-  const qGrid    = document.getElementById('queueGrid');
-  const empty    = document.getElementById('emptyState');
+  const list    = Object.values(orders).sort((a, b) => a.id - b.id); // FIFO
+  const heroSec = document.getElementById('heroSection');
+  const qLabel  = document.getElementById('queueLabel');
+  const qTitle  = document.getElementById('queueTitle');
+  const qGrid   = document.getElementById('queueGrid');
+  const empty   = document.getElementById('emptyState');
 
   updateCount(list.length);
 
@@ -790,21 +808,56 @@ function renderKitchen() {
   }
   empty.classList.add('hidden');
 
-  // Hero — oldest = highest priority
-  const heroOrder = list[0];
-  const heroEl = buildHeroCard(heroOrder);
-  heroSec.innerHTML = '';
-  heroSec.appendChild(heroEl);
-
-  // Queue
-  if (list.length > 1) {
+  const hide = () => { qLabel.classList.add('hidden'); };
+  const showLabel = (n) => {
     qLabel.classList.remove('hidden');
-    qTitle.textContent = 'EN FILA — ' + (list.length - 1) + ' pedido' + (list.length - 1 !== 1 ? 's' : '');
+    qTitle.textContent = 'EN FILA — ' + n + ' pedido' + (n !== 1 ? 's' : '');
+  };
+
+  if (viewMode === 'priority') {
+    // ── Modo Prioridad: #1 hero full-width, resto grilla ──
+    heroSec.innerHTML = '';
+    heroSec.appendChild(buildHeroCard(list[0]));
+    qGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3';
     qGrid.innerHTML = '';
-    list.slice(1).forEach(o => qGrid.appendChild(buildQueueCard(o)));
-  } else {
-    qLabel.classList.add('hidden');
+    if (list.length > 1) {
+      showLabel(list.length - 1);
+      list.slice(1).forEach(o => qGrid.appendChild(buildQueueCard(o)));
+    } else { hide(); }
+
+  } else if (viewMode === 'duo') {
+    // ── Modo Doble: top-2 medianos lado a lado, resto grilla compacta ──
+    heroSec.innerHTML = '';
+    if (list.length === 1) {
+      heroSec.appendChild(buildHeroCard(list[0]));
+      hide(); qGrid.innerHTML = '';
+    } else {
+      const duoWrap = document.createElement('div');
+      duoWrap.className = 'grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4';
+      duoWrap.appendChild(buildMediumCard(list[0], 1));
+      duoWrap.appendChild(buildMediumCard(list[1], 2));
+      heroSec.appendChild(duoWrap);
+      qGrid.className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2';
+      qGrid.innerHTML = '';
+      if (list.length > 2) {
+        showLabel(list.length - 2);
+        list.slice(2).forEach(o => qGrid.appendChild(buildQueueCard(o)));
+      } else { hide(); }
+    }
+
+  } else if (viewMode === 'grid') {
+    // ── Modo Parrilla: todos iguales, sin jerarquía ──
+    heroSec.innerHTML = ''; hide();
+    qGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3';
     qGrid.innerHTML = '';
+    list.forEach(o => qGrid.appendChild(buildQueueCard(o)));
+
+  } else if (viewMode === 'compact') {
+    // ── Modo Compacto: máxima densidad ──
+    heroSec.innerHTML = ''; hide();
+    qGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2';
+    qGrid.innerHTML = '';
+    list.forEach(o => qGrid.appendChild(buildCompactCard(o)));
   }
 }
 
@@ -887,6 +940,90 @@ function buildQueueCard(o) {
       </button>
     </div>`;
   return div;
+}
+
+function buildMediumCard(o, priority) {
+  const div   = document.createElement('div');
+  div.id      = 'order-' + o.id;
+  div.className = 'hero-in';
+  const efect = o.metodo_pago === 'Efectivo';
+  const hBg   = efect ? 'from-green-700 to-green-800' : 'from-blue-700 to-blue-800';
+  const icon  = efect ? '💵' : '📱';
+  const tStr  = new Date(o.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  const rows  = (o.items||[]).map(it => buildItemRow(it, false)).join('');
+  const isFirst = priority === 1;
+  const badgeCls  = isFirst ? 'priority-badge bg-red-500 shadow-red-900/50' : 'bg-orange-600 shadow-orange-900/50';
+  const borderCls = isFirst ? 'border-purple-500/40' : 'border-orange-500/30';
+  const badgeTxt  = isFirst ? '#1 PRIORIDAD' : '#2 EN CURSO';
+  div.innerHTML = `
+    <div class="flex items-center gap-2 mb-2">
+      <div class="${badgeCls} text-white text-xs font-extrabold px-2.5 py-0.5 rounded-full tracking-wider shadow-lg">${badgeTxt}</div>
+      <div class="h-px flex-1 bg-gray-800"></div>
+    </div>
+    <div class="bg-gray-900 border-2 ${borderCls} rounded-2xl overflow-hidden shadow-xl h-full flex flex-col">
+      <div class="bg-gradient-to-r ${hBg} px-4 py-3 flex items-start justify-between">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full tracking-wider">${o.numero_factura||('#'+o.id)}</span>
+            <span class="text-white/60 text-xs">${icon} ${o.metodo_pago} &middot; ${tStr}</span>
+          </div>
+          <div class="text-white font-extrabold text-2xl leading-tight truncate">${o.cliente}</div>
+        </div>
+        <div class="text-white font-extrabold text-xl tabular-nums ml-3 shrink-0">$${Math.round(o.total).toLocaleString('es-CO')}</div>
+      </div>
+      <div class="flex-1 px-4 py-3">${rows||'<div class="text-gray-600 text-sm text-center py-3">Sin detalle</div>'}</div>
+      <div class="px-4 pb-4">
+        <button data-id="${o.id}" onclick="completeOrder(parseInt(this.dataset.id))"
+          class="w-full bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-extrabold py-3 rounded-xl text-base transition-colors shadow-lg shadow-green-950/40">
+          ✓ COMPLETADO
+        </button>
+      </div>
+    </div>`;
+  return div;
+}
+
+function buildCompactCard(o) {
+  const div   = document.createElement('div');
+  div.id      = 'order-' + o.id;
+  div.className = 'card-in bg-gray-900 border border-gray-700/60 rounded-xl overflow-hidden';
+  const efect = o.metodo_pago === 'Efectivo';
+  const hBg   = efect ? 'from-green-800/55 to-green-900/55' : 'from-blue-800/55 to-blue-900/55';
+  const icon  = efect ? '💵' : '📱';
+  const tStr  = new Date(o.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  const itemRows = (o.items||[]).map(it => {
+    const parts = (it.observaciones||'').split(' | ');
+    const isBase = s => s && (s.startsWith('Gaseosa:') || s.startsWith('Cerveza:'));
+    const extra = isBase(parts[0]) ? parts[0] : (it.observaciones||'');
+    return `<div class="flex items-center gap-1 py-0.5 min-w-0">
+      <span class="text-purple-400 text-[10px] font-extrabold shrink-0">${it.cantidad}x</span>
+      <span class="text-white text-xs font-semibold truncate">${it.nombre}</span>
+      ${extra ? `<span class="text-amber-400 text-[10px] shrink-0 truncate">· ${extra}</span>` : ''}
+    </div>`;
+  }).join('');
+  div.innerHTML = `
+    <div class="bg-gradient-to-r ${hBg} px-3 py-2 flex items-center justify-between gap-2">
+      <div class="min-w-0">
+        <div class="text-white font-extrabold text-base leading-tight truncate">${o.cliente}</div>
+        <div class="text-white/50 text-[10px] leading-none mt-0.5">${o.numero_factura||('#'+o.id)} &middot; ${icon} ${tStr}</div>
+      </div>
+      <div class="text-white font-extrabold text-sm tabular-nums shrink-0">$${Math.round(o.total).toLocaleString('es-CO')}</div>
+    </div>
+    <div class="px-3 py-2 space-y-0.5">${itemRows||'<div class="text-gray-700 text-xs py-1">Sin detalle</div>'}</div>
+    <div class="px-3 pb-3">
+      <button data-id="${o.id}" onclick="completeOrder(parseInt(this.dataset.id))"
+        class="w-full bg-green-700 hover:bg-green-600 active:bg-green-800 text-white font-bold py-1.5 rounded-lg text-xs transition-colors">
+        ✓ Listo
+      </button>
+    </div>`;
+  return div;
+}
+
+function setView(mode) {
+  viewMode = mode;
+  localStorage.setItem('kitchenView', mode);
+  document.querySelectorAll('.view-btn').forEach(b =>
+    b.classList.toggle('active', b.id === 'vBtn-' + mode));
+  renderKitchen();
 }
 
 async function completeOrder(id) {
@@ -1184,6 +1321,7 @@ async function checkSupabase() {
 }
 
 // ─── INIT ───
+setView(viewMode);
 loadPending();
 connectWS();
 checkSupabase();
