@@ -14,6 +14,10 @@ from pathlib import Path
 GITHUB_REPO = "TheWiche/Drunks-POS"
 TEMP_UPDATE_DIR = Path(tempfile.gettempdir()) / "drunks_update"
 
+# Versión de este build — se actualiza en cada release.
+# Hardcodeada aquí para que nunca dependa de un archivo externo.
+APP_VERSION = "1.0.4"
+
 _update_info: dict = {
     "has_update": False,
     "latest":     None,
@@ -32,19 +36,8 @@ def get_app_root() -> Path:
 
 
 def get_current_version() -> str:
-    """Lee version.txt — usa utf-8-sig para ignorar el BOM si está presente."""
-    candidates = [
-        Path(getattr(sys, "_MEIPASS", "")) / "version.txt",
-        get_app_root() / "version.txt",
-        Path(__file__).parent / "version.txt",
-    ]
-    for path in candidates:
-        try:
-            if path.exists():
-                return path.read_text(encoding="utf-8-sig").strip()
-        except Exception:
-            pass
-    return "0.0.0"
+    """Retorna la versión de este build (constante hardcodeada en APP_VERSION)."""
+    return APP_VERSION
 
 
 def _version_tuple(v: str) -> tuple:
@@ -147,42 +140,29 @@ def download_and_apply(url: str, progress_cb=None) -> None:
             z.extractall(extract_dir)
         zip_path.unlink(missing_ok=True)
 
-        # 3. Copiar todos los archivos EXCEPTO Drunks.exe (está bloqueado mientras corre)
-        _prog(80, "Copiando archivos...")
+        # 3. Localizar el nuevo Drunks.exe en los archivos extraídos
+        _prog(80, "Preparando instalación...")
         app_root = get_app_root()
         exe_name = "Drunks.exe"
-        new_exe_src = None
 
-        for src_file in extract_dir.rglob("*"):
-            if not src_file.is_file():
-                continue
-            rel = src_file.relative_to(extract_dir)
-            dst_file = app_root / rel
-            if rel.parts[0].lower() == exe_name.lower() or rel.name.lower() == exe_name.lower():
-                new_exe_src = src_file  # se copiará con el bat
-                continue
-            dst_file.parent.mkdir(parents=True, exist_ok=True)
-            try:
-                shutil.copy2(src_file, dst_file)
-            except Exception:
-                pass  # ignorar archivos bloqueados de _internal (raro)
+        # Buscar Drunks.exe dentro del zip extraído (puede estar en raíz o subcarpeta)
+        new_exe_src = next(
+            (f for f in extract_dir.rglob(exe_name) if f.is_file()),
+            None
+        )
+        if not new_exe_src:
+            raise FileNotFoundError(f"No se encontró {exe_name} en el archivo descargado.")
 
         _prog(92, "Preparando reinicio...")
 
-        # 4. Bat mínimo: solo espera, copia el exe, reinicia
-        bat_path = app_root / "_update_exe.bat"
+        # 4. Bat mínimo: espera a que cierre el proceso, reemplaza el exe, reinicia
         main_exe  = app_root / exe_name
-        new_exe_src = new_exe_src or (extract_dir / exe_name)
+        bat_path  = app_root / "_update_exe.bat"
 
         bat_lines = [
             "@echo off",
-            # ping es el método más portable para esperar en bat sin stdin
-            "ping 127.0.0.1 -n 5 > nul",
-        ]
-        if new_exe_src and new_exe_src.exists():
-            bat_lines.append(f'copy /Y "{new_exe_src}" "{main_exe}"')
-        # Limpiar temp
-        bat_lines += [
+            "ping 127.0.0.1 -n 5 > nul",          # esperar ~4 s a que cierre
+            f'copy /Y "{new_exe_src}" "{main_exe}"',
             f'if exist "{TEMP_UPDATE_DIR}" rmdir /S /Q "{TEMP_UPDATE_DIR}"',
             f'start "" "{main_exe}"',
             'del "%~f0"',
