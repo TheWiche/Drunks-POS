@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Drunks · Cocina</title>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('drunksPalette')||'dark')</script>
+<style>
+html[data-theme=light] body{background:#f0ebff!important;color:#1e1b4b!important}
+html[data-theme=light] [class*=bg-gray-95]{background:#eee9ff!important}
+html[data-theme=light] [class*=bg-gray-90]{background:#fff!important}
+html[data-theme=light] [class*=bg-gray-8]{background:#ede9fe!important}
+html[data-theme=light] [class*=bg-gray-7]{background:#ddd6fe!important}
+html[data-theme=light] [class*=border-gray-8]{border-color:#c4b5fd!important}
+html[data-theme=light] [class*=border-gray-7]{border-color:#ddd6fe!important}
+html[data-theme=light] [class*=bg-black]{background:rgba(80,50,180,.55)!important}
+html[data-theme=light] .text-white{color:#1e1b4b!important}
+html[data-theme=light] [class*=text-gray-]{color:#5b21b6!important}
+html[data-theme=ocean] body{background:#020b18!important}
+html[data-theme=ocean] [class*=bg-purple-6]{background:#2563eb!important}
+html[data-theme=ocean] [class*=bg-purple-7]{background:#1d4ed8!important}
+html[data-theme=ocean] [class*=bg-purple-8]{background:#1e40af!important}
+html[data-theme=ocean] [class*=bg-purple-9]{background:#1e3a8a!important}
+html[data-theme=ocean] [class*=text-purple]{color:#60a5fa!important}
+html[data-theme=ocean] [class*=border-purple]{border-color:#3b82f6!important}
+html[data-theme=ocean] [class*=from-purple]{--tw-gradient-from:#1e3a8a!important}
+html[data-theme=ocean] [class*=via-purple]{--tw-gradient-via:#1d4ed8!important}
+html[data-theme=ocean] [class*=glow-purple]{box-shadow:0 0 18px rgba(37,99,235,.4)!important}
+html[data-theme=ocean] .view-btn.active{background:rgba(37,99,235,.85)!important;box-shadow:0 0 14px rgba(37,99,235,.45)!important}
+html[data-theme=emerald] body{background:#020f0b!important}
+html[data-theme=emerald] [class*=bg-purple-6]{background:#0d9488!important}
+html[data-theme=emerald] [class*=bg-purple-7]{background:#0f766e!important}
+html[data-theme=emerald] [class*=bg-purple-8]{background:#115e59!important}
+html[data-theme=emerald] [class*=bg-purple-9]{background:#134e4a!important}
+html[data-theme=emerald] [class*=text-purple]{color:#2dd4bf!important}
+html[data-theme=emerald] [class*=border-purple]{border-color:#14b8a6!important}
+html[data-theme=emerald] [class*=from-purple]{--tw-gradient-from:#134e4a!important}
+html[data-theme=emerald] [class*=via-purple]{--tw-gradient-via:#0f766e!important}
+html[data-theme=emerald] [class*=glow-purple]{box-shadow:0 0 18px rgba(13,148,136,.4)!important}
+html[data-theme=emerald] .view-btn.active{background:rgba(13,148,136,.85)!important;box-shadow:0 0 14px rgba(13,148,136,.45)!important}
+html[data-theme=amber] body{background:#0d0800!important}
+html[data-theme=amber] [class*=bg-purple-6]{background:#d97706!important}
+html[data-theme=amber] [class*=bg-purple-7]{background:#b45309!important}
+html[data-theme=amber] [class*=bg-purple-8]{background:#92400e!important}
+html[data-theme=amber] [class*=bg-purple-9]{background:#78350f!important}
+html[data-theme=amber] [class*=text-purple]{color:#fbbf24!important}
+html[data-theme=amber] [class*=border-purple]{border-color:#f59e0b!important}
+html[data-theme=amber] [class*=from-purple]{--tw-gradient-from:#78350f!important}
+html[data-theme=amber] [class*=via-purple]{--tw-gradient-via:#b45309!important}
+html[data-theme=amber] [class*=glow-purple]{box-shadow:0 0 18px rgba(217,119,6,.4)!important}
+html[data-theme=amber] .view-btn.active{background:rgba(217,119,6,.85)!important;box-shadow:0 0 14px rgba(217,119,6,.45)!important}
+html[data-theme=neon] body{background:#040804!important}
+html[data-theme=neon] [class*=bg-purple-6]{background:#16a34a!important}html[data-theme=neon] [class*=bg-purple-7]{background:#15803d!important}html[data-theme=neon] [class*=bg-purple-8]{background:#166534!important}html[data-theme=neon] [class*=bg-purple-9]{background:#14532d!important}html[data-theme=neon] [class*=text-purple]{color:#4ade80!important}html[data-theme=neon] [class*=border-purple]{border-color:#22c55e!important}html[data-theme=neon] [class*=from-purple]{--tw-gradient-from:#14532d!important}html[data-theme=neon] [class*=glow-purple]{box-shadow:0 0 18px rgba(74,222,128,.4)!important}
+html[data-theme=rose] body{background:#0f0208!important}
+html[data-theme=rose] [class*=bg-purple-6]{background:#e11d48!important}html[data-theme=rose] [class*=bg-purple-7]{background:#be123c!important}html[data-theme=rose] [class*=bg-purple-8]{background:#9f1239!important}html[data-theme=rose] [class*=bg-purple-9]{background:#881337!important}html[data-theme=rose] [class*=text-purple]{color:#fb7185!important}html[data-theme=rose] [class*=border-purple]{border-color:#f43f5e!important}html[data-theme=rose] [class*=from-purple]{--tw-gradient-from:#881337!important}html[data-theme=rose] [class*=glow-purple]{box-shadow:0 0 18px rgba(244,63,94,.4)!important}
+html[data-theme=violet] body{background:#06030f!important}
+html[data-theme=violet] [class*=bg-purple-6]{background:#6d28d9!important}html[data-theme=violet] [class*=bg-purple-7]{background:#5b21b6!important}html[data-theme=violet] [class*=bg-purple-8]{background:#4c1d95!important}html[data-theme=violet] [class*=bg-purple-9]{background:#3b0764!important}html[data-theme=violet] [class*=text-purple]{color:#a78bfa!important}html[data-theme=violet] [class*=border-purple]{border-color:#7c3aed!important}html[data-theme=violet] [class*=from-purple]{--tw-gradient-from:#3b0764!important}html[data-theme=violet] [class*=glow-purple]{box-shadow:0 0 18px rgba(124,58,237,.5)!important}
+html[data-theme=slate] body{background:#0a0c10!important}
+html[data-theme=slate] [class*=bg-purple-6]{background:#475569!important}html[data-theme=slate] [class*=bg-purple-7]{background:#334155!important}html[data-theme=slate] [class*=bg-purple-8]{background:#1e293b!important}html[data-theme=slate] [class*=bg-purple-9]{background:#0f172a!important}html[data-theme=slate] [class*=text-purple]{color:#94a3b8!important}html[data-theme=slate] [class*=border-purple]{border-color:#64748b!important}html[data-theme=slate] [class*=from-purple]{--tw-gradient-from:#0f172a!important}html[data-theme=slate] [class*=glow-purple]{box-shadow:0 0 18px rgba(100,116,139,.3)!important}
+html[data-theme=gold] body{background:#0d0900!important}
+html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[data-theme=gold] [class*=bg-purple-7]{background:#a16207!important}html[data-theme=gold] [class*=bg-purple-8]{background:#854d0e!important}html[data-theme=gold] [class*=bg-purple-9]{background:#713f12!important}html[data-theme=gold] [class*=text-purple]{color:#fde047!important}html[data-theme=gold] [class*=border-purple]{border-color:#eab308!important}html[data-theme=gold] [class*=from-purple]{--tw-gradient-from:#713f12!important}html[data-theme=gold] [class*=glow-purple]{box-shadow:0 0 18px rgba(234,179,8,.4)!important}
+</style>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body{background:#06060f;font-family:'Segoe UI',system-ui,sans-serif}
+  @keyframes heroIn{from{transform:translateY(-30px) scale(.95);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+  .hero-in{animation:heroIn .42s cubic-bezier(.175,.885,.32,1.275)}
+  @keyframes cardIn{from{transform:translateY(-18px) scale(.93);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+  .card-in{animation:cardIn .32s cubic-bezier(.175,.885,.32,1.275)}
+  @keyframes fadeOut{to{transform:scale(.85) translateY(12px);opacity:0;max-height:0;padding:0;margin:0;overflow:hidden}}
+  .fade-out{animation:fadeOut .36s ease forwards}
+  @keyframes pulseGreen{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.45)}60%{box-shadow:0 0 0 10px rgba(74,222,128,0)}}
+  .pulse-green{animation:pulseGreen 2s infinite}
+  @keyframes badgePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+  .priority-badge{animation:badgePulse 2.5s ease infinite}
+  @keyframes activeCardIn{from{opacity:0;transform:translateY(-10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .active-card-in{animation:activeCardIn .35s cubic-bezier(.175,.885,.32,1.275)}
+  .queue-mini-card{min-width:148px;max-width:172px;flex-shrink:0}
+  .station-col{display:flex;flex-direction:column;border-right:1px solid rgba(31,41,55,.6);min-width:300px;flex:1;height:100%}
+  ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#374151;border-radius:4px}
+  input:focus,select:focus{outline:none}
+  .tab-active{border-bottom-color:#9333ea!important;color:#c084fc!important}
+  .dirty-input{border-color:#eab308!important}
+  .dirty-row{background:rgba(234,179,8,.04)!important}
+  .view-btn{color:#4b5563;transition:all .15s ease;width:2.25rem;height:2.25rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center}
+  .view-btn.active{background:rgba(147,51,234,.85);color:#fff;box-shadow:0 0 14px rgba(147,51,234,.45)}
+  .view-btn:not(.active):hover{background:rgba(75,85,99,.45);color:#d1d5db}
+</style>
+</head>
+<body class="min-h-screen text-white">
+
+<!-- ═══ HEADER ═══ -->
+<div class="sticky top-0 z-30 bg-gray-950/96 backdrop-blur border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-xl shadow-lg shadow-purple-900/60 shrink-0">🍹</div>
+    <div>
+      <h1 class="font-extrabold text-lg tracking-wider leading-none">DRUNKS <span class="text-purple-400 font-light text-sm">· COCINA</span></h1>
+      <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+        <div id="wsDot" class="w-2 h-2 rounded-full bg-red-500 shrink-0"></div>
+        <span id="wsTxt" class="text-xs text-gray-500">Conectando...</span>
+        <span class="text-gray-700 text-xs">·</span>
+        <div id="sbDot" class="w-2 h-2 rounded-full bg-gray-600 shrink-0"></div>
+        <span id="sbTxt" class="text-xs text-gray-600">Nube...</span>
+      </div>
+    </div>
+  </div>
+  <div class="flex items-center gap-3">
+    <div class="text-center hidden sm:block">
+      <div class="text-3xl font-extrabold text-purple-400 tabular-nums leading-none" id="orderCount">0</div>
+      <div class="text-[10px] text-gray-600 tracking-widest mt-0.5">ACTIVOS</div>
+    </div>
+    <div id="viewModeBar" class="flex items-center bg-gray-800/60 border border-gray-700 rounded-xl p-1 gap-0.5">
+      <button class="view-btn" id="vBtn-priority" onclick="setView('priority')" title="Prioridad — #1 destacado">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0" width="16" height="8" rx="1.5"/><rect x="0" y="9.5" width="7.5" height="6.5" rx="1.2"/><rect x="8.5" y="9.5" width="7.5" height="6.5" rx="1.2"/></svg>
+      </button>
+      <button class="view-btn" id="vBtn-duo" onclick="setView('duo')" title="Doble prioridad — #1 y #2">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0" width="7.5" height="8.5" rx="1.5"/><rect x="8.5" y="0" width="7.5" height="8.5" rx="1.5"/><rect x="0" y="10" width="4.5" height="6" rx="1"/><rect x="5.75" y="10" width="4.5" height="6" rx="1"/><rect x="11.5" y="10" width="4.5" height="6" rx="1"/></svg>
+      </button>
+      <button class="view-btn" id="vBtn-grid" onclick="setView('grid')" title="Parrilla — todos iguales">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0" width="7.5" height="7.5" rx="1.5"/><rect x="8.5" y="0" width="7.5" height="7.5" rx="1.5"/><rect x="0" y="8.5" width="7.5" height="7.5" rx="1.5"/><rect x="8.5" y="8.5" width="7.5" height="7.5" rx="1.5"/></svg>
+      </button>
+      <button class="view-btn" id="vBtn-compact" onclick="setView('compact')" title="Compacto — máxima densidad">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0.5" width="16" height="3" rx="1"/><rect x="0" y="4.5" width="16" height="3" rx="1"/><rect x="0" y="8.5" width="16" height="3" rx="1"/><rect x="0" y="12.5" width="16" height="3" rx="1"/></svg>
+      </button>
+    </div>
+    <button onclick="toggleStationPanel()" title="Configurar Preparadores"
+      class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">👥</button>
+    <button onclick="toggleThemePicker()" title="Paleta de colores"
+      class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">🎨</button>
+    <button onclick="openAdmin()" title="Administracion"
+      class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">⚙️</button>
+  </div>
+</div>
+
+<!-- ═══ KITCHEN VIEW ═══ -->
+<!-- Modo una estacion (comportamiento actual) -->
+<div id="singleView" class="p-5">
+  <div id="heroSection" class="mb-5"></div>
+  <div id="queueLabel" class="hidden flex items-center gap-3 mb-3">
+    <div class="h-px flex-1 bg-gray-800"></div>
+    <span id="queueTitle" class="text-gray-600 text-[10px] tracking-[0.2em] font-bold shrink-0">EN FILA</span>
+    <div class="h-px flex-1 bg-gray-800"></div>
+  </div>
+  <div id="queueGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+</div>
+<!-- Modo multi-estacion (columnas) -->
+<div id="multiView" class="hidden flex flex-col" style="height:calc(100vh - 5rem)"></div>
+<!-- Empty state (compartido) -->
+<div id="emptyState" class="hidden flex flex-col items-center justify-center py-40 text-gray-800">
+  <div class="text-8xl mb-6 opacity-15">🍹</div>
+  <p class="text-2xl font-bold">Todo listo</p>
+  <p class="text-sm mt-2 text-gray-700">Los pedidos aparecen aqui en tiempo real</p>
+</div>
+
+<!-- ═══ STATION PANEL ═══ -->
+<div id="stationPanel" class="hidden fixed z-[91]" style="top:4.5rem;right:1rem">
+  <div class="bg-gray-900 border border-gray-700 rounded-2xl p-5 shadow-2xl shadow-black/70 w-80">
+    <div class="flex items-center justify-between mb-4">
+      <div class="text-gray-400 text-[10px] tracking-[.2em] font-bold">PREPARADORES / ESTACIONES</div>
+      <button onclick="toggleStationPanel()" class="text-gray-500 hover:text-white text-xl leading-none">x</button>
+    </div>
+    <div class="mb-4">
+      <div class="text-gray-400 text-xs font-semibold mb-2">Numero de estaciones</div>
+      <div class="flex gap-2">
+        <button onclick="setStationCount(1)" id="sCnt-1" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-gray-700 bg-gray-800 text-gray-400 transition-colors">1</button>
+        <button onclick="setStationCount(2)" id="sCnt-2" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-gray-700 bg-gray-800 text-gray-400 transition-colors">2</button>
+        <button onclick="setStationCount(3)" id="sCnt-3" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-gray-700 bg-gray-800 text-gray-400 transition-colors">3</button>
+        <button onclick="setStationCount(4)" id="sCnt-4" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-gray-700 bg-gray-800 text-gray-400 transition-colors">4</button>
+      </div>
+    </div>
+    <div id="stationFormBlock" class="space-y-3 mb-4 max-h-64 overflow-y-auto pr-1"></div>
+    <button onclick="saveStationConfig()"
+      class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">
+      Aplicar configuracion
+    </button>
+  </div>
+</div>
+
+<!-- ═══ THEME PICKER ═══ -->
+<div id="themePicker" class="hidden fixed z-[90]" style="top:4.5rem;right:1rem">
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl shadow-black/60 w-56 max-h-[85vh] overflow-y-auto">
+    <div class="text-gray-500 text-[10px] tracking-[.2em] font-bold mb-3">PALETA DE COLORES</div>
+    <div class="space-y-0.5">
+      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span><span class="text-white text-sm font-semibold">Oscuro</span></button>
+      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span><span class="text-white text-sm font-semibold">Claro</span></button>
+      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span><span class="text-white text-sm font-semibold">Océano</span></button>
+      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span><span class="text-white text-sm font-semibold">Esmeralda</span></button>
+      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span><span class="text-white text-sm font-semibold">Ámbar</span></button>
+      <button data-theme="neon"    onclick="applyTheme('neon')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#16a34a"></span><span class="text-white text-sm font-semibold">Neón</span></button>
+      <button data-theme="rose"    onclick="applyTheme('rose')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#e11d48"></span><span class="text-white text-sm font-semibold">Rosa</span></button>
+      <button data-theme="violet"  onclick="applyTheme('violet')"  class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#6d28d9"></span><span class="text-white text-sm font-semibold">Violeta</span></button>
+      <button data-theme="slate"   onclick="applyTheme('slate')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#475569"></span><span class="text-white text-sm font-semibold">Gris Pizarra</span></button>
+      <button data-theme="gold"    onclick="applyTheme('gold')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#ca8a04"></span><span class="text-white text-sm font-semibold">Dorado</span></button>
+    </div>
+    <div class="mt-3 pt-3 border-t border-gray-800">
+      <div class="text-gray-500 text-[10px] font-bold mb-2">COLOR PERSONALIZADO</div>
+      <div class="flex items-center gap-2">
+        <input type="color" id="customColorPicker" value="#9333ea"
+          oninput="applyCustomTheme(this.value)"
+          style="display:none;width:2rem;height:2rem;border-radius:.5rem;border:none;cursor:pointer;background:transparent;padding:0">
+        <button onclick="document.getElementById('customColorPicker').style.display='inline-block';document.getElementById('customColorPicker').click()"
+          class="flex items-center gap-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-xl text-xs text-gray-300 transition-colors">
+          <span>🎨</span> Elegir color
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN MODAL ═══ -->
+<div id="adminModal" class="fixed inset-0 bg-black/82 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+  <div class="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-700 shrink-0">
+      <h2 class="text-xl font-extrabold">Administracion General</h2>
+      <button onclick="closeAdmin()" class="text-gray-400 hover:text-white text-3xl leading-none transition-colors">x</button>
+    </div>
+    <!-- Tabs -->
+    <div class="flex border-b border-gray-800 px-6 shrink-0">
+      <button id="tab-prods" onclick="showTab('prods')" class="tab-active tab-btn px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors mr-1">Productos</button>
+      <button id="tab-cats"  onclick="showTab('cats')"  class="tab-btn px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors mr-1">Categorias</button>
+      <button id="tab-notes" onclick="showTab('notes')" class="tab-btn px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">Notas Rapidas</button>
+      <button id="tab-bases" onclick="showTab('bases')" class="tab-btn px-5 py-3.5 text-sm font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors ml-1">Bases</button>
+    </div>
+    <!-- Toast -->
+    <div id="adminMsg" class="hidden mx-6 mt-4 text-sm px-4 py-2 rounded-xl shrink-0"></div>
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto px-6 pt-4 pb-2">
+
+      <!-- ── Productos ── -->
+      <div id="pane-prods">
+        <div class="flex justify-end mb-4">
+          <button onclick="addProd()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors">+ Nuevo Producto</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[580px]">
+            <thead>
+              <tr class="text-gray-500 text-[10px] tracking-widest border-b border-gray-800">
+                <th class="text-left py-2 pr-3">NOMBRE</th>
+                <th class="text-left py-2 pr-3">CATEGORIA</th>
+                <th class="text-left py-2 pr-3 w-28">PRECIO</th>
+                <th class="text-center py-2 pr-3 w-24">ESTADO</th>
+                <th class="text-center py-2 pr-3 w-24">BASE</th>
+                <th class="text-center py-2 w-12">DEL</th>
+              </tr>
+            </thead>
+            <tbody id="prodsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── Categorias ── -->
+      <div id="pane-cats" class="hidden">
+        <div class="flex gap-2 mb-5">
+          <input id="newCatName" type="text" placeholder="Nueva categoria..."
+            class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors">
+          <button onclick="addCat()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
+        </div>
+        <div id="catsList" class="space-y-2"></div>
+      </div>
+
+      <!-- ── Notas ── -->
+      <div id="pane-notes" class="hidden">
+        <p class="text-gray-500 text-sm mb-4">Las notas con categoria aparecen dinamicamente al vendedor segun el producto seleccionado.</p>
+        <div class="flex gap-2 mb-5 flex-wrap sm:flex-nowrap">
+          <input id="newNoteText" type="text" placeholder="Texto de la nota..."
+            class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm min-w-0 transition-colors">
+          <select id="newNoteCat" class="bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm shrink-0 transition-colors">
+            <option value="">Global</option>
+          </select>
+          <button onclick="addNote()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
+        </div>
+        <div id="notesList" class="flex flex-wrap gap-2.5"></div>
+      </div>
+
+      <!-- ── Bases ── -->
+      <div id="pane-bases" class="hidden">
+        <!-- Sección 1: Tipos de Base -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-white font-bold text-sm">Tipos de Base</span>
+            <button onclick="toggleNewTipoForm()" class="text-xs bg-gray-800 hover:bg-purple-700 text-gray-300 hover:text-white px-3 py-1.5 rounded-lg transition-colors">+ Nuevo tipo</button>
+          </div>
+          <!-- Form nuevo tipo (oculto por defecto) -->
+          <div id="newTipoForm" class="hidden flex gap-2 mb-3 p-3 bg-gray-800/50 rounded-xl border border-gray-700">
+            <input id="newTipoIcono" type="text" value="🍹" maxlength="4"
+              class="bg-gray-900 border border-gray-700 focus:border-purple-500 rounded-lg px-2.5 py-2 text-white text-sm w-14 text-center transition-colors" placeholder="🍹">
+            <input id="newTipoNombre" type="text" placeholder="Nombre del tipo (ej: Ron)"
+              class="flex-1 bg-gray-900 border border-gray-700 focus:border-purple-500 rounded-lg px-3 py-2 text-white text-sm transition-colors"
+              onkeydown="if(event.key==='Enter')addTipoBase()">
+            <button onclick="addTipoBase()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">Crear</button>
+            <button onclick="toggleNewTipoForm()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-2 rounded-lg text-sm transition-colors">✕</button>
+          </div>
+          <!-- Chips de tipos -->
+          <div id="tipoChips" class="flex flex-wrap gap-2"></div>
+        </div>
+        <!-- Sección 2: Items del tipo seleccionado -->
+        <div id="baseItemsSection" class="hidden">
+          <div class="flex items-center justify-between mb-3 border-t border-gray-800 pt-5">
+            <div class="flex items-center gap-2">
+              <span id="baseItemsTipoLabel" class="text-white font-bold text-sm"></span>
+              <span class="text-gray-500 text-xs">— items de base</span>
+            </div>
+            <div class="flex gap-2">
+              <input id="newBaseNombre" type="text" placeholder="Nombre del item..."
+                class="bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-lg px-3 py-1.5 text-white text-sm w-40 transition-colors"
+                onkeydown="if(event.key==='Enter')addBaseItem()">
+              <button onclick="addBaseItem()" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">+ Agregar</button>
+            </div>
+          </div>
+          <div id="basesList" class="mb-2"></div>
+        </div>
+        <!-- Estado vacío -->
+        <div id="basesEmptyState" class="hidden text-gray-600 text-sm text-center py-8">
+          Crea un tipo de base para empezar (ej: Gaseosa, Cerveza, Ron...)
+        </div>
+      </div>
+
+    </div>
+    <!-- ── SAVE BAR (single-save) ── -->
+    <div id="saveBar" class="hidden shrink-0 border-t border-yellow-700/30 bg-gray-900/90 rounded-b-2xl px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse shrink-0"></div>
+        <span id="saveCount" class="text-yellow-400 text-sm font-semibold"></span>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="discardAll()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-2 rounded-xl text-sm font-medium transition-colors">Descartar</button>
+        <button id="saveAllBtn" onclick="saveAll()" class="bg-green-600 hover:bg-green-500 text-white px-5 py-2 rounded-xl text-sm font-bold transition-colors shadow-lg">Guardar Todo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───
+let ws = null, wsTimer = null;
+let orders = {};
+let viewMode = localStorage.getItem('kitchenView') || 'priority';
+const dirty = { prods: new Set(), cats: new Set() };
+let adminCats = [];
+
+// ─── WEBSOCKET ───
+function connectWS() {
+  if (ws && ws.readyState < 2) return;
+  const _wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(_wsProto + '//' + location.host + '/ws');
+  ws.onopen = () => {
+    document.getElementById('wsDot').className = 'w-2 h-2 rounded-full bg-green-500 shrink-0 pulse-green';
+    document.getElementById('wsTxt').textContent = 'Conectado en vivo';
+    if (wsTimer) { clearTimeout(wsTimer); wsTimer = null; }
+  };
+  ws.onmessage = e => { try { const d = JSON.parse(e.data); if (d.type === 'new_order') addOrder(d.order); } catch(_){} };
+  ws.onclose = ws.onerror = () => {
+    document.getElementById('wsDot').className = 'w-2 h-2 rounded-full bg-red-500 shrink-0';
+    document.getElementById('wsTxt').textContent = 'Reconectando...';
+    wsTimer = setTimeout(connectWS, 3000);
+  };
+}
+
+// ─── KITCHEN RENDER ───
+function addOrder(order) {
+  if (orders[order.id]) return;
+  orders[order.id] = order;
+  renderKitchen();
+}
+
+function renderKitchen() {
+
+  if (stationCfg.count >= 2) { renderMultiStation(); return; }
+
+  const list    = Object.values(orders).sort((a, b) => a.id - b.id); // FIFO
+  const heroSec = document.getElementById('heroSection');
+  const qLabel  = document.getElementById('queueLabel');
+  const qTitle  = document.getElementById('queueTitle');
+  const qGrid   = document.getElementById('queueGrid');
+  const empty   = document.getElementById('emptyState');
+
+  updateCount(list.length);
+
+  if (!list.length) {
+    heroSec.innerHTML = ''; qGrid.innerHTML = '';
+    qLabel.classList.add('hidden');
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  const hide = () => { qLabel.classList.add('hidden'); };
+  const showLabel = (n) => {
+    qLabel.classList.remove('hidden');
+    qTitle.textContent = 'EN FILA — ' + n + ' pedido' + (n !== 1 ? 's' : '');
+  };
+
+  if (viewMode === 'priority') {
+    // ── Modo Prioridad: #1 hero full-width, resto grilla ──
+    heroSec.innerHTML = '';
+    heroSec.appendChild(buildHeroCard(list[0]));
+    qGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3';
+    qGrid.innerHTML = '';
+    if (list.length > 1) {
+      showLabel(list.length - 1);
+      list.slice(1).forEach(o => qGrid.appendChild(buildQueueCard(o)));
+    } else { hide(); }
+
+  } else if (viewMode === 'duo') {
+    // ── Modo Doble: top-2 medianos lado a lado, resto grilla compacta ──
+    heroSec.innerHTML = '';
+    if (list.length === 1) {
+      heroSec.appendChild(buildHeroCard(list[0]));
+      hide(); qGrid.innerHTML = '';
+    } else {
+      const duoWrap = document.createElement('div');
+      duoWrap.className = 'grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4';
+      duoWrap.appendChild(buildMediumCard(list[0], 1));
+      duoWrap.appendChild(buildMediumCard(list[1], 2));
+      heroSec.appendChild(duoWrap);
+      qGrid.className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2';
+      qGrid.innerHTML = '';
+      if (list.length > 2) {
+        showLabel(list.length - 2);
+        list.slice(2).forEach(o => qGrid.appendChild(buildQueueCard(o)));
+      } else { hide(); }
+    }
+
+  } else if (viewMode === 'grid') {
+    // ── Modo Parrilla: todos iguales, sin jerarquía ──
+    heroSec.innerHTML = ''; hide();
+    qGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3';
+    qGrid.innerHTML = '';
+    list.forEach(o => qGrid.appendChild(buildQueueCard(o)));
+
+  } else if (viewMode === 'compact') {
+    // ── Modo Compacto: máxima densidad ──
+    heroSec.innerHTML = ''; hide();
+    qGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2';
+    qGrid.innerHTML = '';
+    list.forEach(o => qGrid.appendChild(buildCompactCard(o)));
+  }
+}
+
+function buildItemRow(it, big) {
+  const parts = (it.observaciones||'').split(' | ');
+  const isBase = s => s && /^[^:]+: /.test(s);
+  const base  = isBase(parts[0]) ? parts[0] : null;
+  const notas = base ? parts.slice(1).join(' | ') : (it.observaciones||'');
+  return `<div class="flex items-start gap-3 py-${big?3:2} border-b border-gray-800/70 last:border-0">
+    <span class="bg-purple-700 text-white ${big?'text-sm':'text-xs'} font-extrabold px-2.5 py-0.5 rounded-lg shrink-0 mt-0.5">${it.cantidad}x</span>
+    <div class="flex-1">
+      <div class="text-white font-bold ${big?'text-base':'text-sm'}">${it.nombre}</div>
+      ${base  ? '<div class="text-amber-400 font-bold text-xs mt-0.5">📌 ' + base + '</div>' : ''}
+      ${notas ? '<div class="text-yellow-300 font-extrabold text-' + (big?'sm':'xs') + ' mt-0.5">⚠ ' + notas + '</div>' : ''}
+    </div>
+  </div>`;
+}
+
+function buildHeroCard(o) {
+  const div = document.createElement('div');
+  div.id = 'order-' + o.id;
+  div.className = 'hero-in';
+  const efect = o.metodo_pago === 'Efectivo';
+  const hBg   = efect ? 'from-green-700 to-green-800' : 'from-blue-700 to-blue-800';
+  const icon  = efect ? '💵' : '📱';
+  const tStr  = new Date(o.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  const rows  = (o.items||[]).map(it => buildItemRow(it, true)).join('');
+  div.innerHTML = `
+    <div class="flex items-center gap-3 mb-3">
+      <div class="priority-badge bg-red-500 text-white text-xs font-extrabold px-3 py-1 rounded-full tracking-wider shadow-lg shadow-red-900/50">#1 PRIORIDAD</div>
+      <div class="h-px flex-1 bg-gray-800"></div>
+    </div>
+    <div class="bg-gray-900 border-2 border-purple-500/40 rounded-3xl overflow-hidden shadow-2xl shadow-purple-950/30">
+      <div class="bg-gradient-to-r ${hBg} px-6 py-5 flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full tracking-wider">${o.numero_factura||('#'+o.id)}</span>
+            <span class="text-white/60 text-xs">${icon} ${o.metodo_pago} &middot; ${tStr}</span>
+          </div>
+          <div class="text-white font-extrabold text-4xl leading-none">${o.cliente}</div>
+        </div>
+        <div class="text-white font-extrabold text-4xl tabular-nums leading-none">$${Math.round(o.total).toLocaleString('es-CO')}</div>
+      </div>
+      <div class="px-6 py-5">${rows||'<div class="text-gray-600 text-sm text-center py-4">Sin detalle</div>'}</div>
+      <div class="px-6 pb-6">
+        <button data-id="${o.id}" onclick="completeOrder(parseInt(this.dataset.id))"
+          class="w-full bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-extrabold py-5 rounded-2xl text-xl transition-colors shadow-xl shadow-green-950/40">
+          ✓ COMPLETADO
+        </button>
+      </div>
+    </div>`;
+  return div;
+}
+
+function buildQueueCard(o) {
+  const div = document.createElement('div');
+  div.id = 'order-' + o.id;
+  div.className = 'card-in bg-gray-900 border border-gray-700 rounded-2xl overflow-hidden flex flex-col';
+  const efect = o.metodo_pago === 'Efectivo';
+  const hBg   = efect ? 'from-green-800/60 to-green-900/60' : 'from-blue-800/60 to-blue-900/60';
+  const icon  = efect ? '💵' : '📱';
+  const tStr  = new Date(o.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  const rows  = (o.items||[]).map(it => buildItemRow(it, false)).join('');
+  div.innerHTML = `
+    <div class="bg-gradient-to-r ${hBg} px-4 py-3 flex justify-between items-start">
+      <div>
+        <div class="text-white font-extrabold text-xl leading-tight">${o.cliente}</div>
+        <div class="flex items-center gap-1.5 mt-0.5">
+          <span class="bg-white/15 text-white/80 text-[9px] font-bold px-1.5 py-0.5 rounded-full">${o.numero_factura||('#'+o.id)}</span>
+          <span class="text-white/50 text-xs">${icon} ${o.metodo_pago} &middot; ${tStr}</span>
+        </div>
+      </div>
+      <div class="text-white font-extrabold text-lg tabular-nums">$${Math.round(o.total).toLocaleString('es-CO')}</div>
+    </div>
+    <div class="flex-1 px-4 py-3">${rows||'<div class="text-gray-600 text-xs text-center py-3">Sin detalle</div>'}</div>
+    <div class="px-4 pb-4">
+      <button data-id="${o.id}" onclick="completeOrder(parseInt(this.dataset.id))"
+        class="w-full bg-green-700 hover:bg-green-600 active:bg-green-800 text-white font-bold py-3 rounded-xl text-sm transition-colors">
+        ✓ Completado
+      </button>
+    </div>`;
+  return div;
+}
+
+function buildMediumCard(o, priority) {
+  const div   = document.createElement('div');
+  div.id      = 'order-' + o.id;
+  div.className = 'hero-in';
+  const efect = o.metodo_pago === 'Efectivo';
+  const hBg   = efect ? 'from-green-700 to-green-800' : 'from-blue-700 to-blue-800';
+  const icon  = efect ? '💵' : '📱';
+  const tStr  = new Date(o.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  const rows  = (o.items||[]).map(it => buildItemRow(it, false)).join('');
+  const isFirst = priority === 1;
+  const badgeCls  = isFirst ? 'priority-badge bg-red-500 shadow-red-900/50' : 'bg-orange-600 shadow-orange-900/50';
+  const borderCls = isFirst ? 'border-purple-500/40' : 'border-orange-500/30';
+  const badgeTxt  = isFirst ? '#1 PRIORIDAD' : '#2 EN CURSO';
+  div.innerHTML = `
+    <div class="flex items-center gap-2 mb-2">
+      <div class="${badgeCls} text-white text-xs font-extrabold px-2.5 py-0.5 rounded-full tracking-wider shadow-lg">${badgeTxt}</div>
+      <div class="h-px flex-1 bg-gray-800"></div>
+    </div>
+    <div class="bg-gray-900 border-2 ${borderCls} rounded-2xl overflow-hidden shadow-xl h-full flex flex-col">
+      <div class="bg-gradient-to-r ${hBg} px-4 py-3 flex items-start justify-between">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full tracking-wider">${o.numero_factura||('#'+o.id)}</span>
+            <span class="text-white/60 text-xs">${icon} ${o.metodo_pago} &middot; ${tStr}</span>
+          </div>
+          <div class="text-white font-extrabold text-2xl leading-tight truncate">${o.cliente}</div>
+        </div>
+        <div class="text-white font-extrabold text-xl tabular-nums ml-3 shrink-0">$${Math.round(o.total).toLocaleString('es-CO')}</div>
+      </div>
+      <div class="flex-1 px-4 py-3">${rows||'<div class="text-gray-600 text-sm text-center py-3">Sin detalle</div>'}</div>
+      <div class="px-4 pb-4">
+        <button data-id="${o.id}" onclick="completeOrder(parseInt(this.dataset.id))"
+          class="w-full bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-extrabold py-3 rounded-xl text-base transition-colors shadow-lg shadow-green-950/40">
+          ✓ COMPLETADO
+        </button>
+      </div>
+    </div>`;
+  return div;
+}
+
+function buildCompactCard(o) {
+  const div   = document.createElement('div');
+  div.id      = 'order-' + o.id;
+  div.className = 'card-in bg-gray-900 border border-gray-700/60 rounded-xl overflow-hidden';
+  const efect = o.metodo_pago === 'Efectivo';
+  const hBg   = efect ? 'from-green-800/55 to-green-900/55' : 'from-blue-800/55 to-blue-900/55';
+  const icon  = efect ? '💵' : '📱';
+  const tStr  = new Date(o.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  const itemRows = (o.items||[]).map(it => {
+    const parts = (it.observaciones||'').split(' | ');
+    const isBase = s => s && /^[^:]+: /.test(s);
+    const extra = isBase(parts[0]) ? parts[0] : (it.observaciones||'');
+    return `<div class="flex items-center gap-1 py-0.5 min-w-0">
+      <span class="text-purple-400 text-[10px] font-extrabold shrink-0">${it.cantidad}x</span>
+      <span class="text-white text-xs font-semibold truncate">${it.nombre}</span>
+      ${extra ? `<span class="text-amber-400 text-[10px] shrink-0 truncate">· ${extra}</span>` : ''}
+    </div>`;
+  }).join('');
+  div.innerHTML = `
+    <div class="bg-gradient-to-r ${hBg} px-3 py-2 flex items-center justify-between gap-2">
+      <div class="min-w-0">
+        <div class="text-white font-extrabold text-base leading-tight truncate">${o.cliente}</div>
+        <div class="text-white/50 text-[10px] leading-none mt-0.5">${o.numero_factura||('#'+o.id)} &middot; ${icon} ${tStr}</div>
+      </div>
+      <div class="text-white font-extrabold text-sm tabular-nums shrink-0">$${Math.round(o.total).toLocaleString('es-CO')}</div>
+    </div>
+    <div class="px-3 py-2 space-y-0.5">${itemRows||'<div class="text-gray-700 text-xs py-1">Sin detalle</div>'}</div>
+    <div class="px-3 pb-3">
+      <button data-id="${o.id}" onclick="completeOrder(parseInt(this.dataset.id))"
+        class="w-full bg-green-700 hover:bg-green-600 active:bg-green-800 text-white font-bold py-1.5 rounded-lg text-xs transition-colors">
+        ✓ Listo
+      </button>
+    </div>`;
+  return div;
+}
+
+function setView(mode) {
+  if (stationCfg && stationCfg.count >= 2) return; // no-op en modo multi-estacion
+  viewMode = mode;
+  saveSetting('kitchenView', mode);
+  saveSetting('kitchen_view', mode);
+  document.querySelectorAll('.view-btn').forEach(b =>
+    b.classList.toggle('active', b.id === 'vBtn-' + mode));
+  renderKitchen();
+}
+
+async function completeOrder(id) {
+  try {
+    const r = await fetch('/api/pedidos/'+id+'/entregar', {method:'PUT'});
+    if (r.ok) {
+      const card = document.getElementById('order-'+id);
+      if (card) {
+        card.classList.add('fade-out');
+        setTimeout(() => { delete orders[id]; renderKitchen(); }, 370);
+      } else {
+        delete orders[id]; renderKitchen();
+      }
+    }
+  } catch(e) {}
+}
+
+function updateCount(n) {
+  if (n === undefined) n = Object.keys(orders).length;
+  document.getElementById('orderCount').textContent = n;
+}
+
+async function loadPending() {
+  try {
+    const r    = await fetch('/api/pedidos/pendientes');
+    const list = await r.json();
+    list.forEach(o => { orders[o.id] = o; });
+    renderKitchen();
+  } catch(e) {}
+}
+
+// ─── ADMIN MODAL ───
+function openAdmin() {
+  document.getElementById('adminModal').classList.remove('hidden');
+  document.getElementById('adminModal').classList.add('flex');
+  showTab('prods');
+}
+function closeAdmin() {
+  if (dirty.prods.size + dirty.cats.size > 0) {
+    if (!confirm('Tienes cambios sin guardar. Cerrar de todas formas?')) return;
+    dirty.prods.clear(); dirty.cats.clear(); updateSaveBar();
+  }
+  document.getElementById('adminModal').classList.add('hidden');
+  document.getElementById('adminModal').classList.remove('flex');
+}
+function showTab(tab) {
+  if (typeof closeBasePop === 'function') closeBasePop();
+  ['prods','cats','notes','bases'].forEach(t => {
+    document.getElementById('pane-'+t).classList.add('hidden');
+    const b = document.getElementById('tab-'+t);
+    b.classList.remove('tab-active'); b.style.borderBottomColor='transparent'; b.style.color='';
+  });
+  document.getElementById('pane-'+tab).classList.remove('hidden');
+  document.getElementById('tab-'+tab).classList.add('tab-active');
+  if (tab === 'prods')  loadProds();
+  if (tab === 'cats')   loadCats();
+  if (tab === 'notes')  loadNotes();
+  if (tab === 'bases')  loadBases();
+}
+function adminToast(msg, ok=true) {
+  const el = document.getElementById('adminMsg');
+  el.textContent = msg;
+  el.className = 'mx-6 mt-4 shrink-0 text-sm px-4 py-2 rounded-xl ' +
+    (ok ? 'bg-green-800/50 border border-green-700 text-green-300' : 'bg-red-900/50 border border-red-700 text-red-300');
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 2800);
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ─── DIRTY TRACKING (single-save) ───
+function markDirty(type, id) {
+  dirty[type].add(id);
+  // Visual indicator on the row
+  const row = document.getElementById('drow-'+id);
+  if (row) { row.classList.add('dirty-row'); }
+  const inputs = document.querySelectorAll('[data-dirty-id="'+id+'"]');
+  inputs.forEach(el => el.classList.add('dirty-input'));
+  updateSaveBar();
+}
+
+function updateSaveBar() {
+  const total = dirty.prods.size + dirty.cats.size;
+  const bar = document.getElementById('saveBar');
+  if (total > 0) {
+    bar.classList.remove('hidden');
+    document.getElementById('saveCount').textContent =
+      total + ' cambio' + (total !== 1 ? 's' : '') + ' sin guardar';
+  } else {
+    bar.classList.add('hidden');
+  }
+}
+
+async function saveAll() {
+  const btn = document.getElementById('saveAllBtn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  let ok = 0, errors = 0;
+
+  for (const id of [...dirty.prods]) {
+    const n = document.getElementById('pn-'+id)?.value.trim();
+    const c = parseInt(document.getElementById('pc-'+id)?.value);
+    const p = parseFloat(document.getElementById('pp-'+id)?.value);
+    if (!n) { errors++; continue; }
+    try {
+      const r = await fetch('/api/productos/'+id, {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({nombre:n, categoria_id:c, precio:p})
+      });
+      if (r.ok) { dirty.prods.delete(id); ok++; }
+      else errors++;
+    } catch(e) { errors++; }
+  }
+
+  for (const id of [...dirty.cats]) {
+    const n = document.getElementById('cn-'+id)?.value.trim();
+    if (!n) { errors++; continue; }
+    try {
+      const r = await fetch('/api/categorias/'+id, {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({nombre:n})
+      });
+      if (r.ok) { dirty.cats.delete(id); ok++; }
+      else errors++;
+    } catch(e) { errors++; }
+  }
+
+  updateSaveBar();
+  if (errors === 0) adminToast('Todo guardado correctamente (' + ok + ' cambios)');
+  else adminToast(errors + ' errores. ' + ok + ' guardados.', false);
+  btn.disabled = false; btn.textContent = 'Guardar Todo';
+}
+
+function discardAll() {
+  dirty.prods.clear(); dirty.cats.clear();
+  updateSaveBar();
+  const pane = document.querySelector('[id^="pane-"]:not(.hidden)');
+  if (pane?.id === 'pane-prods') loadProds();
+  if (pane?.id === 'pane-cats')  loadCats();
+}
+
+// ─── PRODUCTOS TAB ───
+let adminBases = [];   // cache de bases para el selector
+let prodBaseMap = {};  // { productoId: [baseId,...] }
+let openBasePopover = null; // pid del popover abierto
+
+function buildBasesPopover(pid, assignedIds) {
+  // Agrupa bases por tipo para mostrar checkboxes organizados
+  const byTipo = {};
+  adminBases.forEach(b => {
+    const t = b.tipo_nombre || b.tipo || 'Otros';
+    if (!byTipo[t]) byTipo[t] = { icono: b.tipo_icono || '🍹', items: [] };
+    byTipo[t].items.push(b);
+  });
+  const groups = Object.entries(byTipo).map(([tipo, { icono, items }]) => `
+    <div class="mb-2">
+      <div class="text-[10px] font-bold text-gray-500 mb-1">${icono} ${tipo}</div>
+      ${items.map(b => `
+        <label class="flex items-center gap-1.5 px-1 py-0.5 rounded hover:bg-gray-700 cursor-pointer">
+          <input type="checkbox" value="${b.id}" ${assignedIds.includes(b.id)?'checked':''}
+            onchange="onBaseCheckChange(${pid},this)"
+            class="accent-purple-500 w-3 h-3">
+          <span class="text-white text-xs">${esc(b.nombre)}</span>
+        </label>`).join('')}
+    </div>`).join('');
+  return `<div id="basepop-${pid}" class="absolute z-50 right-0 top-full mt-1 bg-gray-900 border border-gray-700 rounded-xl p-3 shadow-2xl min-w-[160px] max-h-64 overflow-y-auto">
+    ${groups || '<div class="text-gray-600 text-xs">Sin bases. Crea en tab Bases.</div>'}
+    <button onclick="closeBasePop()" class="mt-2 w-full text-[10px] text-gray-500 hover:text-gray-300 transition-colors">Cerrar</button>
+  </div>`;
+}
+
+function openBasePop(pid) {
+  // Cierra cualquier popover abierto
+  closeBasePop();
+  openBasePopover = pid;
+  const td = document.getElementById('basetd-'+pid);
+  if (!td) return;
+  td.style.position = 'relative';
+  const assignedIds = prodBaseMap[pid] || [];
+  td.insertAdjacentHTML('beforeend', buildBasesPopover(pid, assignedIds));
+  // Cierra al clic fuera
+  setTimeout(() => document.addEventListener('click', outsideBasePop), 0);
+}
+
+function outsideBasePop(e) {
+  if (!e.target.closest('[id^="basepop-"]') && !e.target.closest('[onclick^="openBasePop"]')) {
+    closeBasePop();
+  }
+}
+
+function closeBasePop() {
+  if (openBasePopover !== null) {
+    document.getElementById('basepop-'+openBasePopover)?.remove();
+    openBasePopover = null;
+    document.removeEventListener('click', outsideBasePop);
+  }
+}
+
+async function onBaseCheckChange(pid, cb) {
+  const td = document.getElementById('basetd-'+pid);
+  const cbs = td?.querySelectorAll('input[type="checkbox"]');
+  const selectedIds = [...(cbs||[])].filter(c=>c.checked).map(c=>parseInt(c.value));
+  prodBaseMap[pid] = selectedIds;
+  // Actualizar etiqueta
+  const lbl = document.getElementById('baselbl-'+pid);
+  if (lbl) {
+    lbl.className = selectedIds.length ? 'text-amber-400 text-[10px] font-bold' : 'text-gray-600 text-[10px]';
+    lbl.textContent = selectedIds.length ? `🍹 ${selectedIds.length} base${selectedIds.length>1?'s':''}` : 'Sin base';
+  }
+  try {
+    await fetch('/api/productos/'+pid+'/bases', {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({base_ids: selectedIds})
+    });
+    await fetch('/api/productos/'+pid, {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({tiene_base: selectedIds.length > 0 ? 1 : 0})
+    });
+  } catch(e) {}
+}
+
+async function loadProds() {
+  try {
+    const [pr, cr, br, bm] = await Promise.all([
+      fetch('/api/productos').then(r=>r.json()),
+      fetch('/api/categorias').then(r=>r.json()),
+      fetch('/api/bases').then(r=>r.json()),
+      fetch('/api/productos/bases-bulk').then(r=>r.json()),
+    ]);
+    adminCats = cr; adminBases = br; prodBaseMap = bm;
+    document.getElementById('prodsTable').innerHTML = pr.map(p => {
+      const assignedIds = prodBaseMap[p.id] || [];
+      const baseLabel = assignedIds.length
+        ? `<span id="baselbl-${p.id}" class="text-amber-400 text-[10px] font-bold">🍹 ${assignedIds.length} base${assignedIds.length>1?'s':''}</span>`
+        : `<span id="baselbl-${p.id}" class="text-gray-600 text-[10px]">Sin base</span>`;
+      return `
+      <tr id="drow-${p.id}" class="border-b border-gray-800/50 hover:bg-gray-800/10 transition-colors ${dirty.prods.has(p.id)?'dirty-row':''}">
+        <td class="py-2.5 pr-3">
+          <input id="pn-${p.id}" data-dirty-id="${p.id}" type="text" value="${esc(p.nombre)}"
+            oninput="markDirty('prods',${p.id})"
+            class="bg-gray-800 border ${dirty.prods.has(p.id)?'border-yellow-500 dirty-input':'border-gray-700'} focus:border-purple-500 rounded-lg px-2.5 py-1.5 text-white text-sm w-full transition-colors">
+        </td>
+        <td class="py-2.5 pr-3">
+          <select id="pc-${p.id}" data-dirty-id="${p.id}" onchange="markDirty('prods',${p.id})"
+            class="bg-gray-800 border ${dirty.prods.has(p.id)?'border-yellow-500':'border-gray-700'} focus:border-purple-500 rounded-lg px-2 py-1.5 text-white text-sm w-36 transition-colors">
+            ${adminCats.map(c=>`<option value="${c.id}"${c.id===p.categoria_id?' selected':''}>${esc(c.nombre)}</option>`).join('')}
+          </select>
+        </td>
+        <td class="py-2.5 pr-3">
+          <input id="pp-${p.id}" data-dirty-id="${p.id}" type="number" value="${p.precio}" step="500" min="0"
+            oninput="markDirty('prods',${p.id})"
+            class="bg-gray-800 border ${dirty.prods.has(p.id)?'border-yellow-500 dirty-input':'border-gray-700'} focus:border-purple-500 rounded-lg px-2.5 py-1.5 text-white text-sm w-28 transition-colors">
+        </td>
+        <td class="py-2.5 pr-3 text-center">
+          <button data-id="${p.id}" onclick="toggleProd(parseInt(this.dataset.id))"
+            class="${p.disponible?'bg-green-700 hover:bg-green-600':'bg-red-800 hover:bg-red-700'} text-white text-xs px-3 py-1.5 rounded-lg font-bold transition-colors w-24">
+            ${p.disponible?'Activo':'Agotado'}
+          </button>
+        </td>
+        <td id="basetd-${p.id}" class="py-2.5 pr-3 text-center">
+          <button onclick="openBasePop(${p.id})"
+            class="flex flex-col items-center gap-0.5 w-full hover:bg-gray-800 rounded-lg px-2 py-1.5 transition-colors">
+            ${baseLabel}
+            <span class="text-gray-600 text-[9px]">▼ elegir</span>
+          </button>
+        </td>
+        <td class="py-2.5 text-center">
+          <button data-id="${p.id}" onclick="deleteProd(parseInt(this.dataset.id))"
+            class="bg-gray-700 hover:bg-red-800 text-white text-xs px-2.5 py-1.5 rounded-lg transition-colors">x</button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(e) { adminToast('Error cargando', false); }
+}
+
+async function toggleProd(id) {
+  try { await fetch('/api/productos/'+id+'/toggle', {method:'PATCH'}); loadProds(); }
+  catch(e) {}
+}
+async function deleteProd(id) {
+  if (!confirm('Eliminar este producto?')) return;
+  dirty.prods.delete(id); updateSaveBar();
+  try { await fetch('/api/productos/'+id, {method:'DELETE'}); adminToast('Eliminado'); loadProds(); }
+  catch(e) {}
+}
+async function addProd() {
+  if (!adminCats.length) { adminToast('Crea una categoria primero', false); return; }
+  try {
+    const r = await fetch('/api/productos', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({nombre:'Nuevo Producto', categoria_id:adminCats[0].id, precio:0, disponible:true})
+    });
+    if (r.ok) { adminToast('Producto creado, edita y guarda'); loadProds(); }
+  } catch(e) {}
+}
+
+// ─── CATEGORIAS TAB ───
+async function loadCats() {
+  try { const r = await fetch('/api/categorias'); renderCats(await r.json()); }
+  catch(e) {}
+}
+function renderCats(cats) {
+  document.getElementById('catsList').innerHTML = cats.length ? cats.map(c => `
+    <div id="drow-${c.id}" class="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-2.5 ${dirty.cats.has(c.id)?'dirty-row border-yellow-700/40':''}">
+      <input id="cn-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.nombre)}"
+        oninput="markDirty('cats',${c.id})"
+        class="flex-1 bg-transparent text-white font-semibold text-sm border-b ${dirty.cats.has(c.id)?'border-yellow-500':'border-transparent'} focus:border-purple-500 transition-colors">
+      <button data-id="${c.id}" onclick="deleteCat(parseInt(this.dataset.id))"
+        class="bg-gray-700 hover:bg-red-800 text-white text-xs px-2 py-1.5 rounded-lg transition-colors shrink-0">x</button>
+    </div>`).join('') : '<div class="text-gray-600 text-sm text-center py-6">Sin categorias.</div>';
+}
+async function deleteCat(id) {
+  if (!confirm('Eliminar esta categoria?')) return;
+  dirty.cats.delete(id); updateSaveBar();
+  try { await fetch('/api/categorias/'+id, {method:'DELETE'}); adminToast('Eliminada'); loadCats(); loadProds(); }
+  catch(e) {}
+}
+async function addCat() {
+  const inp = document.getElementById('newCatName'); const n = inp.value.trim(); if (!n) return;
+  try {
+    const r = await fetch('/api/categorias', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nombre:n})});
+    if (r.ok) { inp.value = ''; adminToast('Creada'); loadCats(); }
+  } catch(e) {}
+}
+
+// ─── NOTAS TAB ───
+async function loadNotes() {
+  try {
+    const [nr, cr] = await Promise.all([fetch('/api/notas_rapidas'), fetch('/api/categorias')]);
+    const notes = await nr.json(); const cats = await cr.json();
+    const sel = document.getElementById('newNoteCat');
+    sel.innerHTML = '<option value="">Global</option>' + cats.map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+    const catMap = {}; cats.forEach(c => catMap[c.id] = c.nombre);
+    document.getElementById('notesList').innerHTML = notes.length ? notes.map(n => `
+      <div class="flex items-center gap-2 rounded-full pl-3 pr-2 py-1.5 border
+        ${n.categoria_id ? 'bg-amber-900/30 border-amber-700/40' : 'bg-gray-800 border-gray-700'}">
+        ${n.categoria_id ? '<span class="text-amber-400 text-[10px] font-bold shrink-0">'+esc(catMap[n.categoria_id]||'')+'</span>' : ''}
+        <span class="text-white text-sm font-medium">${esc(n.texto)}</span>
+        <button data-id="${n.id}" onclick="deleteNote(parseInt(this.dataset.id))"
+          class="bg-gray-700 hover:bg-red-800 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center transition-colors ml-0.5 shrink-0">x</button>
+      </div>`).join('') : '<div class="text-gray-600 text-sm">Sin notas.</div>';
+  } catch(e) {}
+}
+async function addNote() {
+  const inp = document.getElementById('newNoteText'); const sel = document.getElementById('newNoteCat');
+  const texto = inp.value.trim(); if (!texto) return;
+  const cat_id = sel.value ? parseInt(sel.value) : null;
+  try {
+    const r = await fetch('/api/notas_rapidas', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({texto, categoria_id:cat_id})});
+    if (r.ok) { inp.value = ''; adminToast('Nota agregada'); loadNotes(); }
+  } catch(e) {}
+}
+async function deleteNote(id) {
+  try { await fetch('/api/notas_rapidas/'+id, {method:'DELETE'}); loadNotes(); }
+  catch(e) {}
+}
+
+// ─── BASES TAB ───
+let allTipos = [];   // cache de tipos_base
+let allBases2 = [];  // cache de bases con tipo_nombre
+let selectedTipoId = null;
+
+async function loadBases() {
+  try {
+    [allTipos, allBases2] = await Promise.all([
+      fetch('/api/tipos-base').then(r=>r.json()),
+      fetch('/api/bases').then(r=>r.json()),
+    ]);
+    renderTipoChips();
+    // Seleccionar primer tipo si ninguno está seleccionado o el seleccionado ya no existe
+    if (!selectedTipoId || !allTipos.find(t => t.id === selectedTipoId)) {
+      selectedTipoId = allTipos[0]?.id || null;
+    }
+    renderBaseItems();
+  } catch(e) { adminToast('Error cargando bases', false); }
+}
+
+function renderTipoChips() {
+  const el = document.getElementById('tipoChips');
+  const empty = document.getElementById('basesEmptyState');
+  if (!allTipos.length) {
+    el.innerHTML = '';
+    empty?.classList.remove('hidden');
+    document.getElementById('baseItemsSection')?.classList.add('hidden');
+    return;
+  }
+  empty?.classList.add('hidden');
+  el.innerHTML = allTipos.map(t => {
+    const isActive = t.id === selectedTipoId;
+    const itemCount = allBases2.filter(b => b.tipo_id === t.id).length;
+    return `<button onclick="selectTipo(${t.id})"
+      class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-colors border ${isActive
+        ? 'bg-purple-700 border-purple-500 text-white'
+        : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:border-gray-600'}">
+      <span class="tipo-icono-${t.id}">${esc(t.icono)}</span>
+      <span class="tipo-nombre-${t.id}">${esc(t.nombre)}</span>
+      <span class="text-[10px] opacity-60">(${itemCount})</span>
+      <span onclick="event.stopPropagation();deleteTipoBase(${t.id})"
+        class="ml-1 text-gray-400 hover:text-red-400 leading-none" title="Eliminar tipo">×</span>
+    </button>`;
+  }).join('');
+}
+
+function selectTipo(id) {
+  selectedTipoId = id;
+  renderTipoChips();
+  renderBaseItems();
+}
+
+function renderBaseItems() {
+  const section = document.getElementById('baseItemsSection');
+  if (!selectedTipoId || !allTipos.length) { section?.classList.add('hidden'); return; }
+  section?.classList.remove('hidden');
+
+  const tipo = allTipos.find(t => t.id === selectedTipoId);
+  const label = document.getElementById('baseItemsTipoLabel');
+  if (label && tipo) label.textContent = tipo.icono + ' ' + tipo.nombre;
+
+  const items = allBases2.filter(b => b.tipo_id === selectedTipoId);
+  const el = document.getElementById('basesList');
+  if (!items.length) {
+    el.innerHTML = '<div class="text-gray-700 text-xs text-center py-6">Sin items. Agrega uno arriba.</div>';
+    return;
+  }
+  el.innerHTML = `<div class="grid grid-cols-3 gap-2 mb-2">${items.map(b => `
+    <div class="bg-gray-800/60 border ${b.disponible?'border-gray-700':'border-red-900/50'} rounded-2xl p-3 flex flex-col gap-2 ${b.disponible?'':'opacity-70'}">
+      <input id="bn-${b.id}" type="text" value="${esc(b.nombre)}"
+        onblur="saveBaseItem(${b.id})"
+        onkeydown="if(event.key==='Enter')this.blur()"
+        class="bg-transparent text-white font-bold text-sm text-center border-b border-transparent hover:border-gray-600 focus:border-purple-500 outline-none transition-colors w-full">
+      <button data-id="${b.id}" onclick="toggleBaseItem(parseInt(this.dataset.id))"
+        class="w-full font-extrabold text-xs py-2 rounded-xl transition-colors ${b.disponible
+          ? 'bg-red-900/60 hover:bg-red-700 text-red-300 hover:text-white'
+          : 'bg-green-900/60 hover:bg-green-700 text-green-300 hover:text-white'}">
+        ${b.disponible ? '⚠ AGOTADO' : '✓ DISPONIBLE'}
+      </button>
+      <button data-id="${b.id}" onclick="deleteBaseItem(parseInt(this.dataset.id))"
+        class="text-gray-600 hover:text-red-400 text-[10px] transition-colors text-center">Eliminar</button>
+    </div>`).join('')}</div>`;
+}
+
+function toggleNewTipoForm() {
+  const form = document.getElementById('newTipoForm');
+  form?.classList.toggle('hidden');
+  if (!form?.classList.contains('hidden')) document.getElementById('newTipoNombre')?.focus();
+}
+
+async function addTipoBase() {
+  const nombre = document.getElementById('newTipoNombre')?.value.trim();
+  const icono  = document.getElementById('newTipoIcono')?.value.trim() || '🍹';
+  if (!nombre) { adminToast('Escribe un nombre para el tipo', false); return; }
+  try {
+    const r = await fetch('/api/tipos-base', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({nombre, icono})
+    });
+    if (r.ok) {
+      document.getElementById('newTipoNombre').value = '';
+      document.getElementById('newTipoIcono').value = '🍹';
+      document.getElementById('newTipoForm')?.classList.add('hidden');
+      adminToast('Tipo creado');
+      await loadBases();
+      const nuevo = allTipos.find(t => t.nombre === nombre);
+      if (nuevo) selectTipo(nuevo.id);
+    } else {
+      const err = await r.json().catch(()=>({detail:'Error'}));
+      adminToast(err.detail || 'Error al crear', false);
+    }
+  } catch(e) {}
+}
+
+async function deleteTipoBase(id) {
+  if (!confirm('Eliminar este tipo? Solo se puede si no tiene items.')) return;
+  try {
+    const r = await fetch('/api/tipos-base/'+id, {method:'DELETE'});
+    if (r.ok) {
+      if (selectedTipoId === id) selectedTipoId = null;
+      adminToast('Tipo eliminado'); loadBases();
+    } else {
+      const err = await r.json().catch(()=>({detail:'Error'}));
+      adminToast(err.detail || 'No se pudo eliminar', false);
+    }
+  } catch(e) {}
+}
+
+async function addBaseItem() {
+  const nombre = document.getElementById('newBaseNombre')?.value.trim();
+  if (!nombre) { adminToast('Escribe un nombre para el item', false); return; }
+  if (!selectedTipoId) { adminToast('Selecciona un tipo primero', false); return; }
+  try {
+    const r = await fetch('/api/bases', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({nombre, tipo_id: selectedTipoId})
+    });
+    if (r.ok) {
+      document.getElementById('newBaseNombre').value = '';
+      adminToast('Item agregado'); loadBases();
+    } else {
+      const err = await r.json().catch(()=>({detail:'Error'}));
+      adminToast(err.detail || 'Error al agregar', false);
+    }
+  } catch(e) {}
+}
+
+async function saveBaseItem(id) {
+  const inp = document.getElementById('bn-'+id);
+  const nombre = inp?.value.trim();
+  if (!nombre) { inp && (inp.value = inp.defaultValue); return; }
+  const base = allBases2.find(b => b.id === id);
+  if (!base) return;
+  try {
+    const r = await fetch('/api/bases/'+id, {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({nombre, tipo_id: base.tipo_id})
+    });
+    if (r.ok) { adminToast('Guardado'); loadBases(); }
+    else adminToast('Error', false);
+  } catch(e) {}
+}
+
+async function toggleBaseItem(id) {
+  try { await fetch('/api/bases/'+id+'/toggle', {method:'PATCH'}); loadBases(); }
+  catch(e) {}
+}
+
+async function deleteBaseItem(id) {
+  if (!confirm('Eliminar este item? Se quitará de todos los productos.')) return;
+  try { await fetch('/api/bases/'+id, {method:'DELETE'}); adminToast('Eliminado'); loadBases(); }
+  catch(e) {}
+}
+
+// ─── DASHBOARD ───  (ahora en ruta /dashboard)
+
+
+// ─── SETTINGS (DB como fuente de verdad) ───
+function saveSetting(key, value) {
+  localStorage.setItem(key, value);
+  fetch('/api/settings/'+key, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({value})
+  }).catch(()=>{});
+}
+async function loadSettings() {
+  try {
+    const s = await fetch('/api/settings').then(r=>r.json());
+    if (s.palette || s.drunksPalette) applyTheme(s.palette || s.drunksPalette);
+    if (s.kitchen_view) { viewMode = s.kitchen_view; localStorage.setItem('kitchenView', s.kitchen_view); }
+    if (s.station_cfg)  { try { stationCfg   = JSON.parse(s.station_cfg); } catch(e){} }
+    if (s.station_active){ try { stationActive= JSON.parse(s.station_active); } catch(e){} }
+    Object.entries(s).forEach(([k,v]) => localStorage.setItem(k, v));
+  } catch(e) {
+    applyTheme(localStorage.getItem('drunksPalette') || 'dark');
+  }
+}
+
+// ─── THEME SYSTEM ───
+function applyTheme(t) {
+  const theme = t||'dark';
+  if (theme.startsWith('custom:')) { applyCustomTheme(theme.split(':')[1]); return; }
+  document.documentElement.setAttribute('data-theme', theme);
+  saveSetting('drunksPalette', theme);
+  saveSetting('palette', theme);
+  document.querySelectorAll('.theme-opt[data-theme]').forEach(b => {
+    const on = b.dataset.theme === theme;
+    b.style.background = on ? 'rgba(147,51,234,.2)' : '';
+    b.style.outline    = on ? '1px solid rgba(147,51,234,.5)' : '';
+  });
+  const picker = document.getElementById('customColorPicker');
+  if (picker) picker.style.display = 'none';
+}
+function applyCustomTheme(hex) {
+  let style = document.getElementById('custom-theme-style');
+  if (!style) { style = document.createElement('style'); style.id='custom-theme-style'; document.head.appendChild(style); }
+  const h = hex||'#9333ea';
+  const ri = parseInt(h.slice(1,3),16), gi = parseInt(h.slice(3,5),16), bi = parseInt(h.slice(5,7),16);
+  style.textContent = `
+    html[data-theme="custom"] body{background:#06060f}
+    html[data-theme="custom"] .bg-purple-600,.bg-purple-700{background-color:${h}!important}
+    html[data-theme="custom"] .text-purple-400,.text-purple-300{color:${h}!important}
+    html[data-theme="custom"] .border-purple-500{border-color:${h}!important}
+    html[data-theme="custom"] .from-purple-600{--tw-gradient-from:${h}!important}`;
+  document.documentElement.setAttribute('data-theme','custom');
+  saveSetting('drunksPalette','custom:'+h); saveSetting('palette','custom:'+h);
+  document.querySelectorAll('.theme-opt[data-theme]').forEach(b=>{b.style.background='';b.style.outline='';});
+  const picker = document.getElementById('customColorPicker');
+  if (picker) { picker.style.display='inline-block'; picker.value=h; }
+}
+function toggleThemePicker() {
+  document.getElementById('themePicker').classList.toggle('hidden');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#themePicker') && !e.target.closest('[onclick*="toggleThemePicker"]'))
+    document.getElementById('themePicker')?.classList.add('hidden');
+});
+
+// ─── ESTADO SUPABASE ───
+async function checkSupabase() {
+  const dot = document.getElementById('sbDot');
+  const txt = document.getElementById('sbTxt');
+  try {
+    const r = await fetch('/api/sync/status');
+    const d = await r.json();
+    if (!d.configured) {
+      dot.className = 'w-2 h-2 rounded-full bg-gray-600 shrink-0';
+      txt.textContent = 'Nube no configurada';
+      txt.style.color = '#4b5563';
+    } else if (!d.reachable) {
+      dot.className = 'w-2 h-2 rounded-full bg-red-500 shrink-0';
+      txt.textContent = d.pending > 0 ? `Sin nube · ${d.pending} sin subir` : 'Sin conexión a la nube';
+      txt.style.color = '#f87171';
+    } else if (d.pending > 0) {
+      dot.className = 'w-2 h-2 rounded-full bg-yellow-400 shrink-0';
+      txt.textContent = `Subiendo ${d.pending} pedido${d.pending !== 1 ? 's' : ''}...`;
+      txt.style.color = '#fbbf24';
+    } else {
+      dot.className = 'w-2 h-2 rounded-full bg-green-500 shrink-0';
+      txt.textContent = 'Nube sincronizada';
+      txt.style.color = '#4ade80';
+    }
+  } catch(_) {}
+}
+
+// ─── STATION SYSTEM ───
+let stationCfg = JSON.parse(localStorage.getItem('stationCfg') || 'null') || {
+  count: 1,
+  stations: [{ name: 'Preparador 1', catIds: [] }]
+};
+let stationActive = JSON.parse(localStorage.getItem('stationActive') || '{}');
+// { "0": orderId, "1": orderId } — pedido activo por estación
+let stationCats  = [];   // cached from /api/categorias
+
+function toggleStationPanel() {
+  const p = document.getElementById('stationPanel');
+  p.classList.toggle('hidden');
+  if (!p.classList.contains('hidden')) {
+    // Load cats and render form
+    if (!stationCats.length) {
+      fetch('/api/categorias').then(r=>r.json()).then(c=>{
+        stationCats = c; renderStationForm();
+      }).catch(()=>{ renderStationForm(); });
+    } else {
+      renderStationForm();
+    }
+    // Highlight active count button
+    for (let i=1;i<=4;i++) {
+      const btn = document.getElementById('sCnt-'+i);
+      if (btn) btn.className = 'station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border transition-colors '
+        + (i===stationCfg.count
+          ? 'border-purple-500 bg-purple-700 text-white'
+          : 'border-gray-700 bg-gray-800 text-gray-400');
+    }
+  }
+}
+
+function setStationCount(n) {
+  // Adjust stations array
+  while (stationCfg.stations.length < n)
+    stationCfg.stations.push({ name: 'Preparador '+(stationCfg.stations.length+1), catIds: [] });
+  stationCfg.stations = stationCfg.stations.slice(0, n);
+  stationCfg.count = n;
+  for (let i=1;i<=4;i++) {
+    const btn = document.getElementById('sCnt-'+i);
+    if (btn) btn.className = 'station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border transition-colors '
+      + (i===n
+        ? 'border-purple-500 bg-purple-700 text-white'
+        : 'border-gray-700 bg-gray-800 text-gray-400');
+  }
+  renderStationForm();
+}
+
+function renderStationForm() {
+  const block = document.getElementById('stationFormBlock');
+  block.innerHTML = stationCfg.stations.map((s, si) => {
+    const catChecks = stationCats.map(c =>
+      `<label class="flex items-center gap-1.5 text-xs text-gray-300 cursor-pointer">
+        <input type="checkbox" data-si="${si}" data-cat="${c.id}"
+          ${s.catIds.includes(c.id)?'checked':''} class="scat-chk rounded accent-purple-500">
+        <span>${c.nombre}</span>
+      </label>`).join('');
+    return `<div class="bg-gray-800/60 border border-gray-700 rounded-xl p-3">
+      <input data-si="${si}" type="text" value="${s.name.replace(/"/g,'&quot;')}"
+        placeholder="Nombre de la estacion"
+        class="sname-inp w-full bg-transparent text-white text-sm font-semibold border-b border-gray-700 focus:border-purple-500 outline-none mb-2 pb-1">
+      ${stationCats.length
+        ? '<div class="text-gray-500 text-[10px] tracking-widest font-bold mb-1.5">CATEGORIAS</div><div class="flex flex-wrap gap-2">'+catChecks+'</div>'
+        : '<div class="text-gray-600 text-xs">Sin categorias (atiende todos los pedidos)</div>'}
+    </div>`;
+  }).join('');
+}
+
+function saveStationConfig() {
+  // Read names and categories from form
+  document.querySelectorAll('.sname-inp').forEach(inp => {
+    const si = parseInt(inp.dataset.si);
+    if (stationCfg.stations[si]) stationCfg.stations[si].name = inp.value.trim() || ('Preparador '+(si+1));
+  });
+  document.querySelectorAll('.scat-chk').forEach(cb => {
+    const si = parseInt(cb.dataset.si), catId = parseInt(cb.dataset.cat);
+    if (!stationCfg.stations[si]) return;
+    const ids = stationCfg.stations[si].catIds;
+    if (cb.checked && !ids.includes(catId)) ids.push(catId);
+    else if (!cb.checked) stationCfg.stations[si].catIds = ids.filter(id=>id!==catId);
+  });
+  saveSetting('stationCfg', JSON.stringify(stationCfg));
+  saveSetting('station_cfg', JSON.stringify(stationCfg));
+  toggleStationPanel();
+  applyStationLayout();
+}
+
+function applyStationLayout() {
+  const multi = stationCfg.count >= 2;
+  const viewBar = document.getElementById('viewModeBar');
+  if (viewBar) viewBar.style.display = multi ? 'none' : '';
+  document.getElementById('singleView').classList.toggle('hidden', multi);
+  document.getElementById('multiView').classList.toggle('hidden', !multi);
+  renderKitchen();
+}
+
+// ─── COLA COMPARTIDA — asignación automática FIFO ────────────────────────────
+
+// Asigna pedidos de la cola a estaciones libres. Se llama en cada render.
+function autoAssignFreeStations(allOrders) {
+  // Limpiar asignaciones de pedidos que ya no existen
+  Object.keys(stationActive).forEach(si => {
+    if (!orders[Number(stationActive[si])]) delete stationActive[si];
+  });
+
+  const activeIds = new Set(Object.values(stationActive).map(Number));
+  // Cola: pedidos no activos en ninguna estación, orden FIFO
+  const queue = allOrders.filter(o => !activeIds.has(o.id));
+
+  for (let si = 0; si < stationCfg.count; si++) {
+    if (stationActive[String(si)] === undefined && queue.length) {
+      const next = queue.shift();
+      stationActive[String(si)] = next.id;
+      activeIds.add(next.id);
+    }
+  }
+  saveSetting('stationActive', JSON.stringify(stationActive));
+  saveSetting('station_active', JSON.stringify(stationActive));
+}
+
+// Save station name edited inline in the column header
+function saveStationName(si, value) {
+  if (!stationCfg.stations[si]) return;
+  stationCfg.stations[si].name = value.trim() || ('Preparador ' + (si + 1));
+  saveSetting('stationCfg', JSON.stringify(stationCfg));
+  saveSetting('station_cfg', JSON.stringify(stationCfg));
+  // Also sync the config panel input if open
+  const inp = document.querySelector('.sname-inp[data-si="'+si+'"]');
+  if (inp) inp.value = stationCfg.stations[si].name;
+}
+
+// ─── STATION RENDERING ────────────────────────────────────────────────────────
+
+// Hero card — el pedido activo que está preparando ahora el preparador
+function buildActiveCard(order, stationItems, si) {
+  const div = document.createElement('div');
+  div.id = 'active-order-'+order.id+'-'+si;
+  const efect = order.metodo_pago === 'Efectivo';
+  const hBg   = efect ? 'from-green-700 to-green-800' : 'from-blue-700 to-blue-800';
+  const icon  = efect ? '💵' : '📱';
+  const tStr  = new Date(order.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  const rows  = stationItems.map(it => buildItemRow(it, true)).join('');
+  div.className = 'active-card-in bg-gray-900 border border-purple-500/50 rounded-2xl overflow-hidden flex-shrink-0 shadow-lg shadow-purple-900/20';
+  div.innerHTML = `
+    <div class="flex items-center gap-2 px-4 pt-3 pb-1">
+      <div class="priority-badge bg-purple-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full tracking-wider">PREPARANDO</div>
+      <div class="h-px flex-1 bg-gray-800"></div>
+    </div>
+    <div class="bg-gradient-to-r ${hBg} px-4 py-3 flex items-start justify-between">
+      <div class="min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">${order.numero_factura||('#'+order.id)}</span>
+          <span class="text-white/60 text-xs">${icon} ${order.metodo_pago} · ${tStr}</span>
+        </div>
+        <div class="text-white font-extrabold text-2xl leading-tight">${order.cliente}</div>
+      </div>
+      <div class="text-white/80 font-bold text-base tabular-nums ml-2 shrink-0">$${Math.round(order.total).toLocaleString('es-CO')}</div>
+    </div>
+    <div class="px-4 py-3 space-y-1">${rows||'<div class="text-gray-600 text-xs text-center py-2">Sin items</div>'}</div>
+    <div class="px-4 pb-4 pt-1">
+      <button data-oid="${order.id}" data-si="${si}"
+        onclick="completeStationOrder(parseInt(this.dataset.oid),parseInt(this.dataset.si))"
+        class="w-full bg-green-500 hover:bg-green-400 active:bg-green-600 text-white font-extrabold py-3.5 rounded-xl text-base transition-colors shadow-lg shadow-green-900/30 tracking-wide">
+        ✓ LISTO — COMPLETAR PEDIDO
+      </button>
+    </div>`;
+  return div;
+}
+
+// Mini card — pedidos esperando en la cola de este preparador
+function buildQueueMiniCard(order, position) {
+  const div = document.createElement('div');
+  div.className = 'queue-mini-card bg-gray-800/70 border border-gray-700 rounded-xl overflow-hidden';
+  const itemCount = (order.items||[]).length;
+  const efect = order.metodo_pago === 'Efectivo';
+  const dot = efect ? 'bg-green-500' : 'bg-blue-500';
+  div.innerHTML = `
+    <div class="px-3 pt-2.5 pb-1 flex items-center gap-1.5">
+      <span class="text-gray-500 text-[10px] font-bold">#${position+1}</span>
+      <span class="text-purple-400 text-[10px] font-extrabold">${order.numero_factura||('#'+order.id)}</span>
+    </div>
+    <div class="px-3 pb-1">
+      <div class="text-white text-xs font-bold truncate">${order.cliente}</div>
+    </div>
+    <div class="px-3 pb-2.5 flex items-center gap-1.5">
+      <span class="w-1.5 h-1.5 rounded-full ${dot} shrink-0"></span>
+      <span class="text-gray-400 text-[10px]">${itemCount} ${itemCount===1?'bebida':'bebidas'}</span>
+    </div>`;
+  return div;
+}
+
+// Panel de un preparador: header editable + tarjeta activa o placeholder
+function renderActivePanel(si, activeOrder) {
+  const cfg = stationCfg.stations[si];
+  const panel = document.createElement('div');
+  panel.className = 'flex flex-col flex-1 border-r border-gray-800/60 overflow-y-auto min-w-0';
+
+  // ── Header editable ────────────────────────────
+  const hdr = document.createElement('div');
+  hdr.className = 'sticky top-0 z-10 bg-gray-950/95 backdrop-blur border-b border-gray-800 px-4 py-3 flex items-center gap-2 shrink-0';
+  hdr.innerHTML = `
+    <input class="station-col-name bg-transparent text-white font-extrabold text-sm tracking-wide uppercase border-b-2 border-transparent hover:border-gray-600 focus:border-purple-500 focus:outline-none min-w-0 flex-1 transition-colors cursor-text"
+      data-si="${si}" value="${cfg.name}"
+      onblur="saveStationName(${si},this.value)"
+      onkeydown="if(event.key==='Enter')this.blur()"
+      title="Clic para editar nombre">`;
+  panel.appendChild(hdr);
+
+  // ── Pedido activo o placeholder ────────────────
+  if (activeOrder) {
+    const catchAll = !cfg.catIds || cfg.catIds.length === 0;
+    const items = (activeOrder.items||[]).filter(it =>
+      catchAll || cfg.catIds.includes(it.categoria_id));
+    const wrap = document.createElement('div');
+    wrap.className = 'p-3';
+    wrap.appendChild(buildActiveCard(activeOrder, items, si));
+    panel.appendChild(wrap);
+  } else {
+    const empty = document.createElement('div');
+    empty.className = 'flex flex-col items-center justify-center flex-1 text-gray-700 py-16';
+    empty.innerHTML = '<div class="text-4xl mb-3 opacity-20">🍹</div><p class="text-xs">Libre</p>';
+    panel.appendChild(empty);
+  }
+
+  return panel;
+}
+
+// Franja inferior: cola compartida de todos los pedidos en espera
+function renderSharedQueueStrip(queueOrders) {
+  const strip = document.createElement('div');
+  strip.className = 'border-t border-gray-800 bg-gray-950/80 px-4 py-3 shrink-0';
+  if (!queueOrders.length) {
+    strip.innerHTML = '<p class="text-gray-700 text-xs text-center py-0.5">Cola vacía — todos los pedidos están siendo preparados</p>';
+    return strip;
+  }
+  const label = document.createElement('div');
+  label.className = 'text-gray-500 text-[10px] font-extrabold uppercase tracking-widest mb-2';
+  label.textContent = `En cola (${queueOrders.length})`;
+  strip.appendChild(label);
+  const row = document.createElement('div');
+  row.className = 'flex gap-2 overflow-x-auto pb-1';
+  row.style.scrollbarWidth = 'none';
+  queueOrders.forEach((o, i) => row.appendChild(buildQueueMiniCard(o, i)));
+  strip.appendChild(row);
+  return strip;
+}
+
+function renderMultiStation() {
+  const list = Object.values(orders).sort((a,b) => a.id - b.id);
+  const container = document.getElementById('multiView');
+  container.innerHTML = '';
+  const empty = document.getElementById('emptyState');
+  if (!list.length) { empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+
+  autoAssignFreeStations(list);
+
+  const activeIds = new Set(Object.values(stationActive).map(Number));
+  const queueOrders = list.filter(o => !activeIds.has(o.id));
+
+  // ── Fila superior: paneles de cada preparador ──
+  const topRow = document.createElement('div');
+  topRow.className = 'flex flex-1 min-h-0 overflow-hidden';
+  for (let si = 0; si < stationCfg.count; si++) {
+    const oid = stationActive[String(si)];
+    const activeOrder = (oid !== undefined && orders[oid]) ? orders[oid] : null;
+    topRow.appendChild(renderActivePanel(si, activeOrder));
+  }
+  container.appendChild(topRow);
+
+  // ── Franja inferior: cola compartida ───────────
+  container.appendChild(renderSharedQueueStrip(queueOrders));
+}
+
+// Un clic = pedido completado, estación libre, siguiente de la cola sube solo
+async function completeStationOrder(orderId, si) {
+  const order = orders[orderId];
+  if (!order) return;
+
+  // Liberar la estación
+  delete stationActive[String(si)];
+  saveSetting('stationActive', JSON.stringify(stationActive));
+  saveSetting('station_active', JSON.stringify(stationActive));
+
+  // Animar salida
+  const card = document.getElementById('active-order-'+orderId+'-'+si);
+  if (card) card.classList.add('fade-out');
+
+  try {
+    const r = await fetch('/api/pedidos/'+orderId+'/entregar', {method:'PUT'});
+    if (r.ok) {
+      setTimeout(() => { delete orders[orderId]; renderKitchen(); }, 350);
+    }
+  } catch(e) { renderKitchen(); }
+}
+
+// ─── INIT ───
+loadSettings().then(() => {
+  applyStationLayout();
+  loadPending();
+  connectWS();
+  checkSupabase();
+  setInterval(checkSupabase, 30000);
+});
+
+// ── Auto-update ──
+async function checkUpdate() {
+  try {
+    const d = await fetch('/api/update/check').then(r => r.json());
+    if (d.has_update && d.latest) {
+      document.getElementById('updateVersion').textContent = 'v'+d.current+' → v'+d.latest;
+      document.getElementById('updateBanner').classList.remove('hidden');
+    }
+  } catch(e) {}
+}
+async function applyUpdate() {
+  const btn = document.getElementById('updateBtn');
+  btn.textContent = 'Descargando...'; btn.disabled = true;
+  try {
+    await fetch('/api/update/apply', {method:'POST'});
+    btn.textContent = 'Reiniciando...';
+  } catch(e) { btn.textContent = 'Error — intenta de nuevo'; btn.disabled = false; }
+}
+checkUpdate();
+setInterval(checkUpdate, 30 * 60 * 1000);
+</script>
+<!-- ═══ BANNER DE ACTUALIZACIÓN ═══ -->
+<div id="updateBanner" class="hidden fixed bottom-0 left-0 right-0 z-[100] bg-purple-950/97 border-t border-purple-500/50 backdrop-blur px-5 py-3 flex items-center justify-between gap-3 shadow-2xl">
+  <div class="flex items-center gap-3">
+    <span class="text-2xl">🔄</span>
+    <div>
+      <div class="text-white font-bold text-sm">Nueva versión disponible</div>
+      <div id="updateVersion" class="text-purple-300 text-xs font-mono"></div>
+    </div>
+  </div>
+  <div class="flex gap-2 shrink-0">
+    <button id="updateBtn" onclick="applyUpdate()"
+      class="bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-extrabold px-4 py-2 rounded-xl transition-colors shadow-lg">
+      Actualizar ahora
+    </button>
+    <button onclick="document.getElementById('updateBanner').classList.add('hidden')"
+      class="text-purple-400 hover:text-white text-sm px-3 py-2 rounded-xl transition-colors">
+      Después
+    </button>
+  </div>
+</div>
+</body>
+</html>

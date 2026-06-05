@@ -9,7 +9,7 @@ a = Analysis(
     ['app_launcher.py'],
     pathex=[],
     binaries=wv_bins + pn_bins + cl_bins,
-    datas=wv_datas + pn_datas + cl_datas,
+    datas=wv_datas + pn_datas + cl_datas + [('frontend', 'frontend')],
     hiddenimports=wv_hiddenimports + pn_hiddenimports + cl_hiddenimports + [
         'webview',
         'webview.platforms',

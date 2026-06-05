@@ -176,7 +176,7 @@ def _start_server() -> None:
     try:
         _log("Importando módulos del servidor...")
         import uvicorn
-        from main import app  # noqa: F401
+        from backend.main import app  # noqa: F401
         _log("Módulos OK — arrancando uvicorn en 0.0.0.0:" + str(PORT))
         uvicorn.run(app, host=BIND_HOST, port=PORT, log_level="warning")
     except Exception:

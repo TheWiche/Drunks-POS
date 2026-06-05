@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Drunks POS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#0d0d1a}
+.shell{display:flex;flex-direction:column;height:100vh}
+.topbar{
+  background:#0d0d1a;border-bottom:1px solid #1e1e35;
+  height:46px;display:flex;align-items:center;padding:0 14px;gap:6px;
+  flex-shrink:0;user-select:none;-webkit-user-select:none
+}
+.logo{font-family:'Segoe UI',sans-serif;font-weight:800;font-size:.95rem;
+  color:#fff;display:flex;align-items:center;gap:6px;margin-right:14px;white-space:nowrap}
+.nav-btn{
+  font-family:'Segoe UI',sans-serif;font-size:.8rem;font-weight:600;
+  color:#8b8ba8;background:transparent;border:1px solid transparent;
+  border-radius:8px;padding:5px 13px;cursor:pointer;transition:.15s;
+  display:flex;align-items:center;gap:5px;white-space:nowrap
+}
+.nav-btn:hover{background:#1e1e35;color:#fff}
+.nav-btn.active{background:#2d1f6e;color:#c4b5fd;border-color:#7c3aed55}
+.spacer{flex:1}
+.upd-pill{
+  display:none;align-items:center;gap:7px;
+  background:#7c3aed22;border:1px solid #7c3aed55;border-radius:99px;
+  padding:4px 13px 4px 9px;cursor:pointer;
+  animation:pulse 2s infinite
+}
+.upd-pill:hover{background:#7c3aed44}
+.upd-dot{width:8px;height:8px;background:#7c3aed;border-radius:50%;flex-shrink:0}
+.upd-txt{font-size:.75rem;font-weight:700;color:#c4b5fd;font-family:'Segoe UI',sans-serif}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.4)}
+  50%{box-shadow:0 0 0 6px rgba(124,58,237,0)}
+}
+iframe{flex:1;border:none;width:100%}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="logo">🍺 Drunks POS</div>
+    <button class="nav-btn active" id="btn-vendedor"  onclick="go('/vendedor','vendedor')">🛒 Vendedor</button>
+    <button class="nav-btn"        id="btn-cocina"    onclick="go('/cocina','cocina')">👨‍🍳 Cocina</button>
+    <button class="nav-btn"        id="btn-admin"     onclick="go('/admin','admin')">🔐 Admin</button>
+    <div class="spacer"></div>
+    <div class="upd-pill" id="upd-pill" onclick="reqUpdate()">
+      <div class="upd-dot"></div>
+      <span class="upd-txt" id="upd-txt">Actualización disponible</span>
+    </div>
+  </div>
+  <iframe id="frame" src="/vendedor"></iframe>
+</div>
+<script>
+var _cur = 'vendedor';
+function go(url, name) {
+  if (_cur === name) return;
+  _cur = name;
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
+  var btn = document.getElementById('btn-' + name);
+  if (btn) btn.classList.add('active');
+  document.getElementById('frame').src = url;
+}
+document.getElementById('frame').addEventListener('load', function() {
+  try {
+    var p = this.contentWindow.location.pathname;
+    var name = null;
+    if (p.includes('vendedor'))       name = 'vendedor';
+    else if (p.includes('cocina'))    name = 'cocina';
+    else if (p.includes('admin') || p.includes('dashboard')) name = 'admin';
+    if (!name) return;
+    _cur = name;
+    document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
+    var btn = document.getElementById('btn-' + name);
+    if (btn) btn.classList.add('active');
+  } catch(e) {}
+});
+function showUpdate(ver) {
+  document.getElementById('upd-txt').textContent = 'v' + ver + ' disponible';
+  document.getElementById('upd-pill').style.display = 'flex';
+}
+function reqUpdate() {
+  if (window.pywebview && window.pywebview.api)
+    window.pywebview.api.open_update_window();
+}
+</script>
+</body>
+</html>
