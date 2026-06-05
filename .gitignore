@@ -1,0 +1,38 @@
+# Base de datos local — NUNCA subir
+*.db
+*.sqlite
+*.sqlite3
+
+# Credenciales y variables de entorno — NUNCA subir
+.env
+.env.local
+.env.*.local
+
+# Compilados PyInstaller
+dist/
+build/
+*.spec
+*.exe
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+.Python
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
