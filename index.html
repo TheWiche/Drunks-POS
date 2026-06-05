@@ -6,6 +6,7 @@
 <title>Drunks · Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   body{background:#06060f;font-family:'Segoe UI',system-ui,sans-serif}
   ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#374151;border-radius:4px}
@@ -29,6 +30,10 @@
       </div>
     </div>
     <div class="flex items-center gap-2">
+      <button id="exportBtn" onclick="exportExcel()"
+        class="bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-lg shadow-green-950/50 flex items-center gap-1.5">
+        <span>📥</span><span>Exportar Excel</span>
+      </button>
       <button id="refreshBtn" onclick="refresh()"
         class="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-lg shadow-purple-950/50">
         ↻ Actualizar
@@ -608,6 +613,125 @@ function closeInv() {
 }
 
 document.addEventListener('click', e => { if (e.target.id === 'invModal') closeInv(); });
+
+// ── Exportar Excel (cliente, vía SheetJS + Supabase) ──
+async function exportExcel() {
+    const btn = document.getElementById('exportBtn');
+    btn.innerHTML = '<span>⏳</span><span>Generando...</span>';
+    btn.disabled = true;
+    try {
+        const pedidos = await supaFetch('/rest/v1/pedidos?select=*&order=fecha.desc&limit=5000');
+        const wb = XLSX.utils.book_new();
+        const now = new Date();
+
+        // ── Hoja 1: Resumen ──
+        const entregados = pedidos.filter(p => p.estado === 'entregado');
+        const totalIngresos = entregados.reduce((s,p) => s+p.total, 0);
+        const ticketProm    = entregados.length ? totalIngresos/entregados.length : 0;
+        const pendientes    = pedidos.filter(p => p.estado === 'pendiente').length;
+
+        const metodosMap = {};
+        entregados.forEach(p => {
+            if (!metodosMap[p.metodo_pago]) metodosMap[p.metodo_pago] = {cnt:0, total:0};
+            metodosMap[p.metodo_pago].cnt++;
+            metodosMap[p.metodo_pago].total += p.total;
+        });
+
+        const prodMap = {}, catMap = {};
+        entregados.forEach(p => {
+            let items = [];
+            try { items = JSON.parse(p.items_json || '[]'); } catch(_) {}
+            items.forEach(it => {
+                const rev = (it.cantidad||0)*(it.precio||0);
+                const pn = it.nombre||'?';
+                if (!prodMap[pn]) prodMap[pn] = {nombre:pn, uds:0, rev:0};
+                prodMap[pn].uds += it.cantidad||0; prodMap[pn].rev += rev;
+                const cat = it.categoria||'Sin Categoria';
+                if (!catMap[cat]) catMap[cat] = {cat, pedidos:0, uds:0, rev:0};
+                catMap[cat].uds += it.cantidad||0; catMap[cat].rev += rev;
+            });
+        });
+        entregados.forEach(p => {
+            let items = [];
+            try { items = JSON.parse(p.items_json || '[]'); } catch(_) {}
+            const cats = [...new Set(items.map(it => it.categoria||'Sin Categoria'))];
+            cats.forEach(cat => { if (catMap[cat]) catMap[cat].pedidos++; });
+        });
+
+        const resumenRows = [
+            ['DRUNKS POS — REPORTE DE VENTAS'],
+            [`Generado el ${now.toLocaleDateString('es-CO')} a las ${now.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})}`],
+            [],
+            ['ESTADÍSTICAS GENERALES'],
+            ['Total de Pedidos Registrados', pedidos.length],
+            ['Ingresos Totales (entregados)', Math.round(totalIngresos)],
+            ['Ticket Promedio', Math.round(ticketProm)],
+            ['Pedidos Pendientes Actualmente', pendientes],
+            [],
+            ['VENTAS POR MÉTODO DE PAGO'],
+            ['Método de Pago', '# Pedidos', 'Total Ingresos'],
+            ...Object.entries(metodosMap).map(([m,v]) => [m, v.cnt, Math.round(v.total)]),
+            [],
+            ['INGRESOS POR CATEGORÍA'],
+            ['Categoría', 'Pedidos', 'Unidades', 'Ingresos'],
+            ...Object.values(catMap).sort((a,b)=>b.rev-a.rev).map(c => [c.cat, c.pedidos, c.uds, Math.round(c.rev)]),
+            [],
+            ['TOP PRODUCTOS MÁS VENDIDOS'],
+            ['Producto', 'Unidades Vendidas', 'Ingresos Generados'],
+            ...Object.values(prodMap).sort((a,b)=>b.uds-a.uds).slice(0,10).map(p => [p.nombre, p.uds, Math.round(p.rev)]),
+        ];
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resumenRows), 'Resumen');
+
+        // ── Hoja 2: Pedidos ──
+        const pedidosRows = [
+            ['#', 'Factura', 'Cliente', 'Método de Pago', 'Total (COP)', 'Estado', 'Fecha', 'Hora'],
+            ...pedidos.map(p => {
+                const dt = new Date(p.fecha);
+                return [
+                    p.id,
+                    p.numero_factura || ('#'+String(p.id).padStart(5,'0')),
+                    p.cliente,
+                    p.metodo_pago,
+                    Math.round(p.total),
+                    p.estado === 'entregado' ? 'Entregado' : 'Pendiente',
+                    dt.toLocaleDateString('es-CO'),
+                    dt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}),
+                ];
+            }),
+        ];
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(pedidosRows), 'Pedidos');
+
+        // ── Hoja 3: Detalle de Pedidos ──
+        const detalleRows = [
+            ['Pedido #', 'Factura', 'Cliente', 'Método', 'Fecha y Hora', 'Producto', 'Categoría', 'Cantidad', 'Precio Unit.', 'Subtotal', 'Base / Notas'],
+        ];
+        pedidos.forEach(p => {
+            let items = [];
+            try { items = JSON.parse(p.items_json || '[]'); } catch(_) {}
+            const dt = new Date(p.fecha);
+            const dtStr = dt.toLocaleDateString('es-CO') + ' ' + dt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+            const factura = p.numero_factura || ('#'+String(p.id).padStart(5,'0'));
+            items.forEach(it => {
+                detalleRows.push([
+                    p.id, factura, p.cliente, p.metodo_pago, dtStr,
+                    it.nombre||'', it.categoria||'Sin Categoria',
+                    it.cantidad||0, Math.round(it.precio||0),
+                    Math.round((it.cantidad||0)*(it.precio||0)),
+                    it.observaciones||'',
+                ]);
+            });
+        });
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(detalleRows), 'Detalle de Pedidos');
+
+        const fname = `Drunks_Reporte_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.xlsx`;
+        XLSX.writeFile(wb, fname);
+    } catch(e) {
+        alert('Error al generar el Excel: ' + e.message);
+    } finally {
+        btn.innerHTML = '<span>📥</span><span>Exportar Excel</span>';
+        btn.disabled = false;
+    }
+}
 
 loadData();
 setInterval(loadData, 60000);
