@@ -9,7 +9,7 @@ import io
 import json
 import uuid
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException, Response
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException, Response, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import uvicorn
@@ -33,6 +33,15 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
 HOST         = "0.0.0.0"
 PORT         = int(os.getenv("PORT", 8000))
+
+# ── Auto-updater ──────────────────────────────
+try:
+    import updater as _updater
+    APP_VERSION = _updater.get_current_version()
+    _updater.start_background_check()
+except Exception:
+    _updater = None  # type: ignore
+    APP_VERSION = "0.0.0"
 
 # ─────────────────────────────────────────────
 # FRONTEND — VENDEDOR
@@ -85,6 +94,51 @@ html[data-theme=amber] [class*=border-purple]{border-color:#f59e0b!important}
 html[data-theme=amber] [class*=from-purple]{--tw-gradient-from:#78350f!important}
 html[data-theme=amber] [class*=via-purple]{--tw-gradient-via:#b45309!important}
 html[data-theme=amber] [class*=glow-purple]{box-shadow:0 0 18px rgba(217,119,6,.4)!important}
+html[data-theme=neon] body{background:#040804!important}
+html[data-theme=neon] [class*=bg-purple-6]{background:#16a34a!important}
+html[data-theme=neon] [class*=bg-purple-7]{background:#15803d!important}
+html[data-theme=neon] [class*=bg-purple-8]{background:#166534!important}
+html[data-theme=neon] [class*=bg-purple-9]{background:#14532d!important}
+html[data-theme=neon] [class*=text-purple]{color:#4ade80!important}
+html[data-theme=neon] [class*=border-purple]{border-color:#22c55e!important}
+html[data-theme=neon] [class*=from-purple]{--tw-gradient-from:#14532d!important}
+html[data-theme=neon] [class*=glow-purple]{box-shadow:0 0 18px rgba(74,222,128,.4)!important}
+html[data-theme=rose] body{background:#0f0208!important}
+html[data-theme=rose] [class*=bg-purple-6]{background:#e11d48!important}
+html[data-theme=rose] [class*=bg-purple-7]{background:#be123c!important}
+html[data-theme=rose] [class*=bg-purple-8]{background:#9f1239!important}
+html[data-theme=rose] [class*=bg-purple-9]{background:#881337!important}
+html[data-theme=rose] [class*=text-purple]{color:#fb7185!important}
+html[data-theme=rose] [class*=border-purple]{border-color:#f43f5e!important}
+html[data-theme=rose] [class*=from-purple]{--tw-gradient-from:#881337!important}
+html[data-theme=rose] [class*=glow-purple]{box-shadow:0 0 18px rgba(244,63,94,.4)!important}
+html[data-theme=violet] body{background:#06030f!important}
+html[data-theme=violet] [class*=bg-purple-6]{background:#6d28d9!important}
+html[data-theme=violet] [class*=bg-purple-7]{background:#5b21b6!important}
+html[data-theme=violet] [class*=bg-purple-8]{background:#4c1d95!important}
+html[data-theme=violet] [class*=bg-purple-9]{background:#3b0764!important}
+html[data-theme=violet] [class*=text-purple]{color:#a78bfa!important}
+html[data-theme=violet] [class*=border-purple]{border-color:#7c3aed!important}
+html[data-theme=violet] [class*=from-purple]{--tw-gradient-from:#3b0764!important}
+html[data-theme=violet] [class*=glow-purple]{box-shadow:0 0 18px rgba(124,58,237,.5)!important}
+html[data-theme=slate] body{background:#0a0c10!important}
+html[data-theme=slate] [class*=bg-purple-6]{background:#475569!important}
+html[data-theme=slate] [class*=bg-purple-7]{background:#334155!important}
+html[data-theme=slate] [class*=bg-purple-8]{background:#1e293b!important}
+html[data-theme=slate] [class*=bg-purple-9]{background:#0f172a!important}
+html[data-theme=slate] [class*=text-purple]{color:#94a3b8!important}
+html[data-theme=slate] [class*=border-purple]{border-color:#64748b!important}
+html[data-theme=slate] [class*=from-purple]{--tw-gradient-from:#0f172a!important}
+html[data-theme=slate] [class*=glow-purple]{box-shadow:0 0 18px rgba(100,116,139,.3)!important}
+html[data-theme=gold] body{background:#0d0900!important}
+html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}
+html[data-theme=gold] [class*=bg-purple-7]{background:#a16207!important}
+html[data-theme=gold] [class*=bg-purple-8]{background:#854d0e!important}
+html[data-theme=gold] [class*=bg-purple-9]{background:#713f12!important}
+html[data-theme=gold] [class*=text-purple]{color:#fde047!important}
+html[data-theme=gold] [class*=border-purple]{border-color:#eab308!important}
+html[data-theme=gold] [class*=from-purple]{--tw-gradient-from:#713f12!important}
+html[data-theme=gold] [class*=glow-purple]{box-shadow:0 0 18px rgba(234,179,8,.4)!important}
 </style>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -192,29 +246,31 @@ html[data-theme=amber] [class*=glow-purple]{box-shadow:0 0 18px rgba(217,119,6,.
 
 <!-- ═══ THEME PICKER ═══ -->
 <div id="themePicker" class="hidden fixed z-[90]" style="top:4.5rem;right:1rem">
-  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl shadow-black/60 w-52">
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl shadow-black/60 w-56">
     <div class="text-gray-500 text-[10px] tracking-[.2em] font-bold mb-3">PALETA DE COLORES</div>
     <div class="space-y-0.5">
-      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
-        <span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span>
-        <span class="text-white text-sm font-semibold">Oscuro</span>
-      </button>
-      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
-        <span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span>
-        <span class="text-white text-sm font-semibold">Claro</span>
-      </button>
-      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
-        <span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span>
-        <span class="text-white text-sm font-semibold">Océano</span>
-      </button>
-      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
-        <span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span>
-        <span class="text-white text-sm font-semibold">Esmeralda</span>
-      </button>
-      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
-        <span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span>
-        <span class="text-white text-sm font-semibold">Ámbar</span>
-      </button>
+      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span><span class="text-white text-sm font-semibold">Oscuro</span></button>
+      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span><span class="text-white text-sm font-semibold">Claro</span></button>
+      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span><span class="text-white text-sm font-semibold">Océano</span></button>
+      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span><span class="text-white text-sm font-semibold">Esmeralda</span></button>
+      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span><span class="text-white text-sm font-semibold">Ámbar</span></button>
+      <button data-theme="neon"    onclick="applyTheme('neon')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#16a34a"></span><span class="text-white text-sm font-semibold">Neón</span></button>
+      <button data-theme="rose"    onclick="applyTheme('rose')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#e11d48"></span><span class="text-white text-sm font-semibold">Rosa</span></button>
+      <button data-theme="violet"  onclick="applyTheme('violet')"  class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#6d28d9"></span><span class="text-white text-sm font-semibold">Violeta</span></button>
+      <button data-theme="slate"   onclick="applyTheme('slate')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#475569"></span><span class="text-white text-sm font-semibold">Gris Pizarra</span></button>
+      <button data-theme="gold"    onclick="applyTheme('gold')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#ca8a04"></span><span class="text-white text-sm font-semibold">Dorado</span></button>
+    </div>
+    <div class="mt-3 pt-3 border-t border-gray-800">
+      <div class="text-gray-500 text-[10px] font-bold mb-2">COLOR PERSONALIZADO</div>
+      <div class="flex items-center gap-2">
+        <input type="color" id="customColorPicker" value="#9333ea"
+          oninput="applyCustomTheme(this.value)"
+          style="display:none;width:2rem;height:2rem;border-radius:.5rem;border:none;cursor:pointer;background:transparent;padding:0">
+        <button onclick="document.getElementById('customColorPicker').style.display='inline-block';document.getElementById('customColorPicker').click()"
+          class="flex items-center gap-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-xl text-xs text-gray-300 transition-colors">
+          <span>🎨</span> Elegir color
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -230,19 +286,7 @@ html[data-theme=amber] [class*=glow-purple]{box-shadow:0 0 18px rgba(217,119,6,.
       <div id="baseProdName" class="text-2xl font-extrabold text-center text-white mt-1 leading-tight"></div>
       <div class="text-gray-500 text-[10px] text-center tracking-[0.25em] mt-1 mb-5">SELECCIONA LA BASE</div>
 
-      <div class="mb-5">
-        <div class="flex items-center gap-2 text-gray-400 text-[10px] tracking-widest font-bold mb-2.5">
-          <span class="text-lg">🧃</span> GASEOSA
-        </div>
-        <div id="gasGrid" class="grid grid-cols-2 gap-2"></div>
-      </div>
-
-      <div>
-        <div class="flex items-center gap-2 text-gray-400 text-[10px] tracking-widest font-bold mb-2.5">
-          <span class="text-lg">🍺</span> CERVEZA
-        </div>
-        <div id="cervGrid" class="grid grid-cols-3 gap-2"></div>
-      </div>
+      <div id="baseTypeSections"></div>
 
       <button onclick="closeBase()"
         class="mt-5 w-full bg-gray-800 hover:bg-gray-700 text-gray-400 font-semibold py-3 rounded-2xl text-sm transition-colors">
@@ -413,73 +457,51 @@ function tapProd(id) {
 async function openBase(product) {
   pendingProd = product;
   document.getElementById('baseProdName').textContent = product.nombre;
-  // Limpiar contenido previo y mostrar loading
-  document.getElementById('gasGrid').innerHTML  = '<div class="col-span-2 text-gray-500 text-xs text-center py-3">Cargando...</div>';
-  document.getElementById('cervGrid').innerHTML = '';
-  document.querySelectorAll('.dyn-base-section').forEach(el => el.remove());
+  const container = document.getElementById('baseTypeSections');
+  container.innerHTML = '<div class="text-gray-500 text-xs text-center py-4">Cargando...</div>';
   const s = document.getElementById('baseSheet');
   s.classList.remove('hidden'); s.classList.add('flex');
   try {
     const r = await fetch('/api/productos/'+product.id+'/bases');
-    availBases = await r.json();
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    availBases = Array.isArray(data) ? data : [];
   } catch(e) { availBases = []; }
-  renderBaseSheet();
+  try {
+    renderBaseSheet();
+  } catch(e) {
+    container.innerHTML = '<div class="text-red-400 text-xs text-center py-4">Error al cargar bases. Revisa la configuración.</div>';
+  }
 }
 
 function renderBaseSheet() {
-  // Agrupar por tipo, solo disponibles
+  // Agrupar por tipo usando tipo_nombre + tipo_icono del API
   const byTipo = {};
   availBases.filter(b => b.disponible).forEach(b => {
-    (byTipo[b.tipo] = byTipo[b.tipo]||[]).push(b);
+    const key = b.tipo_nombre || b.tipo || 'Otros';
+    if (!byTipo[key]) byTipo[key] = { icono: b.tipo_icono || '🍹', items: [] };
+    byTipo[key].items.push(b);
   });
 
-  const gasGrid  = document.getElementById('gasGrid');
-  const cervGrid = document.getElementById('cervGrid');
-  gasGrid.innerHTML = cervGrid.innerHTML = '';
-  document.querySelectorAll('.dyn-base-section').forEach(el => el.remove());
-
-  const makeBtn = (b, icon, bgCls, bdCls) =>
-    `<button data-base="${b.tipo}: ${b.nombre}" onclick="selectBase(this.dataset.base)"
-      class="card-tap ${bgCls} border ${bdCls} hover:opacity-80 rounded-2xl py-4 text-white font-bold text-sm transition-colors leading-tight">
-      ${icon}<br>${b.nombre}
-    </button>`;
-
-  // Gaseosa → gasGrid
-  const gasItems = byTipo['Gaseosa'] || [];
-  if (gasItems.length) {
-    gasGrid.className = 'grid gap-2 grid-cols-'+Math.min(gasItems.length, 3);
-    gasItems.forEach(b => gasGrid.insertAdjacentHTML('beforeend',
-      makeBtn(b, '🧃', 'bg-amber-900/30', 'border-amber-700/30')));
-  } else {
-    gasGrid.innerHTML = '<span class="text-gray-600 text-xs col-span-2 py-2">Sin bases disponibles</span>';
+  const container = document.getElementById('baseTypeSections');
+  if (!Object.keys(byTipo).length) {
+    container.innerHTML = '<div class="text-gray-600 text-xs text-center py-4">Sin bases disponibles</div>';
+    return;
   }
 
-  // Cerveza → cervGrid
-  const cervItems = byTipo['Cerveza'] || [];
-  if (cervItems.length) {
-    cervGrid.className = 'grid gap-2 grid-cols-'+Math.min(cervItems.length, 3);
-    cervItems.forEach(b => cervGrid.insertAdjacentHTML('beforeend',
-      makeBtn(b, '🍺', 'bg-yellow-900/30', 'border-yellow-700/30')));
-  }
-
-  // Tipos custom → secciones dinámicas
-  const customTipos = Object.keys(byTipo).filter(t => t !== 'Gaseosa' && t !== 'Cerveza');
-  const sheetContent = document.querySelector('#baseSheet .sheet-in .px-5');
-  const cancelBtn = sheetContent?.querySelector('button[onclick="closeBase()"]');
-  customTipos.forEach(tipo => {
-    const items = byTipo[tipo];
-    const sec = document.createElement('div');
-    sec.className = 'dyn-base-section mb-5';
-    sec.innerHTML = `
+  container.innerHTML = Object.entries(byTipo).map(([tipoNombre, { icono, items }]) => `
+    <div class="mb-5">
       <div class="flex items-center gap-2 text-gray-400 text-[10px] tracking-widest font-bold mb-2.5">
-        <span class="text-lg">🍹</span> ${tipo.toUpperCase()}
+        <span class="text-lg">${icono}</span> ${tipoNombre.toUpperCase()}
       </div>
       <div class="grid grid-cols-${Math.min(items.length,3)} gap-2">
-        ${items.map(b => makeBtn(b,'🍹','bg-purple-900/30','border-purple-700/30')).join('')}
-      </div>`;
-    if (cancelBtn) sheetContent.insertBefore(sec, cancelBtn);
-    else sheetContent?.appendChild(sec);
-  });
+        ${items.map(b => `
+          <button data-base="${b.tipo_nombre||b.tipo}: ${b.nombre}" onclick="selectBase(this.dataset.base)"
+            class="card-tap bg-gray-800/60 border border-gray-700 hover:bg-gray-700/60 hover:border-purple-500/40 rounded-2xl py-4 text-white font-bold text-sm transition-colors leading-tight">
+            ${icono}<br>${esc(b.nombre)}
+          </button>`).join('')}
+      </div>
+    </div>`).join('');
 }
 
 function closeBase() {
@@ -724,16 +746,64 @@ function showToast(msg, type) {
 }
 
 window.addEventListener('focus', loadNotes);
+window.addEventListener('focus', loadProducts); // refresca disponibilidad y bases al volver al tab
+
+// ── Settings persistidos en DB ──
+function saveSetting(key, value) {
+  localStorage.setItem(key, value);
+  fetch('/api/settings/'+key, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({value})
+  }).catch(()=>{});
+}
+async function loadSettings() {
+  try {
+    const s = await fetch('/api/settings').then(r=>r.json());
+    const pal = s.palette || localStorage.getItem('drunksPalette') || 'dark';
+    applyTheme(pal);
+    Object.entries(s).forEach(([k,v]) => localStorage.setItem(k, v));
+  } catch(e) {
+    applyTheme(localStorage.getItem('drunksPalette') || 'dark');
+  }
+}
 
 // ── Theme System ──
 function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t||'dark');
-  localStorage.setItem('drunksPalette', t||'dark');
+  const theme = t||'dark';
+  if (theme.startsWith('custom:')) {
+    applyCustomTheme(theme.split(':')[1]); return;
+  }
+  document.documentElement.setAttribute('data-theme', theme);
+  saveSetting('drunksPalette', theme);
+  saveSetting('palette', theme);
   document.querySelectorAll('.theme-opt[data-theme]').forEach(b => {
-    const on = b.dataset.theme === (t||'dark');
+    const on = b.dataset.theme === theme;
     b.style.background = on ? 'rgba(147,51,234,.2)' : '';
     b.style.outline    = on ? '1px solid rgba(147,51,234,.5)' : '';
   });
+  const picker = document.getElementById('customColorPicker');
+  if (picker) picker.style.display = 'none';
+}
+function applyCustomTheme(hex) {
+  let style = document.getElementById('custom-theme-style');
+  if (!style) { style = document.createElement('style'); style.id='custom-theme-style'; document.head.appendChild(style); }
+  const h = hex||'#9333ea';
+  const r = parseInt(h.slice(1,3),16), g = parseInt(h.slice(3,5),16), b = parseInt(h.slice(5,7),16);
+  style.textContent = `
+    html[data-theme="custom"] body{background:#06060f}
+    html[data-theme="custom"] .bg-purple-600,.bg-purple-700{background-color:${h}!important}
+    html[data-theme="custom"] .text-purple-400,.text-purple-300{color:${h}!important}
+    html[data-theme="custom"] .border-purple-500{border-color:${h}!important}
+    html[data-theme="custom"] .from-purple-600{--tw-gradient-from:${h}!important}
+    html[data-theme="custom"] .glow{filter:drop-shadow(0 0 8px rgba(${r},${g},${b},.5))}`;
+  document.documentElement.setAttribute('data-theme','custom');
+  saveSetting('drunksPalette', 'custom:'+h);
+  saveSetting('palette', 'custom:'+h);
+  document.querySelectorAll('.theme-opt[data-theme]').forEach(b => {
+    b.style.background=''; b.style.outline='';
+  });
+  const picker = document.getElementById('customColorPicker');
+  if (picker) { picker.style.display='inline-block'; picker.value=h; }
 }
 function toggleThemePicker() {
   document.getElementById('themePicker').classList.toggle('hidden');
@@ -742,10 +812,50 @@ document.addEventListener('click', e => {
   if (!e.target.closest('#themePicker') && !e.target.closest('[onclick*="toggleThemePicker"]'))
     document.getElementById('themePicker')?.classList.add('hidden');
 });
-applyTheme(localStorage.getItem('drunksPalette') || 'dark');
 
-init();
+loadSettings().then(init);
+
+// ── Auto-update ──
+async function checkUpdate() {
+  try {
+    const d = await fetch('/api/update/check').then(r => r.json());
+    if (d.has_update && d.latest) {
+      document.getElementById('updateVersion').textContent = 'v'+d.current+' → v'+d.latest;
+      document.getElementById('updateBanner').classList.remove('hidden');
+    }
+  } catch(e) {}
+}
+async function applyUpdate() {
+  const btn = document.getElementById('updateBtn');
+  btn.textContent = 'Descargando...'; btn.disabled = true;
+  try {
+    await fetch('/api/update/apply', {method:'POST'});
+    btn.textContent = 'Reiniciando...';
+  } catch(e) { btn.textContent = 'Error — intenta de nuevo'; btn.disabled = false; }
+}
+checkUpdate();
+setInterval(checkUpdate, 30 * 60 * 1000);
 </script>
+<!-- ═══ BANNER DE ACTUALIZACIÓN ═══ -->
+<div id="updateBanner" class="hidden fixed bottom-0 left-0 right-0 z-[100] bg-purple-950/97 border-t border-purple-500/50 backdrop-blur px-5 py-3 flex items-center justify-between gap-3 shadow-2xl">
+  <div class="flex items-center gap-3">
+    <span class="text-2xl">🔄</span>
+    <div>
+      <div class="text-white font-bold text-sm">Nueva versión disponible</div>
+      <div id="updateVersion" class="text-purple-300 text-xs font-mono"></div>
+    </div>
+  </div>
+  <div class="flex gap-2 shrink-0">
+    <button id="updateBtn" onclick="applyUpdate()"
+      class="bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-extrabold px-4 py-2 rounded-xl transition-colors shadow-lg">
+      Actualizar ahora
+    </button>
+    <button onclick="document.getElementById('updateBanner').classList.add('hidden')"
+      class="text-purple-400 hover:text-white text-sm px-3 py-2 rounded-xl transition-colors">
+      Después
+    </button>
+  </div>
+</div>
 </body>
 </html>"""
 
@@ -803,6 +913,16 @@ html[data-theme=amber] [class*=from-purple]{--tw-gradient-from:#78350f!important
 html[data-theme=amber] [class*=via-purple]{--tw-gradient-via:#b45309!important}
 html[data-theme=amber] [class*=glow-purple]{box-shadow:0 0 18px rgba(217,119,6,.4)!important}
 html[data-theme=amber] .view-btn.active{background:rgba(217,119,6,.85)!important;box-shadow:0 0 14px rgba(217,119,6,.45)!important}
+html[data-theme=neon] body{background:#040804!important}
+html[data-theme=neon] [class*=bg-purple-6]{background:#16a34a!important}html[data-theme=neon] [class*=bg-purple-7]{background:#15803d!important}html[data-theme=neon] [class*=bg-purple-8]{background:#166534!important}html[data-theme=neon] [class*=bg-purple-9]{background:#14532d!important}html[data-theme=neon] [class*=text-purple]{color:#4ade80!important}html[data-theme=neon] [class*=border-purple]{border-color:#22c55e!important}html[data-theme=neon] [class*=from-purple]{--tw-gradient-from:#14532d!important}html[data-theme=neon] [class*=glow-purple]{box-shadow:0 0 18px rgba(74,222,128,.4)!important}
+html[data-theme=rose] body{background:#0f0208!important}
+html[data-theme=rose] [class*=bg-purple-6]{background:#e11d48!important}html[data-theme=rose] [class*=bg-purple-7]{background:#be123c!important}html[data-theme=rose] [class*=bg-purple-8]{background:#9f1239!important}html[data-theme=rose] [class*=bg-purple-9]{background:#881337!important}html[data-theme=rose] [class*=text-purple]{color:#fb7185!important}html[data-theme=rose] [class*=border-purple]{border-color:#f43f5e!important}html[data-theme=rose] [class*=from-purple]{--tw-gradient-from:#881337!important}html[data-theme=rose] [class*=glow-purple]{box-shadow:0 0 18px rgba(244,63,94,.4)!important}
+html[data-theme=violet] body{background:#06030f!important}
+html[data-theme=violet] [class*=bg-purple-6]{background:#6d28d9!important}html[data-theme=violet] [class*=bg-purple-7]{background:#5b21b6!important}html[data-theme=violet] [class*=bg-purple-8]{background:#4c1d95!important}html[data-theme=violet] [class*=bg-purple-9]{background:#3b0764!important}html[data-theme=violet] [class*=text-purple]{color:#a78bfa!important}html[data-theme=violet] [class*=border-purple]{border-color:#7c3aed!important}html[data-theme=violet] [class*=from-purple]{--tw-gradient-from:#3b0764!important}html[data-theme=violet] [class*=glow-purple]{box-shadow:0 0 18px rgba(124,58,237,.5)!important}
+html[data-theme=slate] body{background:#0a0c10!important}
+html[data-theme=slate] [class*=bg-purple-6]{background:#475569!important}html[data-theme=slate] [class*=bg-purple-7]{background:#334155!important}html[data-theme=slate] [class*=bg-purple-8]{background:#1e293b!important}html[data-theme=slate] [class*=bg-purple-9]{background:#0f172a!important}html[data-theme=slate] [class*=text-purple]{color:#94a3b8!important}html[data-theme=slate] [class*=border-purple]{border-color:#64748b!important}html[data-theme=slate] [class*=from-purple]{--tw-gradient-from:#0f172a!important}html[data-theme=slate] [class*=glow-purple]{box-shadow:0 0 18px rgba(100,116,139,.3)!important}
+html[data-theme=gold] body{background:#0d0900!important}
+html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[data-theme=gold] [class*=bg-purple-7]{background:#a16207!important}html[data-theme=gold] [class*=bg-purple-8]{background:#854d0e!important}html[data-theme=gold] [class*=bg-purple-9]{background:#713f12!important}html[data-theme=gold] [class*=text-purple]{color:#fde047!important}html[data-theme=gold] [class*=border-purple]{border-color:#eab308!important}html[data-theme=gold] [class*=from-purple]{--tw-gradient-from:#713f12!important}html[data-theme=gold] [class*=glow-purple]{box-shadow:0 0 18px rgba(234,179,8,.4)!important}
 </style>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -817,6 +937,10 @@ html[data-theme=amber] .view-btn.active{background:rgba(217,119,6,.85)!important
   .pulse-green{animation:pulseGreen 2s infinite}
   @keyframes badgePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
   .priority-badge{animation:badgePulse 2.5s ease infinite}
+  @keyframes activeCardIn{from{opacity:0;transform:translateY(-10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .active-card-in{animation:activeCardIn .35s cubic-bezier(.175,.885,.32,1.275)}
+  .queue-mini-card{min-width:148px;max-width:172px;flex-shrink:0}
+  .station-col{display:flex;flex-direction:column;border-right:1px solid rgba(31,41,55,.6);min-width:300px;flex:1;height:100%}
   ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#374151;border-radius:4px}
   input:focus,select:focus{outline:none}
   .tab-active{border-bottom-color:#9333ea!important;color:#c084fc!important}
@@ -886,7 +1010,7 @@ html[data-theme=amber] .view-btn.active{background:rgba(217,119,6,.85)!important
   <div id="queueGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
 </div>
 <!-- Modo multi-estacion (columnas) -->
-<div id="multiView" class="hidden flex gap-0 overflow-x-auto" style="height:calc(100vh - 5rem)"></div>
+<div id="multiView" class="hidden flex flex-col" style="height:calc(100vh - 5rem)"></div>
 <!-- Empty state (compartido) -->
 <div id="emptyState" class="hidden flex flex-col items-center justify-center py-40 text-gray-800">
   <div class="text-8xl mb-6 opacity-15">🍹</div>
@@ -920,29 +1044,31 @@ html[data-theme=amber] .view-btn.active{background:rgba(217,119,6,.85)!important
 
 <!-- ═══ THEME PICKER ═══ -->
 <div id="themePicker" class="hidden fixed z-[90]" style="top:4.5rem;right:1rem">
-  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl shadow-black/60 w-52">
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl shadow-black/60 w-56 max-h-[85vh] overflow-y-auto">
     <div class="text-gray-500 text-[10px] tracking-[.2em] font-bold mb-3">PALETA DE COLORES</div>
     <div class="space-y-0.5">
-      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
-        <span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span>
-        <span class="text-white text-sm font-semibold">Oscuro</span>
-      </button>
-      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
-        <span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span>
-        <span class="text-white text-sm font-semibold">Claro</span>
-      </button>
-      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
-        <span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span>
-        <span class="text-white text-sm font-semibold">Océano</span>
-      </button>
-      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
-        <span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span>
-        <span class="text-white text-sm font-semibold">Esmeralda</span>
-      </button>
-      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
-        <span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span>
-        <span class="text-white text-sm font-semibold">Ámbar</span>
-      </button>
+      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span><span class="text-white text-sm font-semibold">Oscuro</span></button>
+      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span><span class="text-white text-sm font-semibold">Claro</span></button>
+      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span><span class="text-white text-sm font-semibold">Océano</span></button>
+      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span><span class="text-white text-sm font-semibold">Esmeralda</span></button>
+      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span><span class="text-white text-sm font-semibold">Ámbar</span></button>
+      <button data-theme="neon"    onclick="applyTheme('neon')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#16a34a"></span><span class="text-white text-sm font-semibold">Neón</span></button>
+      <button data-theme="rose"    onclick="applyTheme('rose')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#e11d48"></span><span class="text-white text-sm font-semibold">Rosa</span></button>
+      <button data-theme="violet"  onclick="applyTheme('violet')"  class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#6d28d9"></span><span class="text-white text-sm font-semibold">Violeta</span></button>
+      <button data-theme="slate"   onclick="applyTheme('slate')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#475569"></span><span class="text-white text-sm font-semibold">Gris Pizarra</span></button>
+      <button data-theme="gold"    onclick="applyTheme('gold')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#ca8a04"></span><span class="text-white text-sm font-semibold">Dorado</span></button>
+    </div>
+    <div class="mt-3 pt-3 border-t border-gray-800">
+      <div class="text-gray-500 text-[10px] font-bold mb-2">COLOR PERSONALIZADO</div>
+      <div class="flex items-center gap-2">
+        <input type="color" id="customColorPicker" value="#9333ea"
+          oninput="applyCustomTheme(this.value)"
+          style="display:none;width:2rem;height:2rem;border-radius:.5rem;border:none;cursor:pointer;background:transparent;padding:0">
+        <button onclick="document.getElementById('customColorPicker').style.display='inline-block';document.getElementById('customColorPicker').click()"
+          class="flex items-center gap-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-xl text-xs text-gray-300 transition-colors">
+          <span>🎨</span> Elegir color
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -1015,21 +1141,44 @@ html[data-theme=amber] .view-btn.active{background:rgba(217,119,6,.85)!important
 
       <!-- ── Bases ── -->
       <div id="pane-bases" class="hidden">
-        <p class="text-gray-500 text-sm mb-4">Ingredientes base para productos con selector de base. Sin asignacion especifica, el vendedor muestra todas las bases activas.</p>
-        <div class="flex gap-2 mb-5 flex-wrap sm:flex-nowrap">
-          <input id="newBaseNombre" type="text" placeholder="Nombre de la base..."
-            class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm min-w-0 transition-colors">
-          <select id="newBaseTipo" class="bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm shrink-0 transition-colors">
-            <option value="Gaseosa">Gaseosa</option>
-            <option value="Cerveza">Cerveza</option>
-          </select>
-          <button onclick="addBase()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
+        <!-- Sección 1: Tipos de Base -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-white font-bold text-sm">Tipos de Base</span>
+            <button onclick="toggleNewTipoForm()" class="text-xs bg-gray-800 hover:bg-purple-700 text-gray-300 hover:text-white px-3 py-1.5 rounded-lg transition-colors">+ Nuevo tipo</button>
+          </div>
+          <!-- Form nuevo tipo (oculto por defecto) -->
+          <div id="newTipoForm" class="hidden flex gap-2 mb-3 p-3 bg-gray-800/50 rounded-xl border border-gray-700">
+            <input id="newTipoIcono" type="text" value="🍹" maxlength="4"
+              class="bg-gray-900 border border-gray-700 focus:border-purple-500 rounded-lg px-2.5 py-2 text-white text-sm w-14 text-center transition-colors" placeholder="🍹">
+            <input id="newTipoNombre" type="text" placeholder="Nombre del tipo (ej: Ron)"
+              class="flex-1 bg-gray-900 border border-gray-700 focus:border-purple-500 rounded-lg px-3 py-2 text-white text-sm transition-colors"
+              onkeydown="if(event.key==='Enter')addTipoBase()">
+            <button onclick="addTipoBase()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">Crear</button>
+            <button onclick="toggleNewTipoForm()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-2 rounded-lg text-sm transition-colors">✕</button>
+          </div>
+          <!-- Chips de tipos -->
+          <div id="tipoChips" class="flex flex-wrap gap-2"></div>
         </div>
-        <div id="basesList" class="space-y-1 mb-6"></div>
-        <div class="border-t border-gray-800 pt-5">
-          <div class="text-gray-400 text-xs tracking-widest font-bold mb-1">ASIGNACION A PRODUCTOS</div>
-          <p class="text-gray-600 text-xs mb-4">Elige que bases muestra el vendedor para cada producto. Sin seleccion = todas las activas.</p>
-          <div id="basesAssignList" class="space-y-3"></div>
+        <!-- Sección 2: Items del tipo seleccionado -->
+        <div id="baseItemsSection" class="hidden">
+          <div class="flex items-center justify-between mb-3 border-t border-gray-800 pt-5">
+            <div class="flex items-center gap-2">
+              <span id="baseItemsTipoLabel" class="text-white font-bold text-sm"></span>
+              <span class="text-gray-500 text-xs">— items de base</span>
+            </div>
+            <div class="flex gap-2">
+              <input id="newBaseNombre" type="text" placeholder="Nombre del item..."
+                class="bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-lg px-3 py-1.5 text-white text-sm w-40 transition-colors"
+                onkeydown="if(event.key==='Enter')addBaseItem()">
+              <button onclick="addBaseItem()" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">+ Agregar</button>
+            </div>
+          </div>
+          <div id="basesList" class="mb-2"></div>
+        </div>
+        <!-- Estado vacío -->
+        <div id="basesEmptyState" class="hidden text-gray-600 text-sm text-center py-8">
+          Crea un tipo de base para empezar (ej: Gaseosa, Cerveza, Ron...)
         </div>
       </div>
 
@@ -1082,8 +1231,6 @@ function addOrder(order) {
 }
 
 function renderKitchen() {
-  // Prune stationsDone entries for orders no longer active
-  Object.keys(stationsDone).forEach(id => { if (!orders[id]) delete stationsDone[id]; });
 
   if (stationCfg.count >= 2) { renderMultiStation(); return; }
 
@@ -1317,7 +1464,8 @@ function buildCompactCard(o) {
 function setView(mode) {
   if (stationCfg && stationCfg.count >= 2) return; // no-op en modo multi-estacion
   viewMode = mode;
-  localStorage.setItem('kitchenView', mode);
+  saveSetting('kitchenView', mode);
+  saveSetting('kitchen_view', mode);
   document.querySelectorAll('.view-btn').forEach(b =>
     b.classList.toggle('active', b.id === 'vBtn-' + mode));
   renderKitchen();
@@ -1367,6 +1515,7 @@ function closeAdmin() {
   document.getElementById('adminModal').classList.remove('flex');
 }
 function showTab(tab) {
+  if (typeof closeBasePop === 'function') closeBasePop();
   ['prods','cats','notes','bases'].forEach(t => {
     document.getElementById('pane-'+t).classList.add('hidden');
     const b = document.getElementById('tab-'+t);
@@ -1460,11 +1609,100 @@ function discardAll() {
 }
 
 // ─── PRODUCTOS TAB ───
+let adminBases = [];   // cache de bases para el selector
+let prodBaseMap = {};  // { productoId: [baseId,...] }
+let openBasePopover = null; // pid del popover abierto
+
+function buildBasesPopover(pid, assignedIds) {
+  // Agrupa bases por tipo para mostrar checkboxes organizados
+  const byTipo = {};
+  adminBases.forEach(b => {
+    const t = b.tipo_nombre || b.tipo || 'Otros';
+    if (!byTipo[t]) byTipo[t] = { icono: b.tipo_icono || '🍹', items: [] };
+    byTipo[t].items.push(b);
+  });
+  const groups = Object.entries(byTipo).map(([tipo, { icono, items }]) => `
+    <div class="mb-2">
+      <div class="text-[10px] font-bold text-gray-500 mb-1">${icono} ${tipo}</div>
+      ${items.map(b => `
+        <label class="flex items-center gap-1.5 px-1 py-0.5 rounded hover:bg-gray-700 cursor-pointer">
+          <input type="checkbox" value="${b.id}" ${assignedIds.includes(b.id)?'checked':''}
+            onchange="onBaseCheckChange(${pid},this)"
+            class="accent-purple-500 w-3 h-3">
+          <span class="text-white text-xs">${esc(b.nombre)}</span>
+        </label>`).join('')}
+    </div>`).join('');
+  return `<div id="basepop-${pid}" class="absolute z-50 right-0 top-full mt-1 bg-gray-900 border border-gray-700 rounded-xl p-3 shadow-2xl min-w-[160px] max-h-64 overflow-y-auto">
+    ${groups || '<div class="text-gray-600 text-xs">Sin bases. Crea en tab Bases.</div>'}
+    <button onclick="closeBasePop()" class="mt-2 w-full text-[10px] text-gray-500 hover:text-gray-300 transition-colors">Cerrar</button>
+  </div>`;
+}
+
+function openBasePop(pid) {
+  // Cierra cualquier popover abierto
+  closeBasePop();
+  openBasePopover = pid;
+  const td = document.getElementById('basetd-'+pid);
+  if (!td) return;
+  td.style.position = 'relative';
+  const assignedIds = prodBaseMap[pid] || [];
+  td.insertAdjacentHTML('beforeend', buildBasesPopover(pid, assignedIds));
+  // Cierra al clic fuera
+  setTimeout(() => document.addEventListener('click', outsideBasePop), 0);
+}
+
+function outsideBasePop(e) {
+  if (!e.target.closest('[id^="basepop-"]') && !e.target.closest('[onclick^="openBasePop"]')) {
+    closeBasePop();
+  }
+}
+
+function closeBasePop() {
+  if (openBasePopover !== null) {
+    document.getElementById('basepop-'+openBasePopover)?.remove();
+    openBasePopover = null;
+    document.removeEventListener('click', outsideBasePop);
+  }
+}
+
+async function onBaseCheckChange(pid, cb) {
+  const td = document.getElementById('basetd-'+pid);
+  const cbs = td?.querySelectorAll('input[type="checkbox"]');
+  const selectedIds = [...(cbs||[])].filter(c=>c.checked).map(c=>parseInt(c.value));
+  prodBaseMap[pid] = selectedIds;
+  // Actualizar etiqueta
+  const lbl = document.getElementById('baselbl-'+pid);
+  if (lbl) {
+    lbl.className = selectedIds.length ? 'text-amber-400 text-[10px] font-bold' : 'text-gray-600 text-[10px]';
+    lbl.textContent = selectedIds.length ? `🍹 ${selectedIds.length} base${selectedIds.length>1?'s':''}` : 'Sin base';
+  }
+  try {
+    await fetch('/api/productos/'+pid+'/bases', {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({base_ids: selectedIds})
+    });
+    await fetch('/api/productos/'+pid, {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({tiene_base: selectedIds.length > 0 ? 1 : 0})
+    });
+  } catch(e) {}
+}
+
 async function loadProds() {
   try {
-    const [pr, cr] = await Promise.all([fetch('/api/productos'), fetch('/api/categorias')]);
-    const prods = await pr.json(); adminCats = await cr.json();
-    document.getElementById('prodsTable').innerHTML = prods.map(p => `
+    const [pr, cr, br, bm] = await Promise.all([
+      fetch('/api/productos').then(r=>r.json()),
+      fetch('/api/categorias').then(r=>r.json()),
+      fetch('/api/bases').then(r=>r.json()),
+      fetch('/api/productos/bases-bulk').then(r=>r.json()),
+    ]);
+    adminCats = cr; adminBases = br; prodBaseMap = bm;
+    document.getElementById('prodsTable').innerHTML = pr.map(p => {
+      const assignedIds = prodBaseMap[p.id] || [];
+      const baseLabel = assignedIds.length
+        ? `<span id="baselbl-${p.id}" class="text-amber-400 text-[10px] font-bold">🍹 ${assignedIds.length} base${assignedIds.length>1?'s':''}</span>`
+        : `<span id="baselbl-${p.id}" class="text-gray-600 text-[10px]">Sin base</span>`;
+      return `
       <tr id="drow-${p.id}" class="border-b border-gray-800/50 hover:bg-gray-800/10 transition-colors ${dirty.prods.has(p.id)?'dirty-row':''}">
         <td class="py-2.5 pr-3">
           <input id="pn-${p.id}" data-dirty-id="${p.id}" type="text" value="${esc(p.nombre)}"
@@ -1488,26 +1726,24 @@ async function loadProds() {
             ${p.disponible?'Activo':'Agotado'}
           </button>
         </td>
-        <td class="py-2.5 pr-3 text-center">
-          <button data-id="${p.id}" onclick="toggleBase(parseInt(this.dataset.id))" title="${p.tiene_base?'Quitar selector de base':'Activar selector de base'}"
-            class="${p.tiene_base?'bg-amber-700 hover:bg-amber-600':'bg-gray-700 hover:bg-gray-600'} text-white text-xs px-2.5 py-1.5 rounded-lg font-bold transition-colors w-24">
-            ${p.tiene_base?'🍺 Con Base':'Normal'}
+        <td id="basetd-${p.id}" class="py-2.5 pr-3 text-center">
+          <button onclick="openBasePop(${p.id})"
+            class="flex flex-col items-center gap-0.5 w-full hover:bg-gray-800 rounded-lg px-2 py-1.5 transition-colors">
+            ${baseLabel}
+            <span class="text-gray-600 text-[9px]">▼ elegir</span>
           </button>
         </td>
         <td class="py-2.5 text-center">
           <button data-id="${p.id}" onclick="deleteProd(parseInt(this.dataset.id))"
             class="bg-gray-700 hover:bg-red-800 text-white text-xs px-2.5 py-1.5 rounded-lg transition-colors">x</button>
         </td>
-      </tr>`).join('');
+      </tr>`;
+    }).join('');
   } catch(e) { adminToast('Error cargando', false); }
 }
 
 async function toggleProd(id) {
   try { await fetch('/api/productos/'+id+'/toggle', {method:'PATCH'}); loadProds(); }
-  catch(e) {}
-}
-async function toggleBase(id) {
-  try { await fetch('/api/productos/'+id+'/toggle-base', {method:'PATCH'}); loadProds(); }
   catch(e) {}
 }
 async function deleteProd(id) {
@@ -1589,116 +1825,165 @@ async function deleteNote(id) {
 }
 
 // ─── BASES TAB ───
+let allTipos = [];   // cache de tipos_base
+let allBases2 = [];  // cache de bases con tipo_nombre
+let selectedTipoId = null;
+
 async function loadBases() {
   try {
-    const [br, pr] = await Promise.all([fetch('/api/bases'), fetch('/api/productos')]);
-    const bases = await br.json();
-    const prods = await pr.json();
-    renderBasesList(bases);
-    renderBasesAssign(bases, prods.filter(p => p.tiene_base));
+    [allTipos, allBases2] = await Promise.all([
+      fetch('/api/tipos-base').then(r=>r.json()),
+      fetch('/api/bases').then(r=>r.json()),
+    ]);
+    renderTipoChips();
+    // Seleccionar primer tipo si ninguno está seleccionado o el seleccionado ya no existe
+    if (!selectedTipoId || !allTipos.find(t => t.id === selectedTipoId)) {
+      selectedTipoId = allTipos[0]?.id || null;
+    }
+    renderBaseItems();
   } catch(e) { adminToast('Error cargando bases', false); }
 }
 
-function renderBasesList(bases) {
-  const el = document.getElementById('basesList');
-  if (!bases.length) {
-    el.innerHTML = '<div class="text-gray-600 text-sm text-center py-4">Sin bases configuradas.</div>';
+function renderTipoChips() {
+  const el = document.getElementById('tipoChips');
+  const empty = document.getElementById('basesEmptyState');
+  if (!allTipos.length) {
+    el.innerHTML = '';
+    empty?.classList.remove('hidden');
+    document.getElementById('baseItemsSection')?.classList.add('hidden');
     return;
   }
-  const byTipo = {};
-  bases.forEach(b => { (byTipo[b.tipo] = byTipo[b.tipo]||[]).push(b); });
-  el.innerHTML = Object.entries(byTipo).map(([tipo, list]) => {
-    const rows = list.map(b => {
-      const tipoCls = b.tipo==='Gaseosa'
-        ? 'bg-amber-900/40 text-amber-400'
-        : b.tipo==='Cerveza'
-        ? 'bg-yellow-900/40 text-yellow-400'
-        : 'bg-purple-900/40 text-purple-400';
-      return `<div class="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-xl px-3 py-2">
-        <input id="bn-${b.id}" data-tipo="${esc(b.tipo)}" type="text" value="${esc(b.nombre)}"
-          class="flex-1 bg-transparent text-white text-sm border-b border-transparent focus:border-purple-500 transition-colors outline-none">
-        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${tipoCls}">${esc(b.tipo)}</span>
-        <button data-id="${b.id}" onclick="toggleBaseItem(parseInt(this.dataset.id))"
-          class="${b.disponible?'bg-green-700 hover:bg-green-600':'bg-red-800 hover:bg-red-700'} text-white text-xs px-2.5 py-1 rounded-lg font-bold transition-colors w-20 shrink-0">
-          ${b.disponible?'Activo':'Agotado'}
-        </button>
-        <button data-id="${b.id}" onclick="saveBase(parseInt(this.dataset.id))"
-          class="bg-gray-700 hover:bg-purple-700 text-white text-xs px-2.5 py-1 rounded-lg transition-colors shrink-0">✓</button>
-        <button data-id="${b.id}" onclick="deleteBase(parseInt(this.dataset.id))"
-          class="bg-gray-700 hover:bg-red-800 text-white text-xs px-2.5 py-1 rounded-lg transition-colors shrink-0">x</button>
-      </div>`;
-    }).join('');
-    return `<div class="mb-4">
-      <div class="text-gray-500 text-[10px] tracking-widest font-bold mb-2">${tipo.toUpperCase()}</div>
-      <div class="space-y-1.5">${rows}</div>
-    </div>`;
+  empty?.classList.add('hidden');
+  el.innerHTML = allTipos.map(t => {
+    const isActive = t.id === selectedTipoId;
+    const itemCount = allBases2.filter(b => b.tipo_id === t.id).length;
+    return `<button onclick="selectTipo(${t.id})"
+      class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-colors border ${isActive
+        ? 'bg-purple-700 border-purple-500 text-white'
+        : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:border-gray-600'}">
+      <span class="tipo-icono-${t.id}">${esc(t.icono)}</span>
+      <span class="tipo-nombre-${t.id}">${esc(t.nombre)}</span>
+      <span class="text-[10px] opacity-60">(${itemCount})</span>
+      <span onclick="event.stopPropagation();deleteTipoBase(${t.id})"
+        class="ml-1 text-gray-400 hover:text-red-400 leading-none" title="Eliminar tipo">×</span>
+    </button>`;
   }).join('');
 }
 
-function renderBasesAssign(bases, prodsWithBase) {
-  const el = document.getElementById('basesAssignList');
-  if (!prodsWithBase.length) {
-    el.innerHTML = '<div class="text-gray-600 text-xs py-2">No hay productos con base configurados.</div>';
-    return;
-  }
-  el.innerHTML = prodsWithBase.map(p => `
-    <div class="bg-gray-800/40 border border-gray-700 rounded-xl p-3">
-      <div class="text-white text-sm font-bold mb-2">${esc(p.nombre)}</div>
-      <div class="flex flex-wrap gap-2 mb-2" id="bassign-${p.id}">
-        <span class="text-gray-600 text-xs">Cargando...</span>
-      </div>
-      <button data-prod="${p.id}" onclick="saveBaseAssign(parseInt(this.dataset.prod))"
-        class="bg-purple-700 hover:bg-purple-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition-colors">
-        Guardar asignacion
-      </button>
-    </div>`).join('');
-
-  prodsWithBase.forEach(async p => {
-    try {
-      const r = await fetch('/api/productos/'+p.id+'/bases');
-      const pBases = await r.json();
-      const hasExplicit = pBases.some(pb => pb.assigned);
-      const el2 = document.getElementById('bassign-'+p.id);
-      if (!el2) return;
-      el2.innerHTML = bases.map(b => {
-        const checked = hasExplicit && pBases.some(pb => pb.id===b.id && pb.assigned);
-        return `<label class="flex items-center gap-1.5 text-xs text-gray-300 cursor-pointer select-none">
-          <input type="checkbox" data-prod="${p.id}" data-base="${b.id}"
-            ${checked?'checked':''} class="rounded accent-purple-500">
-          <span>${esc(b.nombre)}</span>
-          <span class="text-[9px] text-gray-600">(${esc(b.tipo)})</span>
-        </label>`;
-      }).join('');
-    } catch(e) {}
-  });
+function selectTipo(id) {
+  selectedTipoId = id;
+  renderTipoChips();
+  renderBaseItems();
 }
 
-async function addBase() {
-  const nombre = document.getElementById('newBaseNombre').value.trim();
-  const tipo   = document.getElementById('newBaseTipo').value;
-  if (!nombre) return;
+function renderBaseItems() {
+  const section = document.getElementById('baseItemsSection');
+  if (!selectedTipoId || !allTipos.length) { section?.classList.add('hidden'); return; }
+  section?.classList.remove('hidden');
+
+  const tipo = allTipos.find(t => t.id === selectedTipoId);
+  const label = document.getElementById('baseItemsTipoLabel');
+  if (label && tipo) label.textContent = tipo.icono + ' ' + tipo.nombre;
+
+  const items = allBases2.filter(b => b.tipo_id === selectedTipoId);
+  const el = document.getElementById('basesList');
+  if (!items.length) {
+    el.innerHTML = '<div class="text-gray-700 text-xs text-center py-6">Sin items. Agrega uno arriba.</div>';
+    return;
+  }
+  el.innerHTML = `<div class="grid grid-cols-3 gap-2 mb-2">${items.map(b => `
+    <div class="bg-gray-800/60 border ${b.disponible?'border-gray-700':'border-red-900/50'} rounded-2xl p-3 flex flex-col gap-2 ${b.disponible?'':'opacity-70'}">
+      <input id="bn-${b.id}" type="text" value="${esc(b.nombre)}"
+        onblur="saveBaseItem(${b.id})"
+        onkeydown="if(event.key==='Enter')this.blur()"
+        class="bg-transparent text-white font-bold text-sm text-center border-b border-transparent hover:border-gray-600 focus:border-purple-500 outline-none transition-colors w-full">
+      <button data-id="${b.id}" onclick="toggleBaseItem(parseInt(this.dataset.id))"
+        class="w-full font-extrabold text-xs py-2 rounded-xl transition-colors ${b.disponible
+          ? 'bg-red-900/60 hover:bg-red-700 text-red-300 hover:text-white'
+          : 'bg-green-900/60 hover:bg-green-700 text-green-300 hover:text-white'}">
+        ${b.disponible ? '⚠ AGOTADO' : '✓ DISPONIBLE'}
+      </button>
+      <button data-id="${b.id}" onclick="deleteBaseItem(parseInt(this.dataset.id))"
+        class="text-gray-600 hover:text-red-400 text-[10px] transition-colors text-center">Eliminar</button>
+    </div>`).join('')}</div>`;
+}
+
+function toggleNewTipoForm() {
+  const form = document.getElementById('newTipoForm');
+  form?.classList.toggle('hidden');
+  if (!form?.classList.contains('hidden')) document.getElementById('newTipoNombre')?.focus();
+}
+
+async function addTipoBase() {
+  const nombre = document.getElementById('newTipoNombre')?.value.trim();
+  const icono  = document.getElementById('newTipoIcono')?.value.trim() || '🍹';
+  if (!nombre) { adminToast('Escribe un nombre para el tipo', false); return; }
   try {
-    const r = await fetch('/api/bases', {
+    const r = await fetch('/api/tipos-base', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({nombre, tipo})
+      body: JSON.stringify({nombre, icono})
     });
-    if (r.ok) { document.getElementById('newBaseNombre').value=''; adminToast('Base agregada'); loadBases(); }
-    else adminToast('Error al agregar', false);
+    if (r.ok) {
+      document.getElementById('newTipoNombre').value = '';
+      document.getElementById('newTipoIcono').value = '🍹';
+      document.getElementById('newTipoForm')?.classList.add('hidden');
+      adminToast('Tipo creado');
+      await loadBases();
+      const nuevo = allTipos.find(t => t.nombre === nombre);
+      if (nuevo) selectTipo(nuevo.id);
+    } else {
+      const err = await r.json().catch(()=>({detail:'Error'}));
+      adminToast(err.detail || 'Error al crear', false);
+    }
   } catch(e) {}
 }
 
-async function saveBase(id) {
-  const inp   = document.getElementById('bn-'+id);
+async function deleteTipoBase(id) {
+  if (!confirm('Eliminar este tipo? Solo se puede si no tiene items.')) return;
+  try {
+    const r = await fetch('/api/tipos-base/'+id, {method:'DELETE'});
+    if (r.ok) {
+      if (selectedTipoId === id) selectedTipoId = null;
+      adminToast('Tipo eliminado'); loadBases();
+    } else {
+      const err = await r.json().catch(()=>({detail:'Error'}));
+      adminToast(err.detail || 'No se pudo eliminar', false);
+    }
+  } catch(e) {}
+}
+
+async function addBaseItem() {
+  const nombre = document.getElementById('newBaseNombre')?.value.trim();
+  if (!nombre) { adminToast('Escribe un nombre para el item', false); return; }
+  if (!selectedTipoId) { adminToast('Selecciona un tipo primero', false); return; }
+  try {
+    const r = await fetch('/api/bases', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({nombre, tipo_id: selectedTipoId})
+    });
+    if (r.ok) {
+      document.getElementById('newBaseNombre').value = '';
+      adminToast('Item agregado'); loadBases();
+    } else {
+      const err = await r.json().catch(()=>({detail:'Error'}));
+      adminToast(err.detail || 'Error al agregar', false);
+    }
+  } catch(e) {}
+}
+
+async function saveBaseItem(id) {
+  const inp = document.getElementById('bn-'+id);
   const nombre = inp?.value.trim();
-  const tipo   = inp?.dataset.tipo || 'Gaseosa';
-  if (!nombre) return;
+  if (!nombre) { inp && (inp.value = inp.defaultValue); return; }
+  const base = allBases2.find(b => b.id === id);
+  if (!base) return;
   try {
     const r = await fetch('/api/bases/'+id, {
       method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({nombre, tipo})
+      body: JSON.stringify({nombre, tipo_id: base.tipo_id})
     });
-    if (r.ok) adminToast('Guardado'); else adminToast('Error', false);
-    loadBases();
+    if (r.ok) { adminToast('Guardado'); loadBases(); }
+    else adminToast('Error', false);
   } catch(e) {}
 }
 
@@ -1707,37 +1992,67 @@ async function toggleBaseItem(id) {
   catch(e) {}
 }
 
-async function deleteBase(id) {
-  if (!confirm('Eliminar esta base? Se quitara de todos los productos.')) return;
-  try { await fetch('/api/bases/'+id, {method:'DELETE'}); adminToast('Eliminada'); loadBases(); }
+async function deleteBaseItem(id) {
+  if (!confirm('Eliminar este item? Se quitará de todos los productos.')) return;
+  try { await fetch('/api/bases/'+id, {method:'DELETE'}); adminToast('Eliminado'); loadBases(); }
   catch(e) {}
 }
-
-async function saveBaseAssign(prodId) {
-  const cbs = document.querySelectorAll('#bassign-'+prodId+' input[type="checkbox"]');
-  const base_ids = [...cbs].filter(cb=>cb.checked).map(cb=>parseInt(cb.dataset.base));
-  try {
-    const r = await fetch('/api/productos/'+prodId+'/bases', {
-      method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({base_ids})
-    });
-    if (r.ok) adminToast('Asignacion guardada');
-  } catch(e) {}
-}
-
 
 // ─── DASHBOARD ───  (ahora en ruta /dashboard)
 
 
+// ─── SETTINGS (DB como fuente de verdad) ───
+function saveSetting(key, value) {
+  localStorage.setItem(key, value);
+  fetch('/api/settings/'+key, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({value})
+  }).catch(()=>{});
+}
+async function loadSettings() {
+  try {
+    const s = await fetch('/api/settings').then(r=>r.json());
+    if (s.palette || s.drunksPalette) applyTheme(s.palette || s.drunksPalette);
+    if (s.kitchen_view) { viewMode = s.kitchen_view; localStorage.setItem('kitchenView', s.kitchen_view); }
+    if (s.station_cfg)  { try { stationCfg   = JSON.parse(s.station_cfg); } catch(e){} }
+    if (s.station_active){ try { stationActive= JSON.parse(s.station_active); } catch(e){} }
+    Object.entries(s).forEach(([k,v]) => localStorage.setItem(k, v));
+  } catch(e) {
+    applyTheme(localStorage.getItem('drunksPalette') || 'dark');
+  }
+}
+
 // ─── THEME SYSTEM ───
 function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t||'dark');
-  localStorage.setItem('drunksPalette', t||'dark');
+  const theme = t||'dark';
+  if (theme.startsWith('custom:')) { applyCustomTheme(theme.split(':')[1]); return; }
+  document.documentElement.setAttribute('data-theme', theme);
+  saveSetting('drunksPalette', theme);
+  saveSetting('palette', theme);
   document.querySelectorAll('.theme-opt[data-theme]').forEach(b => {
-    const on = b.dataset.theme === (t||'dark');
+    const on = b.dataset.theme === theme;
     b.style.background = on ? 'rgba(147,51,234,.2)' : '';
     b.style.outline    = on ? '1px solid rgba(147,51,234,.5)' : '';
   });
+  const picker = document.getElementById('customColorPicker');
+  if (picker) picker.style.display = 'none';
+}
+function applyCustomTheme(hex) {
+  let style = document.getElementById('custom-theme-style');
+  if (!style) { style = document.createElement('style'); style.id='custom-theme-style'; document.head.appendChild(style); }
+  const h = hex||'#9333ea';
+  const ri = parseInt(h.slice(1,3),16), gi = parseInt(h.slice(3,5),16), bi = parseInt(h.slice(5,7),16);
+  style.textContent = `
+    html[data-theme="custom"] body{background:#06060f}
+    html[data-theme="custom"] .bg-purple-600,.bg-purple-700{background-color:${h}!important}
+    html[data-theme="custom"] .text-purple-400,.text-purple-300{color:${h}!important}
+    html[data-theme="custom"] .border-purple-500{border-color:${h}!important}
+    html[data-theme="custom"] .from-purple-600{--tw-gradient-from:${h}!important}`;
+  document.documentElement.setAttribute('data-theme','custom');
+  saveSetting('drunksPalette','custom:'+h); saveSetting('palette','custom:'+h);
+  document.querySelectorAll('.theme-opt[data-theme]').forEach(b=>{b.style.background='';b.style.outline='';});
+  const picker = document.getElementById('customColorPicker');
+  if (picker) { picker.style.display='inline-block'; picker.value=h; }
 }
 function toggleThemePicker() {
   document.getElementById('themePicker').classList.toggle('hidden');
@@ -1779,7 +2094,8 @@ let stationCfg = JSON.parse(localStorage.getItem('stationCfg') || 'null') || {
   count: 1,
   stations: [{ name: 'Preparador 1', catIds: [] }]
 };
-let stationsDone = JSON.parse(localStorage.getItem('stationsDone') || '{}');
+let stationActive = JSON.parse(localStorage.getItem('stationActive') || '{}');
+// { "0": orderId, "1": orderId } — pedido activo por estación
 let stationCats  = [];   // cached from /api/categorias
 
 function toggleStationPanel() {
@@ -1854,13 +2170,8 @@ function saveStationConfig() {
     if (cb.checked && !ids.includes(catId)) ids.push(catId);
     else if (!cb.checked) stationCfg.stations[si].catIds = ids.filter(id=>id!==catId);
   });
-  // Check for active orders before changing multi→single
-  if (stationCfg.count === 1 && Object.keys(stationsDone).length > 0) {
-    if (!confirm('Hay pedidos en progreso con asignacion de estacion. Cambiar ahora? El progreso parcial se perdera.')) return;
-    stationsDone = {};
-    localStorage.removeItem('stationsDone');
-  }
-  localStorage.setItem('stationCfg', JSON.stringify(stationCfg));
+  saveSetting('stationCfg', JSON.stringify(stationCfg));
+  saveSetting('station_cfg', JSON.stringify(stationCfg));
   toggleStationPanel();
   applyStationLayout();
 }
@@ -1874,98 +2185,157 @@ function applyStationLayout() {
   renderKitchen();
 }
 
-// Assign order items to stations — returns { stationIdx: [items] }
-function assignOrderToStations(order) {
-  const result = {};
+// ─── COLA COMPARTIDA — asignación automática FIFO ────────────────────────────
+
+// Asigna pedidos de la cola a estaciones libres. Se llama en cada render.
+function autoAssignFreeStations(allOrders) {
+  // Limpiar asignaciones de pedidos que ya no existen
+  Object.keys(stationActive).forEach(si => {
+    if (!orders[Number(stationActive[si])]) delete stationActive[si];
+  });
+
+  const activeIds = new Set(Object.values(stationActive).map(Number));
+  // Cola: pedidos no activos en ninguna estación, orden FIFO
+  const queue = allOrders.filter(o => !activeIds.has(o.id));
+
   for (let si = 0; si < stationCfg.count; si++) {
-    const cfg = stationCfg.stations[si];
-    const catchAll = !cfg.catIds || cfg.catIds.length === 0;
-    const items = (order.items||[]).filter(it =>
-      catchAll || cfg.catIds.includes(it.categoria_id));
-    if (items.length) result[si] = items;
+    if (stationActive[String(si)] === undefined && queue.length) {
+      const next = queue.shift();
+      stationActive[String(si)] = next.id;
+      activeIds.add(next.id);
+    }
   }
-  // Fallback: no station matched → station 0 gets everything
-  if (!Object.keys(result).length && (order.items||[]).length) {
-    result[0] = order.items;
-  }
-  return result;
+  saveSetting('stationActive', JSON.stringify(stationActive));
+  saveSetting('station_active', JSON.stringify(stationActive));
 }
 
-// Build a card for a station column
-function buildColumnCard(order, stationItems, rank, si) {
+// Save station name edited inline in the column header
+function saveStationName(si, value) {
+  if (!stationCfg.stations[si]) return;
+  stationCfg.stations[si].name = value.trim() || ('Preparador ' + (si + 1));
+  saveSetting('stationCfg', JSON.stringify(stationCfg));
+  saveSetting('station_cfg', JSON.stringify(stationCfg));
+  // Also sync the config panel input if open
+  const inp = document.querySelector('.sname-inp[data-si="'+si+'"]');
+  if (inp) inp.value = stationCfg.stations[si].name;
+}
+
+// ─── STATION RENDERING ────────────────────────────────────────────────────────
+
+// Hero card — el pedido activo que está preparando ahora el preparador
+function buildActiveCard(order, stationItems, si) {
   const div = document.createElement('div');
-  div.id = 'col-order-'+order.id+'-'+si;
-  const efect   = order.metodo_pago === 'Efectivo';
-  const hBg     = efect ? 'from-green-700/80 to-green-800/80' : 'from-blue-700/80 to-blue-800/80';
-  const icon    = efect ? '💵' : '📱';
-  const tStr    = new Date(order.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
-  const rows    = stationItems.map(it => buildItemRow(it, false)).join('');
-  const doneSet = new Set(stationsDone[order.id] || []);
-  const isDone  = doneSet.has(si);
-  const allSiList = Object.keys(assignOrderToStations(order)).map(Number);
-  const doneCount = allSiList.filter(x => doneSet.has(x)).length;
-  const totalSt   = allSiList.length;
-  const progressLabel = totalSt > 1
-    ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ml-2 ${doneCount>0?'bg-yellow-700/60 text-yellow-300':'bg-gray-700/60 text-gray-400'}">${doneCount}/${totalSt}</span>`
-    : '';
-  div.className = 'card-in bg-gray-900 border '+(rank===0?'border-purple-500/40':'border-gray-700')+' rounded-2xl overflow-hidden mb-3 flex-shrink-0';
+  div.id = 'active-order-'+order.id+'-'+si;
+  const efect = order.metodo_pago === 'Efectivo';
+  const hBg   = efect ? 'from-green-700 to-green-800' : 'from-blue-700 to-blue-800';
+  const icon  = efect ? '💵' : '📱';
+  const tStr  = new Date(order.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  const rows  = stationItems.map(it => buildItemRow(it, true)).join('');
+  div.className = 'active-card-in bg-gray-900 border border-purple-500/50 rounded-2xl overflow-hidden flex-shrink-0 shadow-lg shadow-purple-900/20';
   div.innerHTML = `
-    ${rank===0?'<div class="flex items-center gap-2 mb-2"><div class="priority-badge bg-red-500 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full tracking-wider shadow-lg shadow-red-900/50">#1 PRIORIDAD</div><div class="h-px flex-1 bg-gray-800"></div></div>':''}
+    <div class="flex items-center gap-2 px-4 pt-3 pb-1">
+      <div class="priority-badge bg-purple-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full tracking-wider">PREPARANDO</div>
+      <div class="h-px flex-1 bg-gray-800"></div>
+    </div>
     <div class="bg-gradient-to-r ${hBg} px-4 py-3 flex items-start justify-between">
       <div class="min-w-0">
         <div class="flex items-center gap-2 mb-1">
           <span class="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">${order.numero_factura||('#'+order.id)}</span>
           <span class="text-white/60 text-xs">${icon} ${order.metodo_pago} · ${tStr}</span>
-          ${progressLabel}
         </div>
-        <div class="text-white font-extrabold text-xl leading-tight truncate">${order.cliente}</div>
+        <div class="text-white font-extrabold text-2xl leading-tight">${order.cliente}</div>
       </div>
-      <div class="text-white font-extrabold text-lg tabular-nums ml-2 shrink-0">$${Math.round(order.total).toLocaleString('es-CO')}</div>
+      <div class="text-white/80 font-bold text-base tabular-nums ml-2 shrink-0">$${Math.round(order.total).toLocaleString('es-CO')}</div>
     </div>
-    <div class="px-4 py-3">${rows||'<div class="text-gray-600 text-xs text-center py-2">Sin items para esta estacion</div>'}</div>
-    <div class="px-4 pb-4">
-      ${isDone
-        ? '<div class="w-full bg-gray-700 text-gray-400 font-bold py-2.5 rounded-xl text-sm text-center">✓ Esta estacion lista</div>'
-        : `<button data-oid="${order.id}" data-si="${si}" onclick="completeStationOrder(parseInt(this.dataset.oid),parseInt(this.dataset.si))"
-            class="w-full bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-extrabold py-2.5 rounded-xl text-sm transition-colors shadow-lg">
-            ✓ LISTO
-           </button>`
-      }
+    <div class="px-4 py-3 space-y-1">${rows||'<div class="text-gray-600 text-xs text-center py-2">Sin items</div>'}</div>
+    <div class="px-4 pb-4 pt-1">
+      <button data-oid="${order.id}" data-si="${si}"
+        onclick="completeStationOrder(parseInt(this.dataset.oid),parseInt(this.dataset.si))"
+        class="w-full bg-green-500 hover:bg-green-400 active:bg-green-600 text-white font-extrabold py-3.5 rounded-xl text-base transition-colors shadow-lg shadow-green-900/30 tracking-wide">
+        ✓ LISTO — COMPLETAR PEDIDO
+      </button>
     </div>`;
   return div;
 }
 
-// Render one station column
-function renderStationColumn(si, allOrders) {
-  const cfg = stationCfg.stations[si];
-  const colOrders = allOrders.filter(o => assignOrderToStations(o)[si] !== undefined);
-  const col = document.createElement('div');
-  col.className = 'flex flex-col border-r border-gray-800/60 overflow-y-auto flex-1 min-w-[280px]';
-
-  // Column header
-  const badge = colOrders.length
-    ? `<span class="text-[10px] font-extrabold w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center ml-1">${colOrders.length}</span>`
-    : '';
-  const hdr = document.createElement('div');
-  hdr.className = 'sticky top-0 z-10 bg-gray-950/95 backdrop-blur border-b border-gray-800 px-4 py-3 flex items-center gap-2';
-  hdr.innerHTML = `<span class="text-white font-extrabold text-sm tracking-wide">${cfg.name.toUpperCase()}</span>${badge}`;
-  col.appendChild(hdr);
-
-  const body = document.createElement('div');
-  body.className = 'p-3 flex-1';
-  if (!colOrders.length) {
-    body.innerHTML = '<div class="flex flex-col items-center justify-center h-40 text-gray-700"><div class="text-4xl mb-3 opacity-30">🍹</div><p class="text-xs">Sin pedidos</p></div>';
-  } else {
-    colOrders.forEach((o, rank) => {
-      const stItems = assignOrderToStations(o)[si] || o.items || [];
-      body.appendChild(buildColumnCard(o, stItems, rank, si));
-    });
-  }
-  col.appendChild(body);
-  return col;
+// Mini card — pedidos esperando en la cola de este preparador
+function buildQueueMiniCard(order, position) {
+  const div = document.createElement('div');
+  div.className = 'queue-mini-card bg-gray-800/70 border border-gray-700 rounded-xl overflow-hidden';
+  const itemCount = (order.items||[]).length;
+  const efect = order.metodo_pago === 'Efectivo';
+  const dot = efect ? 'bg-green-500' : 'bg-blue-500';
+  div.innerHTML = `
+    <div class="px-3 pt-2.5 pb-1 flex items-center gap-1.5">
+      <span class="text-gray-500 text-[10px] font-bold">#${position+1}</span>
+      <span class="text-purple-400 text-[10px] font-extrabold">${order.numero_factura||('#'+order.id)}</span>
+    </div>
+    <div class="px-3 pb-1">
+      <div class="text-white text-xs font-bold truncate">${order.cliente}</div>
+    </div>
+    <div class="px-3 pb-2.5 flex items-center gap-1.5">
+      <span class="w-1.5 h-1.5 rounded-full ${dot} shrink-0"></span>
+      <span class="text-gray-400 text-[10px]">${itemCount} ${itemCount===1?'bebida':'bebidas'}</span>
+    </div>`;
+  return div;
 }
 
-// Render all station columns
+// Panel de un preparador: header editable + tarjeta activa o placeholder
+function renderActivePanel(si, activeOrder) {
+  const cfg = stationCfg.stations[si];
+  const panel = document.createElement('div');
+  panel.className = 'flex flex-col flex-1 border-r border-gray-800/60 overflow-y-auto min-w-0';
+
+  // ── Header editable ────────────────────────────
+  const hdr = document.createElement('div');
+  hdr.className = 'sticky top-0 z-10 bg-gray-950/95 backdrop-blur border-b border-gray-800 px-4 py-3 flex items-center gap-2 shrink-0';
+  hdr.innerHTML = `
+    <input class="station-col-name bg-transparent text-white font-extrabold text-sm tracking-wide uppercase border-b-2 border-transparent hover:border-gray-600 focus:border-purple-500 focus:outline-none min-w-0 flex-1 transition-colors cursor-text"
+      data-si="${si}" value="${cfg.name}"
+      onblur="saveStationName(${si},this.value)"
+      onkeydown="if(event.key==='Enter')this.blur()"
+      title="Clic para editar nombre">`;
+  panel.appendChild(hdr);
+
+  // ── Pedido activo o placeholder ────────────────
+  if (activeOrder) {
+    const catchAll = !cfg.catIds || cfg.catIds.length === 0;
+    const items = (activeOrder.items||[]).filter(it =>
+      catchAll || cfg.catIds.includes(it.categoria_id));
+    const wrap = document.createElement('div');
+    wrap.className = 'p-3';
+    wrap.appendChild(buildActiveCard(activeOrder, items, si));
+    panel.appendChild(wrap);
+  } else {
+    const empty = document.createElement('div');
+    empty.className = 'flex flex-col items-center justify-center flex-1 text-gray-700 py-16';
+    empty.innerHTML = '<div class="text-4xl mb-3 opacity-20">🍹</div><p class="text-xs">Libre</p>';
+    panel.appendChild(empty);
+  }
+
+  return panel;
+}
+
+// Franja inferior: cola compartida de todos los pedidos en espera
+function renderSharedQueueStrip(queueOrders) {
+  const strip = document.createElement('div');
+  strip.className = 'border-t border-gray-800 bg-gray-950/80 px-4 py-3 shrink-0';
+  if (!queueOrders.length) {
+    strip.innerHTML = '<p class="text-gray-700 text-xs text-center py-0.5">Cola vacía — todos los pedidos están siendo preparados</p>';
+    return strip;
+  }
+  const label = document.createElement('div');
+  label.className = 'text-gray-500 text-[10px] font-extrabold uppercase tracking-widest mb-2';
+  label.textContent = `En cola (${queueOrders.length})`;
+  strip.appendChild(label);
+  const row = document.createElement('div');
+  row.className = 'flex gap-2 overflow-x-auto pb-1';
+  row.style.scrollbarWidth = 'none';
+  queueOrders.forEach((o, i) => row.appendChild(buildQueueMiniCard(o, i)));
+  strip.appendChild(row);
+  return strip;
+}
+
 function renderMultiStation() {
   const list = Object.values(orders).sort((a,b) => a.id - b.id);
   const container = document.getElementById('multiView');
@@ -1973,48 +2343,98 @@ function renderMultiStation() {
   const empty = document.getElementById('emptyState');
   if (!list.length) { empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden');
+
+  autoAssignFreeStations(list);
+
+  const activeIds = new Set(Object.values(stationActive).map(Number));
+  const queueOrders = list.filter(o => !activeIds.has(o.id));
+
+  // ── Fila superior: paneles de cada preparador ──
+  const topRow = document.createElement('div');
+  topRow.className = 'flex flex-1 min-h-0 overflow-hidden';
   for (let si = 0; si < stationCfg.count; si++) {
-    container.appendChild(renderStationColumn(si, list));
+    const oid = stationActive[String(si)];
+    const activeOrder = (oid !== undefined && orders[oid]) ? orders[oid] : null;
+    topRow.appendChild(renderActivePanel(si, activeOrder));
   }
+  container.appendChild(topRow);
+
+  // ── Franja inferior: cola compartida ───────────
+  container.appendChild(renderSharedQueueStrip(queueOrders));
 }
 
-// Station-aware completion
+// Un clic = pedido completado, estación libre, siguiente de la cola sube solo
 async function completeStationOrder(orderId, si) {
-  const doneSet = new Set(stationsDone[orderId] || []);
-  doneSet.add(si);
-  stationsDone[orderId] = [...doneSet];
-  localStorage.setItem('stationsDone', JSON.stringify(stationsDone));
-
   const order = orders[orderId];
   if (!order) return;
-  const requiredStations = Object.keys(assignOrderToStations(order)).map(Number);
-  const allDone = requiredStations.every(x => doneSet.has(x));
 
-  if (allDone) {
-    delete stationsDone[orderId];
-    localStorage.setItem('stationsDone', JSON.stringify(stationsDone));
-    // Animate and complete
-    for (let s = 0; s < stationCfg.count; s++) {
-      const card = document.getElementById('col-order-'+orderId+'-'+s);
-      if (card) card.classList.add('fade-out');
+  // Liberar la estación
+  delete stationActive[String(si)];
+  saveSetting('stationActive', JSON.stringify(stationActive));
+  saveSetting('station_active', JSON.stringify(stationActive));
+
+  // Animar salida
+  const card = document.getElementById('active-order-'+orderId+'-'+si);
+  if (card) card.classList.add('fade-out');
+
+  try {
+    const r = await fetch('/api/pedidos/'+orderId+'/entregar', {method:'PUT'});
+    if (r.ok) {
+      setTimeout(() => { delete orders[orderId]; renderKitchen(); }, 350);
     }
-    try {
-      const r = await fetch('/api/pedidos/'+orderId+'/entregar', {method:'PUT'});
-      if (r.ok) { setTimeout(() => { delete orders[orderId]; renderKitchen(); }, 370); }
-    } catch(e) { renderKitchen(); }
-  } else {
-    renderKitchen();
-  }
+  } catch(e) { renderKitchen(); }
 }
 
 // ─── INIT ───
-applyTheme(localStorage.getItem('drunksPalette') || 'dark');
-applyStationLayout();
-loadPending();
-connectWS();
-checkSupabase();
-setInterval(checkSupabase, 30000);
+loadSettings().then(() => {
+  applyStationLayout();
+  loadPending();
+  connectWS();
+  checkSupabase();
+  setInterval(checkSupabase, 30000);
+});
+
+// ── Auto-update ──
+async function checkUpdate() {
+  try {
+    const d = await fetch('/api/update/check').then(r => r.json());
+    if (d.has_update && d.latest) {
+      document.getElementById('updateVersion').textContent = 'v'+d.current+' → v'+d.latest;
+      document.getElementById('updateBanner').classList.remove('hidden');
+    }
+  } catch(e) {}
+}
+async function applyUpdate() {
+  const btn = document.getElementById('updateBtn');
+  btn.textContent = 'Descargando...'; btn.disabled = true;
+  try {
+    await fetch('/api/update/apply', {method:'POST'});
+    btn.textContent = 'Reiniciando...';
+  } catch(e) { btn.textContent = 'Error — intenta de nuevo'; btn.disabled = false; }
+}
+checkUpdate();
+setInterval(checkUpdate, 30 * 60 * 1000);
 </script>
+<!-- ═══ BANNER DE ACTUALIZACIÓN ═══ -->
+<div id="updateBanner" class="hidden fixed bottom-0 left-0 right-0 z-[100] bg-purple-950/97 border-t border-purple-500/50 backdrop-blur px-5 py-3 flex items-center justify-between gap-3 shadow-2xl">
+  <div class="flex items-center gap-3">
+    <span class="text-2xl">🔄</span>
+    <div>
+      <div class="text-white font-bold text-sm">Nueva versión disponible</div>
+      <div id="updateVersion" class="text-purple-300 text-xs font-mono"></div>
+    </div>
+  </div>
+  <div class="flex gap-2 shrink-0">
+    <button id="updateBtn" onclick="applyUpdate()"
+      class="bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-extrabold px-4 py-2 rounded-xl transition-colors shadow-lg">
+      Actualizar ahora
+    </button>
+    <button onclick="document.getElementById('updateBanner').classList.add('hidden')"
+      class="text-purple-400 hover:text-white text-sm px-3 py-2 rounded-xl transition-colors">
+      Después
+    </button>
+  </div>
+</div>
 </body>
 </html>"""
 
@@ -2118,10 +2538,17 @@ def init_db():
                 observaciones TEXT    DEFAULT ''
             )""")
         conn.execute("""
+            CREATE TABLE IF NOT EXISTS tipos_base (
+                id     INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT    NOT NULL UNIQUE,
+                icono  TEXT    NOT NULL DEFAULT '🍹'
+            )""")
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS bases (
                 id         INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre     TEXT    NOT NULL,
                 tipo       TEXT    NOT NULL DEFAULT 'Gaseosa',
+                tipo_id    INTEGER REFERENCES tipos_base(id) ON DELETE SET NULL,
                 disponible INTEGER NOT NULL DEFAULT 1
             )""")
         conn.execute("""
@@ -2130,17 +2557,69 @@ def init_db():
                 base_id     INTEGER NOT NULL REFERENCES bases(id)     ON DELETE CASCADE,
                 PRIMARY KEY (producto_id, base_id)
             )""")
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS settings (
+                key   TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )""")
         conn.commit()
 
-        # Seed bases desde los valores originales hardcodeados
-        if conn.execute("SELECT COUNT(*) FROM bases").fetchone()[0] == 0:
-            conn.executemany("INSERT INTO bases (nombre, tipo) VALUES (?,?)", [
-                ("Ginger",  "Gaseosa"), ("Bretana", "Gaseosa"),
-                ("Quatro",  "Gaseosa"), ("Sprite",  "Gaseosa"),
-                ("Costena", "Cerveza"), ("Aguila",  "Cerveza"),
-                ("Corona",  "Cerveza"),
+        # Seed tipos_base (incluyendo Soda como tercer tipo predeterminado)
+        if conn.execute("SELECT COUNT(*) FROM tipos_base").fetchone()[0] == 0:
+            conn.executemany("INSERT INTO tipos_base (nombre, icono) VALUES (?,?)", [
+                ("Cerveza", "🍺"), ("Gaseosa", "🧃"), ("Soda", "🫧"),
             ])
             conn.commit()
+        else:
+            # Migración: asegurar que "Soda" existe como tipo
+            if not conn.execute("SELECT id FROM tipos_base WHERE nombre='Soda'").fetchone():
+                conn.execute("INSERT INTO tipos_base (nombre, icono) VALUES ('Soda','🫧')")
+                conn.commit()
+
+        # Seed bases predeterminadas
+        if conn.execute("SELECT COUNT(*) FROM bases").fetchone()[0] == 0:
+            cer_id = conn.execute("SELECT id FROM tipos_base WHERE nombre='Cerveza'").fetchone()["id"]
+            gas_id = conn.execute("SELECT id FROM tipos_base WHERE nombre='Gaseosa'").fetchone()["id"]
+            sod_id = conn.execute("SELECT id FROM tipos_base WHERE nombre='Soda'").fetchone()["id"]
+            conn.executemany("INSERT INTO bases (nombre, tipo, tipo_id) VALUES (?,?,?)", [
+                ("Aguila",  "Cerveza", cer_id), ("Corona",  "Cerveza", cer_id),
+                ("Costena", "Cerveza", cer_id),
+                ("Quatro",  "Gaseosa", gas_id), ("Sprite",  "Gaseosa", gas_id),
+                ("Bretana", "Soda",    sod_id),  ("Ginger",  "Soda",    sod_id),
+            ])
+            conn.commit()
+        else:
+            # Migración: reclasificar Bretana/Ginger a Soda si aún son Gaseosa
+            try:
+                sod_id = conn.execute("SELECT id FROM tipos_base WHERE nombre='Soda'").fetchone()["id"]
+                conn.execute(
+                    "UPDATE bases SET tipo='Soda', tipo_id=? WHERE LOWER(nombre) IN ('bretana','ginger') AND (tipo='Gaseosa' OR tipo_id IS NULL OR tipo_id!=(?))",
+                    (sod_id, sod_id)
+                )
+                conn.commit()
+            except Exception:
+                pass
+
+        # Migración: añadir columna tipo_id si no existe (instalaciones antiguas)
+        # DEBE ir ANTES de poblarla
+        try:
+            conn.execute("ALTER TABLE bases ADD COLUMN tipo_id INTEGER REFERENCES tipos_base(id) ON DELETE SET NULL")
+            conn.commit()
+        except Exception:
+            pass  # Ya existe — ignorar
+
+        # Migración: poblar tipo_id en bases existentes que aún no lo tengan
+        try:
+            rows = conn.execute("SELECT id, tipo FROM bases WHERE tipo_id IS NULL").fetchall()
+            if rows:
+                tipos = {r["nombre"]: r["id"] for r in conn.execute("SELECT id, nombre FROM tipos_base").fetchall()}
+                for row in rows:
+                    tid = tipos.get(row["tipo"])
+                    if tid:
+                        conn.execute("UPDATE bases SET tipo_id=? WHERE id=?", (tid, row["id"]))
+                conn.commit()
+        except Exception:
+            pass
 
         # ── Seeding ──
         if conn.execute("SELECT COUNT(*) FROM categorias").fetchone()[0] == 0:
@@ -2249,13 +2728,21 @@ class OrderItem(BaseModel):
     cantidad:      int
     observaciones: str = ""
 
-class BaseCreate(BaseModel):
+class TipoBaseCreate(BaseModel):
     nombre: str
-    tipo:   str = "Gaseosa"
+    icono:  str = "🍹"
+
+class TipoBaseUpdate(BaseModel):
+    nombre: str
+    icono:  str = "🍹"
+
+class BaseCreate(BaseModel):
+    nombre:  str
+    tipo_id: int
 
 class BaseUpdate(BaseModel):
-    nombre: str
-    tipo:   str
+    nombre:  str
+    tipo_id: int
 
 class ProductoBasesUpdate(BaseModel):
     base_ids: List[int]
@@ -2440,6 +2927,39 @@ def to_dict(row) -> dict:
             d[k] = bool(d[k])
     return d
 
+# ── Settings ──
+@app.get("/api/settings")
+def get_settings():
+    with get_conn() as conn:
+        rows = conn.execute("SELECT key, value FROM settings").fetchall()
+    return {r["key"]: r["value"] for r in rows}
+
+@app.put("/api/settings/{key}")
+async def set_setting(key: str, req: Request):
+    data = await req.json()
+    value = str(data.get("value", ""))
+    with get_conn() as conn:
+        conn.execute("INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)", (key, value))
+        conn.commit()
+    return {"ok": True}
+
+# ── Auto-Update ──
+@app.get("/api/update/check")
+def api_check_update():
+    if _updater is None:
+        return {"has_update": False, "current": APP_VERSION, "latest": None, "url": None}
+    return _updater._update_info
+
+@app.post("/api/update/apply")
+async def api_apply_update(background_tasks: BackgroundTasks):
+    if _updater is None:
+        raise HTTPException(503, "Módulo de actualización no disponible")
+    info = _updater._update_info
+    if not info.get("has_update") or not info.get("url"):
+        raise HTTPException(400, "No hay actualización disponible o URL no encontrada")
+    background_tasks.add_task(_updater.download_and_apply, info["url"])
+    return {"ok": True, "message": "Descargando actualización, la app se reiniciará en breve..."}
+
 # ── Categorías ──
 @app.get("/api/categorias")
 def get_categorias():
@@ -2534,31 +3054,96 @@ def toggle_base_producto(id: int):
         conn.commit()
         return to_dict(conn.execute(PROD_Q + " WHERE p.id=?", (id,)).fetchone())
 
+# ── Tipos de Base ──
+BASE_JOIN = """
+    SELECT b.id, b.nombre, b.disponible, b.tipo_id,
+           t.nombre AS tipo_nombre, t.icono AS tipo_icono
+    FROM bases b
+    LEFT JOIN tipos_base t ON b.tipo_id = t.id
+"""
+
+@app.get("/api/tipos-base")
+def get_tipos_base():
+    with get_conn() as conn:
+        return [to_dict(r) for r in conn.execute(
+            "SELECT * FROM tipos_base ORDER BY nombre").fetchall()]
+
+@app.post("/api/tipos-base", status_code=201)
+def create_tipo_base(data: TipoBaseCreate):
+    nombre = data.nombre.strip()
+    if not nombre:
+        raise HTTPException(400, "Nombre requerido")
+    with get_conn() as conn:
+        existing = conn.execute("SELECT id FROM tipos_base WHERE LOWER(nombre)=LOWER(?)", (nombre,)).fetchone()
+        if existing:
+            raise HTTPException(409, "Ya existe un tipo con ese nombre")
+        cur = conn.execute("INSERT INTO tipos_base (nombre, icono) VALUES (?,?)",
+                           (nombre, data.icono.strip() or "🍹"))
+        conn.commit()
+        return to_dict(conn.execute("SELECT * FROM tipos_base WHERE id=?", (cur.lastrowid,)).fetchone())
+
+@app.put("/api/tipos-base/{id}")
+def update_tipo_base(id: int, data: TipoBaseUpdate):
+    nombre = data.nombre.strip()
+    if not nombre:
+        raise HTTPException(400, "Nombre requerido")
+    with get_conn() as conn:
+        if not conn.execute("SELECT id FROM tipos_base WHERE id=?", (id,)).fetchone():
+            raise HTTPException(404, "Tipo no encontrado")
+        dup = conn.execute("SELECT id FROM tipos_base WHERE LOWER(nombre)=LOWER(?) AND id!=?", (nombre, id)).fetchone()
+        if dup:
+            raise HTTPException(409, "Ya existe un tipo con ese nombre")
+        conn.execute("UPDATE tipos_base SET nombre=?, icono=? WHERE id=?",
+                     (nombre, data.icono.strip() or "🍹", id))
+        conn.commit()
+        return to_dict(conn.execute("SELECT * FROM tipos_base WHERE id=?", (id,)).fetchone())
+
+@app.delete("/api/tipos-base/{id}")
+def delete_tipo_base(id: int):
+    with get_conn() as conn:
+        count = conn.execute("SELECT COUNT(*) FROM bases WHERE tipo_id=?", (id,)).fetchone()[0]
+        if count:
+            raise HTTPException(409, f"Este tipo tiene {count} base(s). Elimínalas primero.")
+        conn.execute("DELETE FROM tipos_base WHERE id=?", (id,))
+        conn.commit()
+    return {"ok": True}
+
 # ── Bases ──
 @app.get("/api/bases")
 def get_bases():
     with get_conn() as conn:
         return [to_dict(r) for r in conn.execute(
-            "SELECT * FROM bases ORDER BY tipo, nombre").fetchall()]
+            BASE_JOIN + " ORDER BY t.nombre, b.nombre").fetchall()]
 
 @app.post("/api/bases", status_code=201)
 def create_base(data: BaseCreate):
+    nombre = data.nombre.strip()
+    if not nombre:
+        raise HTTPException(400, "Nombre requerido")
     with get_conn() as conn:
-        cur = conn.execute("INSERT INTO bases (nombre, tipo) VALUES (?,?)",
-                           (data.nombre.strip(), data.tipo.strip()))
+        if not conn.execute("SELECT id FROM tipos_base WHERE id=?", (data.tipo_id,)).fetchone():
+            raise HTTPException(400, "Tipo de base no válido")
+        tipo_text = conn.execute("SELECT nombre FROM tipos_base WHERE id=?", (data.tipo_id,)).fetchone()["nombre"]
+        cur = conn.execute("INSERT INTO bases (nombre, tipo, tipo_id) VALUES (?,?,?)",
+                           (nombre, tipo_text, data.tipo_id))
         conn.commit()
-        return to_dict(conn.execute("SELECT * FROM bases WHERE id=?",
-                                    (cur.lastrowid,)).fetchone())
+        return to_dict(conn.execute(BASE_JOIN + " WHERE b.id=?", (cur.lastrowid,)).fetchone())
 
 @app.put("/api/bases/{id}")
 def update_base(id: int, data: BaseUpdate):
+    nombre = data.nombre.strip()
+    if not nombre:
+        raise HTTPException(400, "Nombre requerido")
     with get_conn() as conn:
         if not conn.execute("SELECT id FROM bases WHERE id=?", (id,)).fetchone():
             raise HTTPException(404, "Base no encontrada")
-        conn.execute("UPDATE bases SET nombre=?, tipo=? WHERE id=?",
-                     (data.nombre.strip(), data.tipo.strip(), id))
+        if not conn.execute("SELECT id FROM tipos_base WHERE id=?", (data.tipo_id,)).fetchone():
+            raise HTTPException(400, "Tipo de base no válido")
+        tipo_text = conn.execute("SELECT nombre FROM tipos_base WHERE id=?", (data.tipo_id,)).fetchone()["nombre"]
+        conn.execute("UPDATE bases SET nombre=?, tipo=?, tipo_id=? WHERE id=?",
+                     (nombre, tipo_text, data.tipo_id, id))
         conn.commit()
-        return to_dict(conn.execute("SELECT * FROM bases WHERE id=?", (id,)).fetchone())
+        return to_dict(conn.execute(BASE_JOIN + " WHERE b.id=?", (id,)).fetchone())
 
 @app.delete("/api/bases/{id}")
 def delete_base(id: int):
@@ -2576,7 +3161,7 @@ def toggle_base_disponible(id: int):
         conn.execute("UPDATE bases SET disponible=? WHERE id=?",
                      (0 if row["disponible"] else 1, id))
         conn.commit()
-        return to_dict(conn.execute("SELECT * FROM bases WHERE id=?", (id,)).fetchone())
+        return to_dict(conn.execute(BASE_JOIN + " WHERE b.id=?", (id,)).fetchone())
 
 @app.get("/api/productos/{id}/bases")
 def get_producto_bases(id: int):
@@ -2584,12 +3169,11 @@ def get_producto_bases(id: int):
         assigned_ids = {r["base_id"] for r in conn.execute(
             "SELECT base_id FROM producto_bases WHERE producto_id=?", (id,)).fetchall()}
         all_bases = [to_dict(r) for r in conn.execute(
-            "SELECT * FROM bases ORDER BY tipo, nombre").fetchall()]
+            BASE_JOIN + " ORDER BY t.nombre, b.nombre").fetchall()]
         if assigned_ids:
             for b in all_bases:
                 b["assigned"] = b["id"] in assigned_ids
         else:
-            # No specific assignment → return only available, all flagged as not explicitly assigned
             all_bases = [dict(**b, assigned=False) for b in all_bases if b["disponible"]]
         return all_bases
 
@@ -2603,6 +3187,15 @@ def set_producto_bases(id: int, data: ProductoBasesUpdate):
                 [(id, bid) for bid in data.base_ids])
         conn.commit()
     return {"ok": True, "count": len(data.base_ids)}
+
+@app.get("/api/productos/bases-bulk")
+def get_all_producto_bases():
+    with get_conn() as conn:
+        rows = conn.execute("SELECT producto_id, base_id FROM producto_bases").fetchall()
+    result: dict[int, list[int]] = {}
+    for r in rows:
+        result.setdefault(r["producto_id"], []).append(r["base_id"])
+    return result
 
 # ── Notas Rápidas ──
 @app.get("/api/notas_rapidas")
@@ -2642,16 +3235,17 @@ async def create_pedido(data: PedidoCreate, background_tasks: BackgroundTasks):
                 "INSERT INTO detalle_pedidos (pedido_id,producto_id,cantidad,observaciones) VALUES (?,?,?,?)",
                 (pedido_id, item.producto_id, item.cantidad, item.observaciones))
             prod = conn.execute("""
-                SELECT p.nombre, p.precio, COALESCE(c.nombre,'Sin Categoria') AS categoria
+                SELECT p.nombre, p.precio, p.categoria_id, COALESCE(c.nombre,'Sin Categoria') AS categoria
                 FROM productos p LEFT JOIN categorias c ON p.categoria_id=c.id
                 WHERE p.id=?
             """, (item.producto_id,)).fetchone()
             items_detail.append({
                 "producto_id":   item.producto_id,
-                "nombre":        prod["nombre"]    if prod else "Desconocido",
+                "nombre":        prod["nombre"]       if prod else "Desconocido",
                 "cantidad":      item.cantidad,
-                "precio":        prod["precio"]    if prod else 0,
-                "categoria":     prod["categoria"] if prod else "Sin Categoria",
+                "precio":        prod["precio"]       if prod else 0,
+                "categoria_id":  prod["categoria_id"] if prod else None,
+                "categoria":     prod["categoria"]    if prod else "Sin Categoria",
                 "observaciones": item.observaciones,
             })
         conn.commit()
@@ -3181,6 +3775,11 @@ html[data-theme=amber] [class*=border-purple]{border-color:#f59e0b!important}
 html[data-theme=amber] [class*=from-purple]{--tw-gradient-from:#78350f!important}
 html[data-theme=amber] [class*=via-purple]{--tw-gradient-via:#b45309!important}
 html[data-theme=amber] [class*=glow-purple]{box-shadow:0 0 18px rgba(217,119,6,.4)!important}
+html[data-theme=neon] body{background:#040804!important}html[data-theme=neon] [class*=bg-purple-6]{background:#16a34a!important}html[data-theme=neon] [class*=bg-purple-7]{background:#15803d!important}html[data-theme=neon] [class*=text-purple]{color:#4ade80!important}html[data-theme=neon] [class*=border-purple]{border-color:#22c55e!important}html[data-theme=neon] [class*=from-purple]{--tw-gradient-from:#14532d!important}
+html[data-theme=rose] body{background:#0f0208!important}html[data-theme=rose] [class*=bg-purple-6]{background:#e11d48!important}html[data-theme=rose] [class*=bg-purple-7]{background:#be123c!important}html[data-theme=rose] [class*=text-purple]{color:#fb7185!important}html[data-theme=rose] [class*=border-purple]{border-color:#f43f5e!important}html[data-theme=rose] [class*=from-purple]{--tw-gradient-from:#881337!important}
+html[data-theme=violet] body{background:#06030f!important}html[data-theme=violet] [class*=bg-purple-6]{background:#6d28d9!important}html[data-theme=violet] [class*=bg-purple-7]{background:#5b21b6!important}html[data-theme=violet] [class*=text-purple]{color:#a78bfa!important}html[data-theme=violet] [class*=border-purple]{border-color:#7c3aed!important}html[data-theme=violet] [class*=from-purple]{--tw-gradient-from:#3b0764!important}
+html[data-theme=slate] body{background:#0a0c10!important}html[data-theme=slate] [class*=bg-purple-6]{background:#475569!important}html[data-theme=slate] [class*=bg-purple-7]{background:#334155!important}html[data-theme=slate] [class*=text-purple]{color:#94a3b8!important}html[data-theme=slate] [class*=border-purple]{border-color:#64748b!important}html[data-theme=slate] [class*=from-purple]{--tw-gradient-from:#0f172a!important}
+html[data-theme=gold] body{background:#0d0900!important}html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[data-theme=gold] [class*=bg-purple-7]{background:#a16207!important}html[data-theme=gold] [class*=text-purple]{color:#fde047!important}html[data-theme=gold] [class*=border-purple]{border-color:#eab308!important}html[data-theme=gold] [class*=from-purple]{--tw-gradient-from:#713f12!important}
 </style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
@@ -3811,15 +4410,46 @@ async function exportExcel() {
   }
 }
 
+// ── Settings DB ──
+function saveSetting(key, value) {
+  localStorage.setItem(key, value);
+  fetch('/api/settings/'+key, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({value})}).catch(()=>{});
+}
+async function loadSettings() {
+  try {
+    const s = await fetch('/api/settings').then(r=>r.json());
+    if (s.palette || s.drunksPalette) applyTheme(s.palette || s.drunksPalette);
+    Object.entries(s).forEach(([k,v]) => localStorage.setItem(k, v));
+  } catch(e) { applyTheme(localStorage.getItem('drunksPalette') || 'dark'); }
+}
 // ── Theme System ──
 function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t||'dark');
-  localStorage.setItem('drunksPalette', t||'dark');
+  const theme = t||'dark';
+  if (theme.startsWith('custom:')) { applyCustomTheme(theme.split(':')[1]); return; }
+  document.documentElement.setAttribute('data-theme', theme);
+  saveSetting('drunksPalette', theme); saveSetting('palette', theme);
   document.querySelectorAll('.theme-opt[data-theme]').forEach(b => {
-    const on = b.dataset.theme === (t||'dark');
+    const on = b.dataset.theme === theme;
     b.style.background = on ? 'rgba(147,51,234,.2)' : '';
     b.style.outline    = on ? '1px solid rgba(147,51,234,.5)' : '';
   });
+  const picker = document.getElementById('customColorPicker');
+  if (picker) picker.style.display = 'none';
+}
+function applyCustomTheme(hex) {
+  let style = document.getElementById('custom-theme-style');
+  if (!style) { style = document.createElement('style'); style.id='custom-theme-style'; document.head.appendChild(style); }
+  const h = hex||'#9333ea';
+  const ri=parseInt(h.slice(1,3),16),gi=parseInt(h.slice(3,5),16),bi=parseInt(h.slice(5,7),16);
+  style.textContent = `html[data-theme="custom"] body{background:#06060f}
+    html[data-theme="custom"] .bg-purple-600,.bg-purple-700{background-color:${h}!important}
+    html[data-theme="custom"] .text-purple-400,.text-purple-300{color:${h}!important}
+    html[data-theme="custom"] .border-purple-500{border-color:${h}!important}`;
+  document.documentElement.setAttribute('data-theme','custom');
+  saveSetting('drunksPalette','custom:'+h); saveSetting('palette','custom:'+h);
+  document.querySelectorAll('.theme-opt[data-theme]').forEach(b=>{b.style.background='';b.style.outline='';});
+  const picker = document.getElementById('customColorPicker');
+  if (picker) { picker.style.display='inline-block'; picker.value=h; }
 }
 function toggleThemePicker() {
   document.getElementById('themePicker').classList.toggle('hidden');
@@ -3829,9 +4459,28 @@ document.addEventListener('click', e => {
     document.getElementById('themePicker')?.classList.add('hidden');
 });
 
-loadData();
-setInterval(loadData, 60000);
-applyTheme(localStorage.getItem('drunksPalette') || 'dark');
+loadSettings().then(() => { loadData(); setInterval(loadData, 60000); });
+
+// ── Auto-update ──
+async function checkUpdate() {
+  try {
+    const d = await fetch('/api/update/check').then(r => r.json());
+    if (d.has_update && d.latest) {
+      document.getElementById('updateVersion').textContent = 'v'+d.current+' → v'+d.latest;
+      document.getElementById('updateBanner').classList.remove('hidden');
+    }
+  } catch(e) {}
+}
+async function applyUpdate() {
+  const btn = document.getElementById('updateBtn');
+  btn.textContent = 'Descargando...'; btn.disabled = true;
+  try {
+    await fetch('/api/update/apply', {method:'POST'});
+    btn.textContent = 'Reiniciando...';
+  } catch(e) { btn.textContent = 'Error — intenta de nuevo'; btn.disabled = false; }
+}
+checkUpdate();
+setInterval(checkUpdate, 30 * 60 * 1000);
 </script>
 
 <!-- ═══ THEME PICKER ═══ -->
@@ -3860,6 +4509,26 @@ applyTheme(localStorage.getItem('drunksPalette') || 'dark');
         <span class="text-white text-sm font-semibold">Ámbar</span>
       </button>
     </div>
+  </div>
+</div>
+<!-- ═══ BANNER DE ACTUALIZACIÓN ═══ -->
+<div id="updateBanner" class="hidden fixed bottom-0 left-0 right-0 z-[100] bg-purple-950/97 border-t border-purple-500/50 backdrop-blur px-5 py-3 flex items-center justify-between gap-3 shadow-2xl">
+  <div class="flex items-center gap-3">
+    <span class="text-2xl">🔄</span>
+    <div>
+      <div class="text-white font-bold text-sm">Nueva versión disponible</div>
+      <div id="updateVersion" class="text-purple-300 text-xs font-mono"></div>
+    </div>
+  </div>
+  <div class="flex gap-2 shrink-0">
+    <button id="updateBtn" onclick="applyUpdate()"
+      class="bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-extrabold px-4 py-2 rounded-xl transition-colors shadow-lg">
+      Actualizar ahora
+    </button>
+    <button onclick="document.getElementById('updateBanner').classList.add('hidden')"
+      class="text-purple-400 hover:text-white text-sm px-3 py-2 rounded-xl transition-colors">
+      Después
+    </button>
   </div>
 </div>
 </body>
