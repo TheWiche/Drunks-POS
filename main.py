@@ -43,6 +43,49 @@ VENDEDOR_HTML = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>Drunks · Vendedor</title>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('drunksPalette')||'dark')</script>
+<style>
+html[data-theme=light] body{background:#f0ebff!important;color:#1e1b4b!important}
+html[data-theme=light] [class*=bg-gray-95]{background:#eee9ff!important}
+html[data-theme=light] [class*=bg-gray-90]{background:#fff!important}
+html[data-theme=light] [class*=bg-gray-8]{background:#ede9fe!important}
+html[data-theme=light] [class*=bg-gray-7]{background:#ddd6fe!important}
+html[data-theme=light] [class*=border-gray-8]{border-color:#c4b5fd!important}
+html[data-theme=light] [class*=border-gray-7]{border-color:#ddd6fe!important}
+html[data-theme=light] [class*=bg-black]{background:rgba(80,50,180,.55)!important}
+html[data-theme=light] .text-white{color:#1e1b4b!important}
+html[data-theme=light] [class*=text-gray-]{color:#5b21b6!important}
+html[data-theme=ocean] body{background:#020b18!important}
+html[data-theme=ocean] [class*=bg-purple-6]{background:#2563eb!important}
+html[data-theme=ocean] [class*=bg-purple-7]{background:#1d4ed8!important}
+html[data-theme=ocean] [class*=bg-purple-8]{background:#1e40af!important}
+html[data-theme=ocean] [class*=bg-purple-9]{background:#1e3a8a!important}
+html[data-theme=ocean] [class*=text-purple]{color:#60a5fa!important}
+html[data-theme=ocean] [class*=border-purple]{border-color:#3b82f6!important}
+html[data-theme=ocean] [class*=from-purple]{--tw-gradient-from:#1e3a8a!important}
+html[data-theme=ocean] [class*=via-purple]{--tw-gradient-via:#1d4ed8!important}
+html[data-theme=ocean] [class*=glow-purple]{box-shadow:0 0 18px rgba(37,99,235,.4)!important}
+html[data-theme=emerald] body{background:#020f0b!important}
+html[data-theme=emerald] [class*=bg-purple-6]{background:#0d9488!important}
+html[data-theme=emerald] [class*=bg-purple-7]{background:#0f766e!important}
+html[data-theme=emerald] [class*=bg-purple-8]{background:#115e59!important}
+html[data-theme=emerald] [class*=bg-purple-9]{background:#134e4a!important}
+html[data-theme=emerald] [class*=text-purple]{color:#2dd4bf!important}
+html[data-theme=emerald] [class*=border-purple]{border-color:#14b8a6!important}
+html[data-theme=emerald] [class*=from-purple]{--tw-gradient-from:#134e4a!important}
+html[data-theme=emerald] [class*=via-purple]{--tw-gradient-via:#0f766e!important}
+html[data-theme=emerald] [class*=glow-purple]{box-shadow:0 0 18px rgba(13,148,136,.4)!important}
+html[data-theme=amber] body{background:#0d0800!important}
+html[data-theme=amber] [class*=bg-purple-6]{background:#d97706!important}
+html[data-theme=amber] [class*=bg-purple-7]{background:#b45309!important}
+html[data-theme=amber] [class*=bg-purple-8]{background:#92400e!important}
+html[data-theme=amber] [class*=bg-purple-9]{background:#78350f!important}
+html[data-theme=amber] [class*=text-purple]{color:#fbbf24!important}
+html[data-theme=amber] [class*=border-purple]{border-color:#f59e0b!important}
+html[data-theme=amber] [class*=from-purple]{--tw-gradient-from:#78350f!important}
+html[data-theme=amber] [class*=via-purple]{--tw-gradient-via:#b45309!important}
+html[data-theme=amber] [class*=glow-purple]{box-shadow:0 0 18px rgba(217,119,6,.4)!important}
+</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   *{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
@@ -84,7 +127,9 @@ VENDEDOR_HTML = """<!DOCTYPE html>
   <div class="flex items-center gap-2.5 px-4 pt-3 pb-1.5">
     <div class="w-8 h-8 rounded-xl bg-purple-600 flex items-center justify-center text-base shadow-lg shadow-purple-900/60 shrink-0">🍹</div>
     <span class="font-black tracking-widest text-purple-300 text-xs">DRUNKS POS</span>
-    <div class="ml-auto flex items-center gap-1.5">
+    <div class="ml-auto flex items-center gap-2">
+      <button onclick="toggleThemePicker()" title="Paleta de colores"
+        class="w-8 h-8 rounded-xl bg-gray-800/80 border border-gray-700 text-sm flex items-center justify-center hover:bg-gray-700 transition-colors">🎨</button>
       <span class="text-gray-600 text-[10px]">TOTAL</span>
       <div id="totalDisplay" class="text-white font-extrabold text-xl leading-none tabular-nums">$0</div>
     </div>
@@ -142,6 +187,35 @@ VENDEDOR_HTML = """<!DOCTYPE html>
       class="card-tap bg-gradient-to-br from-blue-600 to-blue-700 text-white font-black py-4 rounded-2xl text-sm shadow-lg shadow-blue-950/60">
       <div class="text-xl mb-0.5">📱</div>TRANSFERENCIA
     </button>
+  </div>
+</div>
+
+<!-- ═══ THEME PICKER ═══ -->
+<div id="themePicker" class="hidden fixed z-[90]" style="top:4.5rem;right:1rem">
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl shadow-black/60 w-52">
+    <div class="text-gray-500 text-[10px] tracking-[.2em] font-bold mb-3">PALETA DE COLORES</div>
+    <div class="space-y-0.5">
+      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span>
+        <span class="text-white text-sm font-semibold">Oscuro</span>
+      </button>
+      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span>
+        <span class="text-white text-sm font-semibold">Claro</span>
+      </button>
+      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span>
+        <span class="text-white text-sm font-semibold">Océano</span>
+      </button>
+      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span>
+        <span class="text-white text-sm font-semibold">Esmeralda</span>
+      </button>
+      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span>
+        <span class="text-white text-sm font-semibold">Ámbar</span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -596,6 +670,26 @@ function showToast(msg, type) {
 }
 
 window.addEventListener('focus', loadNotes);
+
+// ── Theme System ──
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t||'dark');
+  localStorage.setItem('drunksPalette', t||'dark');
+  document.querySelectorAll('.theme-opt[data-theme]').forEach(b => {
+    const on = b.dataset.theme === (t||'dark');
+    b.style.background = on ? 'rgba(147,51,234,.2)' : '';
+    b.style.outline    = on ? '1px solid rgba(147,51,234,.5)' : '';
+  });
+}
+function toggleThemePicker() {
+  document.getElementById('themePicker').classList.toggle('hidden');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#themePicker') && !e.target.closest('[onclick*="toggleThemePicker"]'))
+    document.getElementById('themePicker')?.classList.add('hidden');
+});
+applyTheme(localStorage.getItem('drunksPalette') || 'dark');
+
 init();
 </script>
 </body>
@@ -610,6 +704,52 @@ COCINA_HTML = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Drunks · Cocina</title>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('drunksPalette')||'dark')</script>
+<style>
+html[data-theme=light] body{background:#f0ebff!important;color:#1e1b4b!important}
+html[data-theme=light] [class*=bg-gray-95]{background:#eee9ff!important}
+html[data-theme=light] [class*=bg-gray-90]{background:#fff!important}
+html[data-theme=light] [class*=bg-gray-8]{background:#ede9fe!important}
+html[data-theme=light] [class*=bg-gray-7]{background:#ddd6fe!important}
+html[data-theme=light] [class*=border-gray-8]{border-color:#c4b5fd!important}
+html[data-theme=light] [class*=border-gray-7]{border-color:#ddd6fe!important}
+html[data-theme=light] [class*=bg-black]{background:rgba(80,50,180,.55)!important}
+html[data-theme=light] .text-white{color:#1e1b4b!important}
+html[data-theme=light] [class*=text-gray-]{color:#5b21b6!important}
+html[data-theme=ocean] body{background:#020b18!important}
+html[data-theme=ocean] [class*=bg-purple-6]{background:#2563eb!important}
+html[data-theme=ocean] [class*=bg-purple-7]{background:#1d4ed8!important}
+html[data-theme=ocean] [class*=bg-purple-8]{background:#1e40af!important}
+html[data-theme=ocean] [class*=bg-purple-9]{background:#1e3a8a!important}
+html[data-theme=ocean] [class*=text-purple]{color:#60a5fa!important}
+html[data-theme=ocean] [class*=border-purple]{border-color:#3b82f6!important}
+html[data-theme=ocean] [class*=from-purple]{--tw-gradient-from:#1e3a8a!important}
+html[data-theme=ocean] [class*=via-purple]{--tw-gradient-via:#1d4ed8!important}
+html[data-theme=ocean] [class*=glow-purple]{box-shadow:0 0 18px rgba(37,99,235,.4)!important}
+html[data-theme=ocean] .view-btn.active{background:rgba(37,99,235,.85)!important;box-shadow:0 0 14px rgba(37,99,235,.45)!important}
+html[data-theme=emerald] body{background:#020f0b!important}
+html[data-theme=emerald] [class*=bg-purple-6]{background:#0d9488!important}
+html[data-theme=emerald] [class*=bg-purple-7]{background:#0f766e!important}
+html[data-theme=emerald] [class*=bg-purple-8]{background:#115e59!important}
+html[data-theme=emerald] [class*=bg-purple-9]{background:#134e4a!important}
+html[data-theme=emerald] [class*=text-purple]{color:#2dd4bf!important}
+html[data-theme=emerald] [class*=border-purple]{border-color:#14b8a6!important}
+html[data-theme=emerald] [class*=from-purple]{--tw-gradient-from:#134e4a!important}
+html[data-theme=emerald] [class*=via-purple]{--tw-gradient-via:#0f766e!important}
+html[data-theme=emerald] [class*=glow-purple]{box-shadow:0 0 18px rgba(13,148,136,.4)!important}
+html[data-theme=emerald] .view-btn.active{background:rgba(13,148,136,.85)!important;box-shadow:0 0 14px rgba(13,148,136,.45)!important}
+html[data-theme=amber] body{background:#0d0800!important}
+html[data-theme=amber] [class*=bg-purple-6]{background:#d97706!important}
+html[data-theme=amber] [class*=bg-purple-7]{background:#b45309!important}
+html[data-theme=amber] [class*=bg-purple-8]{background:#92400e!important}
+html[data-theme=amber] [class*=bg-purple-9]{background:#78350f!important}
+html[data-theme=amber] [class*=text-purple]{color:#fbbf24!important}
+html[data-theme=amber] [class*=border-purple]{border-color:#f59e0b!important}
+html[data-theme=amber] [class*=from-purple]{--tw-gradient-from:#78350f!important}
+html[data-theme=amber] [class*=via-purple]{--tw-gradient-via:#b45309!important}
+html[data-theme=amber] [class*=glow-purple]{box-shadow:0 0 18px rgba(217,119,6,.4)!important}
+html[data-theme=amber] .view-btn.active{background:rgba(217,119,6,.85)!important;box-shadow:0 0 14px rgba(217,119,6,.45)!important}
+</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   body{background:#06060f;font-family:'Segoe UI',system-ui,sans-serif}
@@ -669,6 +809,8 @@ COCINA_HTML = """<!DOCTYPE html>
         <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0.5" width="16" height="3" rx="1"/><rect x="0" y="4.5" width="16" height="3" rx="1"/><rect x="0" y="8.5" width="16" height="3" rx="1"/><rect x="0" y="12.5" width="16" height="3" rx="1"/></svg>
       </button>
     </div>
+    <button onclick="toggleThemePicker()" title="Paleta de colores"
+      class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">🎨</button>
     <a href="/dashboard" title="Dashboard"
       class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">📊</a>
     <button onclick="openAdmin()" title="Administracion"
@@ -693,6 +835,35 @@ COCINA_HTML = """<!DOCTYPE html>
     <div class="text-8xl mb-6 opacity-15">🍹</div>
     <p class="text-2xl font-bold">Todo listo</p>
     <p class="text-sm mt-2 text-gray-700">Los pedidos aparecen aqui en tiempo real</p>
+  </div>
+</div>
+
+<!-- ═══ THEME PICKER ═══ -->
+<div id="themePicker" class="hidden fixed z-[90]" style="top:4.5rem;right:1rem">
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl shadow-black/60 w-52">
+    <div class="text-gray-500 text-[10px] tracking-[.2em] font-bold mb-3">PALETA DE COLORES</div>
+    <div class="space-y-0.5">
+      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span>
+        <span class="text-white text-sm font-semibold">Oscuro</span>
+      </button>
+      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span>
+        <span class="text-white text-sm font-semibold">Claro</span>
+      </button>
+      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span>
+        <span class="text-white text-sm font-semibold">Océano</span>
+      </button>
+      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span>
+        <span class="text-white text-sm font-semibold">Esmeralda</span>
+      </button>
+      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span>
+        <span class="text-white text-sm font-semibold">Ámbar</span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1312,6 +1483,24 @@ async function deleteNote(id) {
 // ─── DASHBOARD ───  (ahora en ruta /dashboard)
 
 
+// ─── THEME SYSTEM ───
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t||'dark');
+  localStorage.setItem('drunksPalette', t||'dark');
+  document.querySelectorAll('.theme-opt[data-theme]').forEach(b => {
+    const on = b.dataset.theme === (t||'dark');
+    b.style.background = on ? 'rgba(147,51,234,.2)' : '';
+    b.style.outline    = on ? '1px solid rgba(147,51,234,.5)' : '';
+  });
+}
+function toggleThemePicker() {
+  document.getElementById('themePicker').classList.toggle('hidden');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#themePicker') && !e.target.closest('[onclick*="toggleThemePicker"]'))
+    document.getElementById('themePicker')?.classList.add('hidden');
+});
+
 // ─── ESTADO SUPABASE ───
 async function checkSupabase() {
   const dot = document.getElementById('sbDot');
@@ -1340,6 +1529,7 @@ async function checkSupabase() {
 }
 
 // ─── INIT ───
+applyTheme(localStorage.getItem('drunksPalette') || 'dark');
 setView(viewMode);
 loadPending();
 connectWS();
@@ -2365,6 +2555,49 @@ DASHBOARD_HTML = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Drunks · Dashboard</title>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('drunksPalette')||'dark')</script>
+<style>
+html[data-theme=light] body{background:#f0ebff!important;color:#1e1b4b!important}
+html[data-theme=light] [class*=bg-gray-95]{background:#eee9ff!important}
+html[data-theme=light] [class*=bg-gray-90]{background:#fff!important}
+html[data-theme=light] [class*=bg-gray-8]{background:#ede9fe!important}
+html[data-theme=light] [class*=bg-gray-7]{background:#ddd6fe!important}
+html[data-theme=light] [class*=border-gray-8]{border-color:#c4b5fd!important}
+html[data-theme=light] [class*=border-gray-7]{border-color:#ddd6fe!important}
+html[data-theme=light] [class*=bg-black]{background:rgba(80,50,180,.55)!important}
+html[data-theme=light] .text-white{color:#1e1b4b!important}
+html[data-theme=light] [class*=text-gray-]{color:#5b21b6!important}
+html[data-theme=ocean] body{background:#020b18!important}
+html[data-theme=ocean] [class*=bg-purple-6]{background:#2563eb!important}
+html[data-theme=ocean] [class*=bg-purple-7]{background:#1d4ed8!important}
+html[data-theme=ocean] [class*=bg-purple-8]{background:#1e40af!important}
+html[data-theme=ocean] [class*=bg-purple-9]{background:#1e3a8a!important}
+html[data-theme=ocean] [class*=text-purple]{color:#60a5fa!important}
+html[data-theme=ocean] [class*=border-purple]{border-color:#3b82f6!important}
+html[data-theme=ocean] [class*=from-purple]{--tw-gradient-from:#1e3a8a!important}
+html[data-theme=ocean] [class*=via-purple]{--tw-gradient-via:#1d4ed8!important}
+html[data-theme=ocean] [class*=glow-purple]{box-shadow:0 0 18px rgba(37,99,235,.4)!important}
+html[data-theme=emerald] body{background:#020f0b!important}
+html[data-theme=emerald] [class*=bg-purple-6]{background:#0d9488!important}
+html[data-theme=emerald] [class*=bg-purple-7]{background:#0f766e!important}
+html[data-theme=emerald] [class*=bg-purple-8]{background:#115e59!important}
+html[data-theme=emerald] [class*=bg-purple-9]{background:#134e4a!important}
+html[data-theme=emerald] [class*=text-purple]{color:#2dd4bf!important}
+html[data-theme=emerald] [class*=border-purple]{border-color:#14b8a6!important}
+html[data-theme=emerald] [class*=from-purple]{--tw-gradient-from:#134e4a!important}
+html[data-theme=emerald] [class*=via-purple]{--tw-gradient-via:#0f766e!important}
+html[data-theme=emerald] [class*=glow-purple]{box-shadow:0 0 18px rgba(13,148,136,.4)!important}
+html[data-theme=amber] body{background:#0d0800!important}
+html[data-theme=amber] [class*=bg-purple-6]{background:#d97706!important}
+html[data-theme=amber] [class*=bg-purple-7]{background:#b45309!important}
+html[data-theme=amber] [class*=bg-purple-8]{background:#92400e!important}
+html[data-theme=amber] [class*=bg-purple-9]{background:#78350f!important}
+html[data-theme=amber] [class*=text-purple]{color:#fbbf24!important}
+html[data-theme=amber] [class*=border-purple]{border-color:#f59e0b!important}
+html[data-theme=amber] [class*=from-purple]{--tw-gradient-from:#78350f!important}
+html[data-theme=amber] [class*=via-purple]{--tw-gradient-via:#b45309!important}
+html[data-theme=amber] [class*=glow-purple]{box-shadow:0 0 18px rgba(217,119,6,.4)!important}
+</style>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
@@ -2392,6 +2625,8 @@ DASHBOARD_HTML = """<!DOCTYPE html>
     <div class="flex items-center gap-2">
       <a href="/cocina"   class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-3 py-2 rounded-xl text-xs font-medium transition-colors hidden sm:block">Cocina</a>
       <a href="/vendedor" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-3 py-2 rounded-xl text-xs font-medium transition-colors hidden sm:block">Vendedor</a>
+      <button onclick="toggleThemePicker()" title="Paleta de colores"
+        class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-3 py-2 rounded-xl text-sm transition-colors">🎨</button>
       <button id="exportBtn" onclick="exportExcel()"
         class="bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-lg shadow-green-950/50 flex items-center gap-1.5">
         <span>📥</span><span>Exportar Excel</span>
@@ -2992,9 +3227,57 @@ async function exportExcel() {
   }
 }
 
+// ── Theme System ──
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t||'dark');
+  localStorage.setItem('drunksPalette', t||'dark');
+  document.querySelectorAll('.theme-opt[data-theme]').forEach(b => {
+    const on = b.dataset.theme === (t||'dark');
+    b.style.background = on ? 'rgba(147,51,234,.2)' : '';
+    b.style.outline    = on ? '1px solid rgba(147,51,234,.5)' : '';
+  });
+}
+function toggleThemePicker() {
+  document.getElementById('themePicker').classList.toggle('hidden');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#themePicker') && !e.target.closest('[onclick*="toggleThemePicker"]'))
+    document.getElementById('themePicker')?.classList.add('hidden');
+});
+
 loadData();
 setInterval(loadData, 60000);
+applyTheme(localStorage.getItem('drunksPalette') || 'dark');
 </script>
+
+<!-- ═══ THEME PICKER ═══ -->
+<div id="themePicker" class="hidden fixed z-[90]" style="top:4.5rem;right:1rem">
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl shadow-black/60 w-52">
+    <div class="text-gray-500 text-[10px] tracking-[.2em] font-bold mb-3">PALETA DE COLORES</div>
+    <div class="space-y-0.5">
+      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span>
+        <span class="text-white text-sm font-semibold">Oscuro</span>
+      </button>
+      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span>
+        <span class="text-white text-sm font-semibold">Claro</span>
+      </button>
+      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span>
+        <span class="text-white text-sm font-semibold">Océano</span>
+      </button>
+      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span>
+        <span class="text-white text-sm font-semibold">Esmeralda</span>
+      </button>
+      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors">
+        <span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span>
+        <span class="text-white text-sm font-semibold">Ámbar</span>
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 </html>"""
 
