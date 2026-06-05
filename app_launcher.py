@@ -30,7 +30,8 @@ os.environ.setdefault(
     ".F5RAHHnBt722dm9-yfe8bZw6J0wAJWh01fJfh3pf4lM",
 )
 
-HOST = "127.0.0.1"
+BIND_HOST = "0.0.0.0"   # escucha en toda la red (otros dispositivos pueden conectarse)
+LOCAL_HOST = "127.0.0.1"  # el webview se conecta por localhost
 PORT = 8000
 
 _server_error: str = ""
@@ -51,14 +52,14 @@ def _start_server() -> None:
         import uvicorn
         from main import app  # noqa: F401 — PyInstaller necesita ver este import
         _log("Módulos importados OK. Arrancando uvicorn...")
-        uvicorn.run(app, host=HOST, port=PORT, log_level="warning")
+        uvicorn.run(app, host=BIND_HOST, port=PORT, log_level="warning")
     except Exception:
         _server_error = traceback.format_exc()
         _log(f"ERROR en servidor:\n{_server_error}")
 
 
 def _wait_ready(timeout: float = 25.0) -> bool:
-    url = f"http://{HOST}:{PORT}/"
+    url = f"http://{LOCAL_HOST}:{PORT}/"
     deadline = time.time() + timeout
     while time.time() < deadline:
         try:
@@ -101,7 +102,7 @@ if __name__ == "__main__":
     else:
         window = webview.create_window(
             "Drunks POS",
-            f"http://{HOST}:{PORT}/",
+            f"http://{LOCAL_HOST}:{PORT}/",
             width=1366,
             height=768,
             min_size=(1024, 600),
