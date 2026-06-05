@@ -1,0 +1,169 @@
+"""
+Módulo de auto-actualización para Drunks POS.
+Consulta GitHub Releases y aplica la actualización sin intervención técnica.
+"""
+import os
+import sys
+import zipfile
+import threading
+import tempfile
+import subprocess
+from pathlib import Path
+
+GITHUB_REPO = "TheWiche/Drunks-POS"
+TEMP_UPDATE_DIR = Path(tempfile.gettempdir()) / "drunks_update"
+
+_update_info: dict = {
+    "has_update": False,
+    "latest":     None,
+    "current":    "0.0.0",
+    "url":        None,
+    "checking":   False,
+    "error":      None,
+}
+
+
+def get_app_root() -> Path:
+    """Raíz del proyecto (donde está INICIAR_SISTEMA.bat)."""
+    if getattr(sys, "frozen", False):
+        # Ejecutando como .exe compilado:
+        # sys.executable = .../dist/drunks_backend/drunks_backend.exe
+        return Path(sys.executable).parent.parent.parent
+    return Path(__file__).parent
+
+
+def get_current_version() -> str:
+    """Lee version.txt desde _MEIPASS (exe) o directorio del script."""
+    candidates = [
+        Path(getattr(sys, "_MEIPASS", "")) / "version.txt",
+        get_app_root() / "version.txt",
+        Path(__file__).parent / "version.txt",
+    ]
+    for path in candidates:
+        try:
+            if path.exists():
+                return path.read_text(encoding="utf-8").strip()
+        except Exception:
+            pass
+    return "0.0.0"
+
+
+def _version_tuple(v: str) -> tuple:
+    try:
+        return tuple(int(x) for x in v.split("."))
+    except Exception:
+        return (0, 0, 0)
+
+
+def check_for_update() -> None:
+    """Consulta la API de GitHub Releases. Actualiza _update_info."""
+    _update_info["checking"] = True
+    _update_info["error"] = None
+    try:
+        import httpx
+        r = httpx.get(
+            f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest",
+            headers={"Accept": "application/vnd.github.v3+json"},
+            timeout=8.0,
+            follow_redirects=True,
+        )
+        if r.status_code != 200:
+            _update_info["error"] = f"GitHub respondió {r.status_code}"
+            return
+
+        data = r.json()
+        latest = data.get("tag_name", "").lstrip("v")
+        current = get_current_version()
+
+        # Buscar el asset .zip en los adjuntos del release
+        asset_url = next(
+            (a["browser_download_url"] for a in data.get("assets", [])
+             if a["name"].endswith(".zip")),
+            None,
+        )
+
+        _update_info.update({
+            "has_update": _version_tuple(latest) > _version_tuple(current),
+            "latest":     latest,
+            "current":    current,
+            "url":        asset_url,
+        })
+
+    except ImportError:
+        _update_info["error"] = "httpx no disponible"
+    except Exception as exc:
+        _update_info["error"] = str(exc)
+    finally:
+        _update_info["checking"] = False
+
+
+def start_background_check() -> None:
+    """Lanza el chequeo de actualización en un hilo daemon (no bloquea el arranque)."""
+    _update_info["current"] = get_current_version()
+    t = threading.Thread(target=check_for_update, daemon=True, name="update-check")
+    t.start()
+
+
+def download_and_apply(url: str) -> None:
+    """
+    Descarga el ZIP de la nueva versión, lo extrae y lanza un .bat
+    que reemplaza los archivos mientras la app está cerrada.
+    """
+    try:
+        import httpx
+
+        # Limpiar directorio temporal previo
+        if TEMP_UPDATE_DIR.exists():
+            import shutil
+            shutil.rmtree(TEMP_UPDATE_DIR, ignore_errors=True)
+        TEMP_UPDATE_DIR.mkdir(parents=True, exist_ok=True)
+
+        zip_path = TEMP_UPDATE_DIR / "update.zip"
+
+        # Descargar con streaming
+        with httpx.stream("GET", url, follow_redirects=True, timeout=60.0) as r:
+            r.raise_for_status()
+            with open(zip_path, "wb") as f:
+                for chunk in r.iter_bytes(chunk_size=65536):
+                    f.write(chunk)
+
+        # Extraer ZIP al directorio temporal
+        extract_dir = TEMP_UPDATE_DIR / "extracted"
+        with zipfile.ZipFile(zip_path, "r") as z:
+            z.extractall(extract_dir)
+        zip_path.unlink(missing_ok=True)
+
+        app_root = get_app_root()
+        bat_path = app_root / "_apply_update.bat"
+
+        # Escribir script que aplicará la actualización tras cerrar la app
+        bat_content = (
+            "@echo off\n"
+            "title Drunks POS - Aplicando actualizacion...\n"
+            "echo Aplicando actualizacion, espera un momento...\n"
+            "timeout /t 3 /nobreak >nul\n"
+            f'robocopy "{extract_dir}" "{app_root}" /E /IS /IT /NFL /NDL /NJH /NJS /nc /ns /np\n'
+            f'if exist "{TEMP_UPDATE_DIR}" rmdir /S /Q "{TEMP_UPDATE_DIR}"\n'
+            "echo Actualizacion aplicada. Reiniciando Drunks POS...\n"
+            "timeout /t 1 /nobreak >nul\n"
+            f'start "" "{app_root}\\INICIAR_SISTEMA.bat"\n'
+            'del "%~f0"\n'
+        )
+        bat_path.write_text(bat_content, encoding="utf-8")
+
+        # Lanzar el bat de forma desacoplada y cerrar la app
+        subprocess.Popen(
+            ["cmd", "/c", str(bat_path)],
+            creationflags=(
+                subprocess.DETACHED_PROCESS
+                | subprocess.CREATE_NEW_PROCESS_GROUP
+                | subprocess.CREATE_NO_WINDOW
+            ),
+        )
+
+    except Exception as exc:
+        _update_info["error"] = f"Error al aplicar actualización: {exc}"
+        return
+
+    # Cerrar la app para que el bat pueda reemplazar los archivos
+    os._exit(0)
