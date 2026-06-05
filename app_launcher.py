@@ -5,6 +5,7 @@ Shell nativa con barra de navegación, detección de updates y ventana de progre
 import os
 import sys
 import time
+import socket
 import threading
 import traceback
 import urllib.request
@@ -31,7 +32,23 @@ os.environ.setdefault(
 
 BIND_HOST  = "0.0.0.0"
 LOCAL_HOST = "127.0.0.1"
-PORT       = 8000
+
+def _pick_port(preferred: int = 8000) -> int:
+    """Usa el puerto preferido si está libre, si no busca uno disponible."""
+    for port in [preferred] + list(range(8001, 8020)):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                s.bind((LOCAL_HOST, port))
+                return port
+            except OSError:
+                continue
+    # último recurso: puerto asignado por el OS
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((LOCAL_HOST, 0))
+        return s.getsockname()[1]
+
+PORT = _pick_port(8000)
 
 _main_window   = None
 _update_window = None
