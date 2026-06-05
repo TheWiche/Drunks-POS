@@ -463,22 +463,41 @@ function renderNotes() {
     return;
   }
 
+  const appliedNotes = (active && active.obs)
+    ? active.obs.split(', ').map(x => x.trim()).filter(Boolean)
+    : [];
+
   bar.innerHTML = shown.map(n => {
-    const isCtx = n.categoria_id !== null;
+    const isCtx     = n.categoria_id !== null;
+    const isApplied = appliedNotes.includes(n.texto);
+    let cls;
+    if (isApplied) {
+      cls = 'bg-purple-700 border-purple-500 text-white shadow-md shadow-purple-900/40';
+    } else if (isCtx) {
+      cls = 'bg-amber-900/30 border-amber-700/40 text-amber-300 hover:bg-amber-800/50';
+    } else {
+      cls = 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-500';
+    }
     return `<button data-note="${n.texto.replace(/"/g,'&quot;')}" onclick="applyNote(this.dataset.note)"
-      class="card-tap text-xs px-3 py-1.5 rounded-full border font-semibold transition-all
-        ${isCtx ? 'bg-amber-900/30 border-amber-700/40 text-amber-300 hover:bg-amber-800/50' : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-500'}">
-      ${n.texto}
+      class="card-tap text-xs px-3 py-1.5 rounded-full border font-semibold transition-all ${cls}">
+      ${isApplied ? '✓ ' : ''}${n.texto}
     </button>`;
   }).join('');
 }
 
 function applyNote(note) {
   if (!lastKey || !cart[lastKey]) { showToast('Toca una bebida del carrito primero', 'warn'); return; }
-  const item = cart[lastKey];
-  item.obs = item.obs ? item.obs + ', ' + note : note;
-  renderCart();
-  showToast(note, 'ok');
+  const item  = cart[lastKey];
+  const notes = item.obs ? item.obs.split(', ').map(n => n.trim()).filter(Boolean) : [];
+  if (notes.includes(note)) {
+    item.obs = notes.filter(n => n !== note).join(', ');
+    renderCart(); renderNotes();
+    showToast('Nota eliminada', 'warn');
+  } else {
+    item.obs = notes.length ? notes.join(', ') + ', ' + note : note;
+    renderCart(); renderNotes();
+    showToast(note, 'ok');
+  }
 }
 
 function applyFreeNote() {
