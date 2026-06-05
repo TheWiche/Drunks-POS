@@ -18,7 +18,7 @@ set SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsIn
 echo  [1/2] Iniciando servidor...
 echo.
 
-start "" /B "%~dp0dist\drunks_backend\drunks_backend.exe"
+start "" /B "%~dp0drunks_backend\drunks_backend.exe"
 
 echo  [2/2] Abriendo sistema en el navegador...
 timeout /t 3 /nobreak >nul

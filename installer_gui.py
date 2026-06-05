@@ -157,7 +157,7 @@ class InstallerApp:
 
     # ── Lógica de instalación ─────────────────────────────────────────────────
     def _install(self):
-        dest = Path(self.install_path.get())
+        dest = Path(self.install_path.get()) / "Drunks"
         try:
             # 1. Consultar última versión
             self._set_status("Consultando versión en GitHub...")
