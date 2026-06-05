@@ -343,6 +343,7 @@ const CAT_CFG = {
 const DEF_CFG = { icon:'🍾', bg:'bg-gray-800/50 border-gray-700/20', active:'bg-gray-700/70 border-purple-400/60 glow-purple', pill:'bg-purple-700 text-purple-100' };
 
 let availBases = [];  // cargadas dinámicamente desde /api/productos/{id}/bases
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ── Estado ──
 let products = [], categories = [], quickNotes = [];
@@ -2998,7 +2999,16 @@ PROD_Q = """
 @app.get("/api/productos")
 def get_productos():
     with get_conn() as conn:
-        return [to_dict(r) for r in conn.execute(PROD_Q + " ORDER BY c.nombre, p.nombre").fetchall()]
+        productos = [to_dict(r) for r in conn.execute(PROD_Q + " ORDER BY c.nombre, p.nombre").fetchall()]
+        # Corregir inconsistencia: tiene_base=True pero sin entradas en producto_bases
+        ids_con_bases = {r[0] for r in conn.execute(
+            "SELECT DISTINCT producto_id FROM producto_bases").fetchall()}
+        for p in productos:
+            if p.get("tiene_base") and p["id"] not in ids_con_bases:
+                p["tiene_base"] = False
+                conn.execute("UPDATE productos SET tiene_base=0 WHERE id=?", (p["id"],))
+        conn.commit()
+        return productos
 
 @app.post("/api/productos", status_code=201)
 def create_producto(data: ProductoCreate):
