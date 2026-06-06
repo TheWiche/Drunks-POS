@@ -23,6 +23,12 @@ html,body{height:100%;overflow:hidden;background:#0d0d1a}
 .nav-btn:hover{background:#1e1e35;color:#fff}
 .nav-btn.active{background:#2d1f6e;color:#c4b5fd;border-color:#7c3aed55}
 .spacer{flex:1}
+.fs-btn{
+  font-size:.9rem;line-height:1;background:transparent;border:1px solid transparent;
+  border-radius:8px;padding:5px 9px;cursor:pointer;color:#8b8ba8;transition:.15s;
+  display:flex;align-items:center;justify-content:center
+}
+.fs-btn:hover{background:#1e1e35;color:#fff}
 .upd-pill{
   display:none;align-items:center;gap:7px;
   background:#7c3aed22;border:1px solid #7c3aed55;border-radius:99px;
@@ -47,6 +53,7 @@ iframe{flex:1;border:none;width:100%}
     <button class="nav-btn"        id="btn-cocina"    onclick="go('/cocina','cocina')">👨‍🍳 Cocina</button>
     <button class="nav-btn"        id="btn-admin"     onclick="go('/admin','admin')">🔐 Admin</button>
     <div class="spacer"></div>
+    <button class="fs-btn" id="btn-fs" onclick="toggleFullscreen()" title="Pantalla completa (F11)">⛶</button>
     <div class="upd-pill" id="upd-pill" onclick="reqUpdate()">
       <div class="upd-dot"></div>
       <span class="upd-txt" id="upd-txt">Actualización disponible</span>
@@ -86,6 +93,17 @@ function reqUpdate() {
   if (window.pywebview && window.pywebview.api)
     window.pywebview.api.open_update_window();
 }
+var _isFs = false;
+function toggleFullscreen() {
+  if (window.pywebview && window.pywebview.api) {
+    window.pywebview.api.toggle_fullscreen();
+    _isFs = !_isFs;
+    document.getElementById('btn-fs').textContent = _isFs ? '⊡' : '⛶';
+  }
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'F11') { e.preventDefault(); toggleFullscreen(); }
+});
 </script>
 </body>
 </html>

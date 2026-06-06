@@ -110,8 +110,9 @@ def get_pendientes():
             pd = dict(p)
             pd["items"] = [dict(d) for d in conn.execute("""
                 SELECT dp.producto_id, dp.cantidad, dp.observaciones,
-                       pr.nombre, pr.categoria_id
-                FROM detalle_pedidos dp JOIN productos pr ON dp.producto_id=pr.id
+                       COALESCE(pr.nombre,'Producto eliminado') AS nombre,
+                       pr.categoria_id
+                FROM detalle_pedidos dp LEFT JOIN productos pr ON dp.producto_id=pr.id
                 WHERE dp.pedido_id=?""", (p["id"],)).fetchall()]
             result.append(pd)
     return result

@@ -151,6 +151,13 @@ class AppAPI:
             except Exception:
                 pass
 
+    def toggle_fullscreen(self):
+        if _main_window:
+            try:
+                _main_window.toggle_fullscreen()
+            except Exception:
+                pass
+
 
 # ── Lógica de actualización con ventana tkinter ───────────────────────────────
 def _run_update_with_ui():
