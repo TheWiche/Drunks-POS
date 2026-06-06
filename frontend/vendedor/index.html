@@ -475,11 +475,12 @@ function closeBase() {
 function selectBase(base) {
   if (!pendingProd) return;
   const key = pendingProd.id + '|' + base;
+  const prodId = pendingProd.id;
   lastKey = key;
   if (!cart[key]) { cart[key] = { product: pendingProd, qty: 1, base, obs: '' }; }
   else { cart[key].qty++; }
   closeBase();
-  _refreshProdCard(pendingProd.id); renderCart(); renderNotes(); updateTotal();
+  _refreshProdCard(prodId); renderCart(); renderNotes(); updateTotal();
 }
 
 // ── Carrito ──
@@ -544,8 +545,8 @@ function removeItem(key) {
   _refreshProdCard(prodId); renderCart(); renderNotes(); updateTotal();
 }
 
-function clearCart() {
-  if (!confirm('Limpiar todo el carrito?')) return;
+async function clearCart() {
+  if (!await appConfirm('Limpiar todo el carrito?', 'Limpiar')) return;
   cart = {}; lastKey = null;
   renderProds(); renderCart(); renderNotes(); updateTotal();
 }
@@ -671,32 +672,45 @@ function closeConfirm() {
 }
 
 async function sendOrder() {
-  const btn    = document.getElementById('confirmBtn');
+  const btn     = document.getElementById('confirmBtn');
   const cliente = document.getElementById('clientName').value.trim();
   const items   = Object.values(cart);
   const total   = items.reduce((s, i) => s + i.product.precio * i.qty, 0);
-  btn.disabled  = true; btn.textContent = 'Enviando...';
+  const method  = pendingMethod;
+
+  btn.disabled = true; btn.textContent = 'Enviando...';
+
+  // Limpiar UI de inmediato — no esperar al servidor
+  const cartSnapshot = { ...cart };
+  cart = {}; lastKey = null;
+  document.getElementById('clientName').value = '';
+  renderProds(); renderCart(); renderNotes(); updateTotal();
+  closeConfirm();
+  showToast('Pedido enviado a cocina!', 'ok');
+
   try {
     const r = await fetch('/api/pedidos', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        cliente, metodo_pago: pendingMethod, total,
+        cliente, metodo_pago: method, total,
         items: items.map(i => ({
           producto_id:   i.product.id,
           cantidad:      i.qty,
-          observaciones: [i.base, i.obs].filter(Boolean).join(' | ')
-        }))
-      })
+          observaciones: [i.base, i.obs].filter(Boolean).join(' | '),
+        })),
+      }),
     });
-    if (r.ok) {
-      cart = {}; lastKey = null;
-      document.getElementById('clientName').value = '';
+    if (!r.ok) {
+      cart = cartSnapshot;
       renderProds(); renderCart(); renderNotes(); updateTotal();
-      closeConfirm();
-      showToast('Pedido enviado a cocina!', 'ok');
-    } else { showToast('Error al enviar', 'error'); }
-  } catch(e) { showToast('Sin conexion', 'error'); }
-  finally { btn.disabled = false; btn.textContent = 'Confirmar y Mandar a Preparacion'; }
+      showToast('Error al enviar — carrito restaurado', 'error');
+    }
+  } catch(e) {
+    cart = cartSnapshot;
+    renderProds(); renderCart(); renderNotes(); updateTotal();
+    showToast('Sin conexion — carrito restaurado', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Confirmar y Mandar a Preparacion';
 }
 
 function showToast(msg, type) {
@@ -819,5 +833,27 @@ setInterval(checkUpdate, 30 * 60 * 1000);
     </button>
   </div>
 </div>
+
+<!-- App Confirm Modal -->
+<div id="appConfirmModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+  <div class="bg-gray-900 border border-gray-700/80 rounded-2xl p-6 max-w-xs w-full mx-4 shadow-2xl">
+    <p id="appConfirmMsg" class="text-white text-sm font-semibold leading-relaxed mb-5"></p>
+    <div class="flex gap-3 justify-end">
+      <button onclick="_appCR(false)" class="px-4 py-2 rounded-xl bg-gray-800 text-gray-300 text-sm font-bold hover:bg-gray-700 transition-colors">Cancelar</button>
+      <button id="appConfirmOk" onclick="_appCR(true)" class="px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-500 transition-colors">Confirmar</button>
+    </div>
+  </div>
+</div>
+<script>
+let _appCR = null;
+function appConfirm(msg, okLabel = 'Confirmar') {
+  return new Promise(r => {
+    _appCR = v => { document.getElementById('appConfirmModal').classList.add('hidden'); _appCR = null; r(v); };
+    document.getElementById('appConfirmMsg').textContent = msg;
+    document.getElementById('appConfirmOk').textContent = okLabel;
+    document.getElementById('appConfirmModal').classList.remove('hidden');
+  });
+}
+</script>
 </body>
 </html>
