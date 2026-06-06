@@ -16,7 +16,7 @@ TEMP_UPDATE_DIR = Path(tempfile.gettempdir()) / "drunks_update"
 
 # Version de este build -- se actualiza en cada release.
 # Hardcodeada aqui para que nunca dependa de un archivo externo.
-APP_VERSION = "1.0.15"
+APP_VERSION = "1.0.16"
 
 _update_info: dict = {
     "has_update": False,
@@ -164,13 +164,15 @@ def download_and_apply(url: str, progress_cb=None) -> None:
         dst_str = str(app_root)
         tmp_str = str(TEMP_UPDATE_DIR)
 
+        # robocopy maneja archivos bloqueados con reintentos (/R:5 /W:2)
+        # y no borra archivos extra en destino (conserva drunks.db, logs, etc.)
         vbs_lines = [
-            'WScript.Sleep 6000',
-            'Dim fso, sh',
-            'Set fso = CreateObject("Scripting.FileSystemObject")',
-            f'fso.CopyFolder "{src_str}\\", "{dst_str}\\", True',
-            f'If fso.FolderExists("{tmp_str}") Then fso.DeleteFolder "{tmp_str}", True',
+            'WScript.Sleep 8000',
+            'Dim sh, fso',
             'Set sh = CreateObject("WScript.Shell")',
+            f'sh.Run "robocopy ""{src_str}"" ""{dst_str}"" /E /IS /R:5 /W:2", 0, True',
+            'Set fso = CreateObject("Scripting.FileSystemObject")',
+            f'If fso.FolderExists("{tmp_str}") Then fso.DeleteFolder "{tmp_str}", True',
             f'sh.Run Chr(34) & "{main_exe}" & Chr(34)',
             'fso.DeleteFile WScript.ScriptFullName',
         ]
@@ -182,6 +184,7 @@ def download_and_apply(url: str, progress_cb=None) -> None:
             creationflags=(
                 subprocess.DETACHED_PROCESS
                 | subprocess.CREATE_NEW_PROCESS_GROUP
+                | subprocess.CREATE_NO_WINDOW
             ),
         )
         _prog(100, "Cerrando...")

