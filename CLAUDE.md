@@ -3,7 +3,7 @@
 > Para ver el mapa completo de carpetas/archivos usa `/arquitectura`
 
 ## Qué es
-POS offline-first para negocio de bebidas. Desktop app: pywebview → FastAPI/Uvicorn → SQLite. Distribuida como un solo `Drunks.exe` (PyInstaller onefile). Auto-actualización desde GitHub Releases.
+POS offline-first para negocio de bebidas. Desktop app: pywebview → FastAPI/Uvicorn → SQLite. Distribuida como carpeta `Drunks\` (PyInstaller COLLECT). Auto-actualización desde GitHub Releases.
 
 ## Arquitectura (desde v1.0.6)
 
@@ -21,7 +21,7 @@ frontend/         ← HTML/CSS/JS servidos como archivos estáticos
 | `app_launcher.py` | Entry point: arranca uvicorn en hilo, abre pywebview, maneja updates con ventana tkinter. Import: `from backend.main import app` |
 | `updater.py` | Chequea GitHub Releases, descarga ZIP, bat mínimo para reemplazar Drunks.exe. `APP_VERSION` hardcodeado aquí. |
 | `installer_gui.py` | Instalador independiente (ttk tema `vista`, estilo Windows nativo). |
-| `drunks_app.spec` | PyInstaller **onefile** spec. Incluye `('frontend','frontend')` en datas. |
+| `drunks_app.spec` | PyInstaller **COLLECT** spec. Incluye `('frontend','frontend')` en datas. Produce `dist\Drunks\`. |
 | `version.txt` | Informativo solamente — la app NO lo lee. |
 
 ### Backend (`backend/`)
@@ -53,22 +53,23 @@ frontend/         ← HTML/CSS/JS servidos como archivos estáticos
 **Admin PIN**: el setting `admin_pin` en SQLite. Si está vacío → acceso libre. Si tiene valor → overlay PIN. Se guarda en `sessionStorage` al desbloquear.
 
 ## Versión actual
-**1.0.5** — hardcodeada en `updater.py` línea `APP_VERSION = "1.0.5"`.  
+**1.0.14** — hardcodeada en `updater.py` línea `APP_VERSION = "1.0.14"`.  
 GitHub repo: `TheWiche/Drunks-POS`  
-Último release: `v1.0.5`
+Último release: `v1.0.14`
 
 ## Cómo hacer un release (paso a paso)
 
 1. **Subir versión** en `updater.py`: cambiar `APP_VERSION = "1.0.X"`
 2. **Actualizar** `version.txt` (informativo)
 3. **Compilar**: `pyinstaller drunks_app.spec --noconfirm`  
-   → produce `dist\Drunks.exe` (incluye `frontend/` dentro)
+   → produce `dist\Drunks\` (carpeta con `Drunks.exe` + DLLs + frontend)
 4. **Compilar instalador** (si hubo cambios): `pyinstaller installer_gui.py --onefile --noconsole --uac-admin --name Instalar_Drunks --noconfirm`
-5. **Crear ZIP**: `Compress-Archive -Path dist\Drunks.exe -DestinationPath drunks_v1.0.X.zip -Force`
+5. **Crear ZIP** (contenido de la carpeta, sin la carpeta raíz):  
+   `Compress-Archive -Path dist\Drunks\* -DestinationPath drunks_v1.0.X.zip -Force`
 6. **Publicar release**:
    ```
    & "C:\Program Files\GitHub CLI\gh.exe" release create v1.0.X `
-     drunks_v1.0.X.zip dist\Drunks.exe dist\Instalar_Drunks.exe `
+     drunks_v1.0.X.zip dist\Instalar_Drunks.exe `
      --repo TheWiche/Drunks-POS `
      --title "Drunks POS v1.0.X" `
      --notes "- descripción del cambio"
@@ -93,12 +94,10 @@ GitHub repo: `TheWiche/Drunks-POS`
 
 ## Reglas importantes
 - La versión **NUNCA** se lee de archivo — solo de `APP_VERSION` en `updater.py`
-- Build es **onefile** — no COLLECT, no carpeta `_internal`
-- El bat de update usa `ping 127.0.0.1 -n 5 > nul` (no `timeout` — falla sin stdin)
+- Build es **COLLECT** (carpeta `dist\Drunks\`) — las DLLs están siempre en disco, nunca se extraen
+- El update usa VBScript con `fso.CopyFolder` para copiar la carpeta completa (no solo el exe)
+- ZIP del release se crea con `dist\Drunks\*` (contenido de la carpeta, no la carpeta en sí)
 - La ventana de progreso de update es **tkinter** (no segunda ventana pywebview)
 - El `frontend/` se sirve via `FileResponse` — **no** como strings embebidos en Python
 - `FRONTEND_DIR` en `backend/config.py` detecta automáticamente si está frozen (PyInstaller) o en dev
 - La carpeta `frontend/static/` se monta en `/static` vía `StaticFiles`
-
-## Error conocido en otro PC
-`Failed to load Python DLL python312.dll` → error de antivirus o Windows Defender bloqueando la extracción del onefile en `%TEMP%\_MEI...`. Solución: agregar excepción en el antivirus, o usar build tipo COLLECT (carpeta) en vez de onefile.

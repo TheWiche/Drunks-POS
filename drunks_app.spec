@@ -37,12 +37,10 @@ a = Analysis(
 )
 pyz = PYZ(a.pure)
 
-# onefile: todo dentro de Drunks.exe — sin carpeta _internal
+# COLLECT: carpeta dist\Drunks\ con Drunks.exe + DLLs siempre en disco (no extraccion temporal)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.datas,
     [],
     name='Drunks',
     debug=False,
@@ -50,7 +48,6 @@ exe = EXE(
     strip=False,
     upx=True,
     upx_exclude=[],
-    runtime_tmpdir='.',
     console=False,
     uac_admin=True,
     disable_windowed_traceback=False,
@@ -58,4 +55,14 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='Drunks',
 )

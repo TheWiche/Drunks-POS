@@ -16,7 +16,7 @@ TEMP_UPDATE_DIR = Path(tempfile.gettempdir()) / "drunks_update"
 
 # Version de este build -- se actualiza en cada release.
 # Hardcodeada aqui para que nunca dependa de un archivo externo.
-APP_VERSION = "1.0.13"
+APP_VERSION = "1.0.14"
 
 _update_info: dict = {
     "has_update": False,
@@ -140,7 +140,7 @@ def download_and_apply(url: str, progress_cb=None) -> None:
             z.extractall(extract_dir)
         zip_path.unlink(missing_ok=True)
 
-        # 3. Localizar el nuevo Drunks.exe en los archivos extraidos
+        # 3. Localizar la carpeta del update (build COLLECT: carpeta con Drunks.exe + DLLs)
         _prog(80, "Preparando instalacion...")
         app_root = get_app_root()
         exe_name = "Drunks.exe"
@@ -152,18 +152,24 @@ def download_and_apply(url: str, progress_cb=None) -> None:
         if not new_exe_src:
             raise FileNotFoundError(f"No se encontro {exe_name} en el archivo descargado.")
 
+        src_folder = new_exe_src.parent  # carpeta que contiene el exe y las DLLs
+
         _prog(92, "Preparando reinicio...")
 
-        # 4. VBScript silencioso: espera, reemplaza el exe, reinicia -- sin ventana CMD
+        # 4. VBScript silencioso: espera, copia toda la carpeta, reinicia -- sin ventana CMD
         main_exe = app_root / exe_name
         vbs_path = app_root / "_update_exe.vbs"
 
+        src_str = str(src_folder)
+        dst_str = str(app_root)
+        tmp_str = str(TEMP_UPDATE_DIR)
+
         vbs_lines = [
-            'WScript.Sleep 5000',
-            'Dim fso',
+            'WScript.Sleep 6000',
+            'Dim fso, sh',
             'Set fso = CreateObject("Scripting.FileSystemObject")',
-            f'fso.CopyFile "{new_exe_src}", "{main_exe}", True',
-            f'If fso.FolderExists("{TEMP_UPDATE_DIR}") Then fso.DeleteFolder "{TEMP_UPDATE_DIR}", True',
+            f'fso.CopyFolder "{src_str}\\", "{dst_str}\\", True',
+            f'If fso.FolderExists("{tmp_str}") Then fso.DeleteFolder "{tmp_str}", True',
             'Set sh = CreateObject("WScript.Shell")',
             f'sh.Run Chr(34) & "{main_exe}" & Chr(34)',
             'fso.DeleteFile WScript.ScriptFullName',

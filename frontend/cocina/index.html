@@ -722,22 +722,11 @@ function setView(mode) {
 
 async function completeOrder(id) {
   const card = document.getElementById('order-' + id);
-  // 1. Flash verde de éxito
-  if (card) { card.classList.add('completing-flash'); card.style.pointerEvents = 'none'; }
-  // 2. Llamada a la API
-  try {
-    const r = await fetch('/api/pedidos/' + id + '/entregar', { method: 'PUT' });
-    if (!r.ok) {
-      card?.classList.remove('completing-flash');
-      if (card) card.style.pointerEvents = '';
-      return;
-    }
-  } catch(e) {
-    card?.classList.remove('completing-flash');
-    if (card) card.style.pointerEvents = '';
-    return;
-  }
-  // 3. Determinar si el hero fue completado (el siguiente debe "ascender desde la cola")
+  if (!card) return;
+  // 1. Flash + UI inmediato (optimistic — SQLite local no falla)
+  card.classList.add('completing-flash'); card.style.pointerEvents = 'none';
+  fetch('/api/pedidos/' + id + '/entregar', { method: 'PUT' }).catch(() => {});
+  // 2. Determinar si el hero fue completado (el siguiente debe "ascender desde la cola")
   const heroSec = document.getElementById('heroSection');
   const isHero = !!(heroSec && card && heroSec.contains(card));
   const remaining = Object.values(orders).filter(o => o.id !== id).length;
@@ -1694,11 +1683,8 @@ async function completeStationOrder(orderId, si) {
   const card = document.getElementById('active-order-' + orderId + '-' + si);
   // 1. Flash de éxito
   if (card) { card.classList.add('completing-flash'); card.style.pointerEvents = 'none'; }
-  // 2. API
-  try {
-    const r = await fetch('/api/pedidos/' + orderId + '/entregar', { method: 'PUT' });
-    if (!r.ok) { card?.classList.remove('completing-flash'); if(card) card.style.pointerEvents=''; return; }
-  } catch(e) { card?.classList.remove('completing-flash'); if(card) card.style.pointerEvents=''; return; }
+  // 2. Optimistic — disparar sin esperar
+  fetch('/api/pedidos/' + orderId + '/entregar', { method: 'PUT' }).catch(() => {});
   // 3. Liberar estación y animar salida
   delete stationActive[String(si)];
   saveSetting('stationActive', JSON.stringify(stationActive));
