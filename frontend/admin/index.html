@@ -57,6 +57,15 @@ html[data-theme=gold] body{background:#0d0900!important}html[data-theme=gold] [c
 .tab-active { color:#a78bfa!important; border-bottom:2px solid #7c3aed!important; }
 .dirty-row  { background:rgba(234,179,8,.05)!important; }
 .dirty-input{ border-color:#ca8a04!important; }
+/* ─── Emoji Picker ─── */
+.emoji-trigger{ cursor:pointer!important; caret-color:transparent; }
+.emoji-trigger:focus{ outline:none; border-color:#7c3aed!important; }
+#emojiPickerPanel{ display:none; }
+#emojiPickerPanel.open{ display:flex; }
+#epTabs::-webkit-scrollbar{ height:3px; }
+#epTabs::-webkit-scrollbar-thumb{ background:#4b5563; border-radius:2px; }
+#emojiGrid::-webkit-scrollbar{ width:4px; }
+#emojiGrid::-webkit-scrollbar-thumb{ background:#374151; border-radius:2px; }
 /* ─── PIN overlay ─── */
 #pinOverlay{position:fixed;inset:0;z-index:999;background:#0d0d1a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem}
 #pinOverlay.hidden{display:none!important}
@@ -860,8 +869,9 @@ setInterval(checkUpdate, 30 * 60 * 1000);
       <!-- ── Categorias ── -->
       <div id="pane-cats" class="hidden">
         <div class="flex gap-2 mb-5">
-          <input id="newCatIcono" type="text" placeholder="🏷️" maxlength="4"
-            class="w-16 text-center bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-2 py-2.5 text-white text-lg transition-colors">
+          <input id="newCatIcono" type="text" placeholder="🏷️" maxlength="4" readonly
+            onclick="openEmojiPicker(this)"
+            class="emoji-trigger w-16 text-center bg-gray-800 border border-gray-700 rounded-xl px-2 py-2.5 text-white text-lg transition-colors select-none">
           <input id="newCatName" type="text" placeholder="Nueva categoria..."
             class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors">
           <button onclick="addCat()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
@@ -893,8 +903,9 @@ setInterval(checkUpdate, 30 * 60 * 1000);
           </div>
           <!-- Form nuevo tipo (oculto por defecto) -->
           <div id="newTipoForm" class="hidden flex gap-2 mb-3 p-3 bg-gray-800/50 rounded-xl border border-gray-700">
-            <input id="newTipoIcono" type="text" value="🍹" maxlength="4"
-              class="bg-gray-900 border border-gray-700 focus:border-purple-500 rounded-lg px-2.5 py-2 text-white text-sm w-14 text-center transition-colors" placeholder="🍹">
+            <input id="newTipoIcono" type="text" value="🍹" maxlength="4" readonly
+              onclick="openEmojiPicker(this)"
+              class="emoji-trigger bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-2 text-white text-sm w-14 text-center transition-colors select-none" placeholder="🍹">
             <input id="newTipoNombre" type="text" placeholder="Nombre del tipo (ej: Ron)"
               class="flex-1 bg-gray-900 border border-gray-700 focus:border-purple-500 rounded-lg px-3 py-2 text-white text-sm transition-colors"
               onkeydown="if(event.key==='Enter')addTipoBase()">
@@ -1331,10 +1342,10 @@ async function loadCats() {
 function renderCats(cats) {
   document.getElementById('catsList').innerHTML = cats.length ? cats.map(c => `
     <div id="drow-${c.id}" class="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-xl px-3 py-2.5 ${dirty.cats.has(c.id)?'dirty-row border-yellow-700/40':''}">
-      <input id="ci-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.icono||'🏷️')}" maxlength="4"
-        oninput="markDirty('cats',${c.id})"
-        class="w-11 text-center text-lg bg-gray-900/70 border border-gray-600 hover:border-gray-500 focus:border-purple-500 rounded-lg outline-none transition-colors cursor-text shrink-0"
-        title="Icono (emoji)">
+      <input id="ci-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.icono||'🏷️')}" maxlength="4" readonly
+        onclick="openEmojiPicker(this)" oninput="markDirty('cats',${c.id})"
+        class="emoji-trigger w-11 text-center text-lg bg-gray-900/70 border border-gray-600 hover:border-gray-500 rounded-lg outline-none transition-colors shrink-0 select-none"
+        title="Cambiar emoji">
       <input id="cn-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.nombre)}"
         oninput="markDirty('cats',${c.id})"
         class="flex-1 bg-transparent text-white font-semibold text-sm border-b ${dirty.cats.has(c.id)?'border-yellow-500':'border-transparent'} focus:border-purple-500 transition-colors">
@@ -1986,7 +1997,13 @@ setInterval(checkUpdate, 30 * 60 * 1000);
 </script>
 
 <!-- App Confirm Modal -->
-<div id="appConfirmModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+<!-- ═══ EMOJI PICKER ═══ -->
+<div id="emojiPickerPanel" class="fixed z-[350] bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl shadow-black/70 flex-col" style="width:296px;max-height:330px">
+  <div id="epTabs" class="flex gap-1 px-2 pt-2 pb-1.5 border-b border-gray-800 overflow-x-auto shrink-0"></div>
+  <div id="emojiGrid" class="overflow-y-auto p-2 flex-1"></div>
+</div>
+
+<div id="appConfirmModal" class="hidden fixed inset-0 z-[400] flex items-center justify-center bg-black/70 backdrop-blur-sm">
   <div class="bg-gray-900 border border-gray-700/80 rounded-2xl p-6 max-w-xs w-full mx-4 shadow-2xl">
     <p id="appConfirmMsg" class="text-white text-sm font-semibold leading-relaxed mb-5"></p>
     <div class="flex gap-3 justify-end">
@@ -1996,6 +2013,79 @@ setInterval(checkUpdate, 30 * 60 * 1000);
   </div>
 </div>
 <script>
+// ═══ EMOJI PICKER ═══
+const EMOJIS = {
+  '🍺 Bebidas': ['🍺','🍻','🍹','🍷','🥂','🍸','🥃','🍾','🧉','🫗','🍶','🍵','☕','🧋','🥤','🧃','🫖','🧊','💧','🌊','🫧'],
+  '🍕 Comida':  ['🍕','🍔','🌮','🌯','🥗','🍟','🍣','🍱','🥪','🥙','🌭','🍿','🥨','🧀','🥚','🍳','🥓','🍖','🍗','🥩','🥞','🧇'],
+  '🍓 Frutas':  ['🍎','🍊','🍋','🍋‍🟩','🍇','🍓','🍑','🍒','🥭','🍌','🍍','🥝','🍉','🫐','🍅','🍈','🍐','🥥','🍏','🍄'],
+  '🍰 Dulces':  ['🍰','🎂','🍫','🍬','🍭','🍩','🧁','🍪','🍦','🍨','🍡','🧆','🥧','🍮','🍯'],
+  '🌿 Plantas': ['🌿','🌱','🍃','🌶️','🫑','🥦','🥬','🥑','🥕','🌽','🧄','🧅','🍆','🫒','🫛','🌺','🌸','🌻','🌴','🍀'],
+  '🏷️ Negocio': ['🏷️','📦','📋','💰','💵','💴','💶','💷','💳','🛒','🧾','🎯','⭐','🌟','🔥','✨','💥','🎁','🎉','🏆','👑','💎','🔑','📊','📈','🏅','🥇'],
+  '😀 Caras':   ['😀','😁','😍','🤩','😎','😋','🤤','🥳','🤑','😏','😜','🤪','😂','🥰','😇','🤠','🥴','😤','💪','👍','👌','🙌','🫶','🤝','✌️'],
+  '❤️ Colores': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💖','💗','💓','💞','🔴','🟠','🟡','🟢','🔵','🟣','⚫','⚪','🟤'],
+  '⚡ Símbolos': ['⚡','🌈','🌙','☀️','⭐','💫','✨','🔮','🎵','🎶','🎨','🏆','🎯','🎲','🃏','🎪','💡','🔑','🛡️','⚔️','🔔','🚀','💎','🌀','🌊','❄️'],
+};
+
+let _epTarget = null;
+let _epCurCat = Object.keys(EMOJIS)[0];
+
+function openEmojiPicker(inputEl) {
+  _epTarget = inputEl;
+  const panel = document.getElementById('emojiPickerPanel');
+  renderEmojiCat(_epCurCat);
+  // Posicionar cerca del input
+  const rect = inputEl.getBoundingClientRect();
+  let top  = rect.bottom + 6;
+  let left = rect.left;
+  if (left + 300 > window.innerWidth)  left = window.innerWidth - 304;
+  if (left < 4) left = 4;
+  if (top + 334 > window.innerHeight) top = rect.top - 336;
+  if (top < 4) top = 4;
+  panel.style.top  = top  + 'px';
+  panel.style.left = left + 'px';
+  panel.classList.add('open');
+}
+
+function renderEmojiCat(cat) {
+  _epCurCat = cat;
+  const cats = Object.keys(EMOJIS);
+  document.getElementById('epTabs').innerHTML = cats.map(c =>
+    `<button data-cat="${c.replace(/"/g,'&quot;')}"
+      class="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-lg whitespace-nowrap transition-colors
+        ${c===cat ? 'bg-purple-700 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}">${c}</button>`
+  ).join('');
+  document.getElementById('emojiGrid').innerHTML =
+    '<div class="grid grid-cols-7 gap-0.5">' +
+    (EMOJIS[cat]||[]).map(e =>
+      `<button data-emoji="${e}" class="text-xl p-1.5 rounded-lg hover:bg-gray-700 active:scale-90 transition-all leading-none" title="${e}">${e}</button>`
+    ).join('') + '</div>';
+}
+
+document.getElementById('epTabs').addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-cat]');
+  if (btn) renderEmojiCat(btn.dataset.cat);
+});
+document.getElementById('emojiGrid').addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-emoji]');
+  if (btn && _epTarget) {
+    _epTarget.value = btn.dataset.emoji;
+    _epTarget.dispatchEvent(new Event('input', {bubbles:true}));
+    closeEmojiPicker();
+  }
+});
+document.addEventListener('mousedown', function(e) {
+  const panel = document.getElementById('emojiPickerPanel');
+  if (!panel.classList.contains('open')) return;
+  if (!panel.contains(e.target) && !e.target.classList.contains('emoji-trigger')) {
+    closeEmojiPicker();
+  }
+});
+function closeEmojiPicker() {
+  document.getElementById('emojiPickerPanel').classList.remove('open');
+  _epTarget = null;
+}
+// ════════════════════════
+
 let _appCR = null;
 function appConfirm(msg, okLabel = 'Confirmar') {
   return new Promise(r => {
