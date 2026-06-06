@@ -802,13 +802,18 @@ async function checkUpdate() {
     }
   } catch(e) {}
 }
-async function applyUpdate() {
+function applyUpdate() {
   const btn = document.getElementById('updateBtn');
-  btn.textContent = 'Descargando...'; btn.disabled = true;
+  btn.textContent = 'Actualizando...'; btn.disabled = true;
+  // Delega al shell (ventana pywebview padre) para mostrar ventana de progreso
   try {
-    await fetch('/api/update/apply', {method:'POST'});
-    btn.textContent = 'Reiniciando...';
-  } catch(e) { btn.textContent = 'Error — intenta de nuevo'; btn.disabled = false; }
+    if (window.top && window.top.pywebview && window.top.pywebview.api) {
+      window.top.pywebview.api.open_update_window();
+    } else {
+      // Fallback en modo dev (sin pywebview)
+      fetch('/api/update/apply', {method:'POST'}).catch(() => {});
+    }
+  } catch(e) { btn.textContent = 'Error'; btn.disabled = false; }
 }
 checkUpdate();
 setInterval(checkUpdate, 30 * 60 * 1000);

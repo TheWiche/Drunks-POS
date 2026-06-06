@@ -96,6 +96,18 @@ class _UpdateProgressWindow:
         ttk.Label(frame, textvariable=self._pct_var,
                   font=("Segoe UI", 8)).pack(anchor=tk.E, pady=(2, 0))
 
+        self._close_btn = ttk.Button(frame, text="Cerrar", command=self._root.destroy)
+
+    def enable_close(self):
+        """Muestra el botón Cerrar y permite cerrar la ventana (en caso de error)."""
+        def _apply():
+            self._root.protocol("WM_DELETE_WINDOW", self._root.destroy)
+            self._close_btn.pack(anchor=tk.E, pady=(8, 0))
+        try:
+            self._root.after(0, _apply)
+        except Exception:
+            pass
+
     def set_progress(self, pct: int, msg: str = ""):
         def _apply():
             self._progress["value"] = pct
@@ -129,7 +141,15 @@ class _UpdateProgressWindow:
 # ── API expuesta a JS vía window.pywebview.api ────────────────────────────────
 class AppAPI:
     def open_update_window(self):
-        threading.Thread(target=_run_update_with_ui, daemon=True, name="updater").start()
+        # Non-daemon: este hilo sobrevive después de que pywebview cierre
+        t = threading.Thread(target=_run_update_with_ui, daemon=False, name="updater")
+        t.start()
+        # Cerrar la ventana principal: el usuario ve la ventana de progreso
+        if _main_window:
+            try:
+                _main_window.destroy()
+            except Exception:
+                pass
 
 
 # ── Lógica de actualización con ventana tkinter ───────────────────────────────
@@ -146,21 +166,24 @@ def _run_update_with_ui():
             if not url:
                 _log("update: URL no encontrada en _update_info")
                 win.set_error("No se encontró la URL de descarga.")
+                win.enable_close()
                 return
 
             download_and_apply(url, progress_cb=win.set_progress)
-            # download_and_apply llama os._exit(0) al terminar — no llega aquí
+            # Descarga + VBScript lanzado → cerrar la ventana tkinter
+            win.close()
 
         except Exception:
             err = traceback.format_exc()
             _log(f"update error:\n{err}")
             short = err.strip().splitlines()[-1]
             win.set_error(short)
-            _update_window = None
+            win.enable_close()
 
     threading.Thread(target=do_update, daemon=True, name="update-worker").start()
-    win.run()  # bloquea este hilo con el mainloop de tkinter
+    win.run()  # bloquea en el mainloop de tkinter
     _update_window = None
+    os._exit(0)  # terminar el proceso una vez que la ventana cierre
 
 
 # ── Polling: notifica al main_window cuando hay update disponible ─────────────

