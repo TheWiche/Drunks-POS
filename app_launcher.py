@@ -165,16 +165,29 @@ def _run_update_with_ui():
 
 # ── Polling: notifica al main_window cuando hay update disponible ─────────────
 def _poll_updates():
-    time.sleep(3)  # darle tiempo al chequeo de background
-    for _ in range(120):
-        time.sleep(0.5)
+    """Chequea en startup y re-chequea cada 2 horas mientras la app está abierta."""
+    notified: set = set()
+
+    while True:
+        time.sleep(5)  # gracia inicial para que el chequeo de background termine
+        for _ in range(120):  # poll hasta 60 s por cada ciclo
+            time.sleep(0.5)
+            try:
+                from updater import _update_info
+                latest = _update_info.get("latest")
+                if _update_info.get("has_update") and latest and latest not in notified:
+                    if _main_window:
+                        _main_window.evaluate_js(f"showUpdate('{latest}')")
+                    notified.add(latest)
+                    break
+            except Exception:
+                pass
+
+        time.sleep(7200)  # esperar 2 horas antes del siguiente chequeo
+
         try:
-            from updater import _update_info
-            if _update_info.get("has_update") and _update_info.get("latest"):
-                latest = _update_info["latest"]
-                if _main_window:
-                    _main_window.evaluate_js(f"showUpdate('{latest}')")
-                return
+            from updater import check_for_update
+            check_for_update()
         except Exception:
             pass
 

@@ -16,7 +16,7 @@ TEMP_UPDATE_DIR = Path(tempfile.gettempdir()) / "drunks_update"
 
 # Versión de este build — se actualiza en cada release.
 # Hardcodeada aquí para que nunca dependa de un archivo externo.
-APP_VERSION = "1.0.9"
+APP_VERSION = "1.0.10"
 
 _update_info: dict = {
     "has_update": False,
@@ -155,27 +155,28 @@ def download_and_apply(url: str, progress_cb=None) -> None:
 
         _prog(92, "Preparando reinicio...")
 
-        # 4. Bat mínimo: espera a que cierre el proceso, reemplaza el exe, reinicia
-        main_exe  = app_root / exe_name
-        bat_path  = app_root / "_update_exe.bat"
+        # 4. VBScript silencioso: espera, reemplaza el exe, reinicia — sin ventana CMD
+        main_exe = app_root / exe_name
+        vbs_path = app_root / "_update_exe.vbs"
 
-        bat_lines = [
-            "@echo off",
-            "ping 127.0.0.1 -n 5 > nul",          # esperar ~4 s a que cierre
-            f'copy /Y "{new_exe_src}" "{main_exe}"',
-            f'if exist "{TEMP_UPDATE_DIR}" rmdir /S /Q "{TEMP_UPDATE_DIR}"',
-            f'start "" "{main_exe}"',
-            'del "%~f0"',
+        vbs_lines = [
+            'WScript.Sleep 5000',
+            'Dim fso',
+            'Set fso = CreateObject("Scripting.FileSystemObject")',
+            f'fso.CopyFile "{new_exe_src}", "{main_exe}", True',
+            f'If fso.FolderExists("{TEMP_UPDATE_DIR}") Then fso.DeleteFolder "{TEMP_UPDATE_DIR}", True',
+            'Set sh = CreateObject("WScript.Shell")',
+            f'sh.Run Chr(34) & "{main_exe}" & Chr(34)',
+            'fso.DeleteFile WScript.ScriptFullName',
         ]
-        bat_path.write_text("\n".join(bat_lines), encoding="utf-8")
+        vbs_path.write_text("\r\n".join(vbs_lines), encoding="utf-8")
 
         _prog(98, "Reiniciando...")
         subprocess.Popen(
-            ["cmd", "/c", str(bat_path)],
+            ["wscript.exe", str(vbs_path)],
             creationflags=(
                 subprocess.DETACHED_PROCESS
                 | subprocess.CREATE_NEW_PROCESS_GROUP
-                | subprocess.CREATE_NO_WINDOW
             ),
         )
         _prog(100, "Cerrando...")
