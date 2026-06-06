@@ -860,6 +860,8 @@ setInterval(checkUpdate, 30 * 60 * 1000);
       <!-- ── Categorias ── -->
       <div id="pane-cats" class="hidden">
         <div class="flex gap-2 mb-5">
+          <input id="newCatIcono" type="text" placeholder="🏷️" maxlength="4"
+            class="w-16 text-center bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-2 py-2.5 text-white text-lg transition-colors">
           <input id="newCatName" type="text" placeholder="Nueva categoria..."
             class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors">
           <button onclick="addCat()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
@@ -1140,11 +1142,12 @@ async function saveAll() {
 
   for (const id of [...dirty.cats]) {
     const n = document.getElementById('cn-'+id)?.value.trim();
+    const icono = document.getElementById('ci-'+id)?.value.trim() || '🏷️';
     if (!n) { errors++; continue; }
     try {
       const r = await fetch('/api/categorias/'+id, {
         method:'PUT', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({nombre:n})
+        body: JSON.stringify({nombre:n, icono})
       });
       if (r.ok) { dirty.cats.delete(id); ok++; }
       else errors++;
@@ -1327,7 +1330,11 @@ async function loadCats() {
 }
 function renderCats(cats) {
   document.getElementById('catsList').innerHTML = cats.length ? cats.map(c => `
-    <div id="drow-${c.id}" class="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-2.5 ${dirty.cats.has(c.id)?'dirty-row border-yellow-700/40':''}">
+    <div id="drow-${c.id}" class="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-xl px-3 py-2.5 ${dirty.cats.has(c.id)?'dirty-row border-yellow-700/40':''}">
+      <input id="ci-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.icono||'🏷️')}" maxlength="4"
+        oninput="markDirty('cats',${c.id})"
+        class="w-11 text-center text-lg bg-gray-900/70 border border-gray-600 hover:border-gray-500 focus:border-purple-500 rounded-lg outline-none transition-colors cursor-text shrink-0"
+        title="Icono (emoji)">
       <input id="cn-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.nombre)}"
         oninput="markDirty('cats',${c.id})"
         class="flex-1 bg-transparent text-white font-semibold text-sm border-b ${dirty.cats.has(c.id)?'border-yellow-500':'border-transparent'} focus:border-purple-500 transition-colors">
@@ -1342,10 +1349,13 @@ async function deleteCat(id) {
   catch(e) {}
 }
 async function addCat() {
-  const inp = document.getElementById('newCatName'); const n = inp.value.trim(); if (!n) return;
+  const inp = document.getElementById('newCatName');
+  const ico = document.getElementById('newCatIcono');
+  const n = inp.value.trim(); if (!n) return;
+  const icono = ico?.value.trim() || '🏷️';
   try {
-    const r = await fetch('/api/categorias', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nombre:n})});
-    if (r.ok) { inp.value = ''; adminToast('Creada'); loadCats(); }
+    const r = await fetch('/api/categorias', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nombre:n, icono})});
+    if (r.ok) { inp.value = ''; if (ico) ico.value = ''; adminToast('Creada'); loadCats(); }
   } catch(e) {}
 }
 

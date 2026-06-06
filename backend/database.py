@@ -44,6 +44,7 @@ def init_db():
         for migration in [
             "ALTER TABLE notas_rapidas ADD COLUMN categoria_id INTEGER REFERENCES categorias(id) ON DELETE SET NULL",
             "ALTER TABLE productos ADD COLUMN tiene_base INTEGER NOT NULL DEFAULT 0",
+            "ALTER TABLE categorias ADD COLUMN icono TEXT NOT NULL DEFAULT '🏷️'",
         ]:
             try:
                 conn.execute(migration)

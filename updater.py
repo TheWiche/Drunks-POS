@@ -1,6 +1,6 @@
 """
-Módulo de auto-actualización para Drunks POS.
-Consulta GitHub Releases y aplica la actualización sin intervención técnica.
+Modulo de auto-actualizacion para Drunks POS.
+Consulta GitHub Releases y aplica la actualizacion sin intervencion tecnica.
 """
 import os
 import sys
@@ -14,9 +14,9 @@ from pathlib import Path
 GITHUB_REPO = "TheWiche/Drunks-POS"
 TEMP_UPDATE_DIR = Path(tempfile.gettempdir()) / "drunks_update"
 
-# Versión de este build — se actualiza en cada release.
-# Hardcodeada aquí para que nunca dependa de un archivo externo.
-APP_VERSION = "1.0.12"
+# Version de este build -- se actualiza en cada release.
+# Hardcodeada aqui para que nunca dependa de un archivo externo.
+APP_VERSION = "1.0.13"
 
 _update_info: dict = {
     "has_update": False,
@@ -29,14 +29,14 @@ _update_info: dict = {
 
 
 def get_app_root() -> Path:
-    """Raíz del proyecto (directorio del exe o del script)."""
+    """Raiz del proyecto (directorio del exe o del script)."""
     if getattr(sys, "frozen", False):
         return Path(sys.executable).parent
     return Path(__file__).parent
 
 
 def get_current_version() -> str:
-    """Retorna la versión de este build (constante hardcodeada en APP_VERSION)."""
+    """Retorna la version de este build (constante hardcodeada en APP_VERSION)."""
     return APP_VERSION
 
 
@@ -60,7 +60,7 @@ def check_for_update() -> None:
             follow_redirects=True,
         )
         if r.status_code != 200:
-            _update_info["error"] = f"GitHub respondió {r.status_code}"
+            _update_info["error"] = f"GitHub respondio {r.status_code}"
             return
 
         data = r.json()
@@ -89,7 +89,7 @@ def check_for_update() -> None:
 
 
 def start_background_check() -> None:
-    """Lanza el chequeo de actualización en un hilo daemon (no bloquea el arranque)."""
+    """Lanza el chequeo de actualizacion en un hilo daemon (no bloquea el arranque)."""
     _update_info["current"] = get_current_version()
     t = threading.Thread(target=check_for_update, daemon=True, name="update-check")
     t.start()
@@ -97,9 +97,9 @@ def start_background_check() -> None:
 
 def download_and_apply(url: str, progress_cb=None) -> None:
     """
-    Descarga el ZIP, copia los archivos con shutil (más confiable que robocopy),
-    y usa un .bat mínimo solo para reemplazar Drunks.exe (que está bloqueado).
+    Descarga el ZIP, extrae Drunks.exe y usa VBScript silencioso para reemplazarlo.
     progress_cb(pct: int, msg: str) se llama con 0-100 durante el proceso.
+    El llamador (app_launcher._run_update_with_ui) maneja el cierre del proceso.
     """
     import shutil
 
@@ -140,22 +140,21 @@ def download_and_apply(url: str, progress_cb=None) -> None:
             z.extractall(extract_dir)
         zip_path.unlink(missing_ok=True)
 
-        # 3. Localizar el nuevo Drunks.exe en los archivos extraídos
-        _prog(80, "Preparando instalación...")
+        # 3. Localizar el nuevo Drunks.exe en los archivos extraidos
+        _prog(80, "Preparando instalacion...")
         app_root = get_app_root()
         exe_name = "Drunks.exe"
 
-        # Buscar Drunks.exe dentro del zip extraído (puede estar en raíz o subcarpeta)
         new_exe_src = next(
             (f for f in extract_dir.rglob(exe_name) if f.is_file()),
             None
         )
         if not new_exe_src:
-            raise FileNotFoundError(f"No se encontró {exe_name} en el archivo descargado.")
+            raise FileNotFoundError(f"No se encontro {exe_name} en el archivo descargado.")
 
         _prog(92, "Preparando reinicio...")
 
-        # 4. VBScript silencioso: espera, reemplaza el exe, reinicia — sin ventana CMD
+        # 4. VBScript silencioso: espera, reemplaza el exe, reinicia -- sin ventana CMD
         main_exe = app_root / exe_name
         vbs_path = app_root / "_update_exe.vbs"
 
@@ -182,6 +181,6 @@ def download_and_apply(url: str, progress_cb=None) -> None:
         _prog(100, "Cerrando...")
 
     except Exception as exc:
-        _update_info["error"] = f"Error al aplicar actualización: {exc}"
+        _update_info["error"] = f"Error al aplicar actualizacion: {exc}"
         raise
     # El llamador (app_launcher._run_update_with_ui) maneja el cierre del proceso

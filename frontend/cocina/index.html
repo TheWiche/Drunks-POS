@@ -286,6 +286,8 @@ html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[dat
       <!-- ── Categorias ── -->
       <div id="pane-cats" class="hidden">
         <div class="flex gap-2 mb-5">
+          <input id="newCatIcono" type="text" placeholder="🏷️" maxlength="4"
+            class="w-16 text-center bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-2 py-2.5 text-white text-lg transition-colors">
           <input id="newCatName" type="text" placeholder="Nueva categoria..."
             class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors">
           <button onclick="addCat()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
@@ -396,7 +398,85 @@ function connectWS() {
 function addOrder(order) {
   if (orders[order.id]) return;
   orders[order.id] = order;
-  renderKitchen();
+
+  const empty = document.getElementById('emptyState');
+  if (empty) empty.classList.add('hidden');
+
+  if (stationCfg.count >= 2) {
+    _addOrderMultiStation(order);
+  } else {
+    _addOrderSingleStation(order);
+  }
+  updateCount(Object.keys(orders).length);
+}
+
+// Agrega un pedido a la vista multi-estación sin re-renderizar todo
+function _addOrderMultiStation(order) {
+  const allOrders = Object.values(orders).sort((a,b) => a.id - b.id);
+  const activeIdsBefore = new Set(Object.values(stationActive).map(Number));
+  autoAssignFreeStations(allOrders);
+  const activeIdsAfter = new Set(Object.values(stationActive).map(Number));
+
+  // Si el pedido fue asignado a una estación libre, actualizar solo ese panel
+  if (activeIdsAfter.has(order.id) && !activeIdsBefore.has(order.id)) {
+    const si = parseInt(Object.keys(stationActive).find(k => Number(stationActive[k]) === order.id));
+    if (!isNaN(si)) { _updateSingleStation(si); return; }
+  }
+
+  // Pedido va a la cola — agregar solo la mini-card al strip
+  const strip = document.querySelector('[data-queue-strip]');
+  if (!strip) { renderKitchen(); return; }
+
+  // Si el strip mostraba "cola vacía", reconstruirlo
+  const emptyMsg = strip.querySelector('p.text-gray-700');
+  if (emptyMsg) {
+    const activeIds2 = new Set(Object.values(stationActive).map(Number));
+    const queueOrders = allOrders.filter(o => !activeIds2.has(o.id));
+    strip.replaceWith(renderSharedQueueStrip(queueOrders)); return;
+  }
+
+  const row = strip.querySelector('.flex.gap-2.overflow-x-auto');
+  if (!row) { renderKitchen(); return; }
+  const activeIds2 = new Set(Object.values(stationActive).map(Number));
+  const queueOrders = allOrders.filter(o => !activeIds2.has(o.id));
+  const position = queueOrders.findIndex(o => o.id === order.id);
+  const card = buildQueueMiniCard(order, position);
+  card.style.animation = 'queueIn .3s cubic-bezier(.175,.885,.32,1.275) both';
+  row.appendChild(card);
+  const label = strip.querySelector('.text-gray-500');
+  if (label) label.textContent = `En cola (${queueOrders.length})`;
+}
+
+// Agrega un pedido a la vista de estación única sin re-renderizar todo
+function _addOrderSingleStation(order) {
+  const allOrders = Object.values(orders).sort((a,b) => a.id - b.id);
+
+  // Primer pedido — re-render total está bien (estaba vacío)
+  if (allOrders.length === 1) { renderKitchen(); return; }
+
+  // Modo duo con 1 pedido previo → el layout cambia (hero → 2 medianos) → re-render
+  if (viewMode === 'duo' && allOrders.length === 2) { renderKitchen(); return; }
+
+  const qGrid = document.getElementById('queueGrid');
+  if (!qGrid) { renderKitchen(); return; }
+
+  // Nuevo pedido siempre tiene el id más alto → va al final de la cola
+  let card;
+  if (viewMode === 'compact') {
+    card = buildCompactCard(order);
+    card.className = card.className.replace('card-in', 'queue-in');
+  } else {
+    card = buildQueueCard(order);
+    card.className = card.className.replace('card-in', 'queue-in');
+  }
+  qGrid.appendChild(card);
+
+  // Actualizar etiqueta de fila en modos que la muestran
+  if (viewMode === 'priority' || viewMode === 'duo') {
+    const n = qGrid.children.length;
+    document.getElementById('queueTitle').textContent = 'EN FILA — ' + n + ' pedido' + (n !== 1 ? 's' : '');
+    document.getElementById('queueLabel')?.classList.remove('hidden');
+  }
 }
 
 function renderKitchen() {
@@ -767,11 +847,12 @@ async function saveAll() {
 
   for (const id of [...dirty.cats]) {
     const n = document.getElementById('cn-'+id)?.value.trim();
+    const icono = document.getElementById('ci-'+id)?.value.trim() || '🏷️';
     if (!n) { errors++; continue; }
     try {
       const r = await fetch('/api/categorias/'+id, {
         method:'PUT', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({nombre:n})
+        body: JSON.stringify({nombre:n, icono})
       });
       if (r.ok) { dirty.cats.delete(id); ok++; }
       else errors++;
@@ -954,7 +1035,11 @@ async function loadCats() {
 }
 function renderCats(cats) {
   document.getElementById('catsList').innerHTML = cats.length ? cats.map(c => `
-    <div id="drow-${c.id}" class="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-2.5 ${dirty.cats.has(c.id)?'dirty-row border-yellow-700/40':''}">
+    <div id="drow-${c.id}" class="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-xl px-3 py-2.5 ${dirty.cats.has(c.id)?'dirty-row border-yellow-700/40':''}">
+      <input id="ci-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.icono||'🏷️')}" maxlength="4"
+        oninput="markDirty('cats',${c.id})"
+        class="w-11 text-center text-lg bg-gray-900/70 border border-gray-600 hover:border-gray-500 focus:border-purple-500 rounded-lg outline-none transition-colors cursor-text shrink-0"
+        title="Icono (emoji)">
       <input id="cn-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.nombre)}"
         oninput="markDirty('cats',${c.id})"
         class="flex-1 bg-transparent text-white font-semibold text-sm border-b ${dirty.cats.has(c.id)?'border-yellow-500':'border-transparent'} focus:border-purple-500 transition-colors">
@@ -969,10 +1054,13 @@ async function deleteCat(id) {
   catch(e) {}
 }
 async function addCat() {
-  const inp = document.getElementById('newCatName'); const n = inp.value.trim(); if (!n) return;
+  const inp = document.getElementById('newCatName');
+  const ico = document.getElementById('newCatIcono');
+  const n = inp.value.trim(); if (!n) return;
+  const icono = ico?.value.trim() || '🏷️';
   try {
-    const r = await fetch('/api/categorias', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nombre:n})});
-    if (r.ok) { inp.value = ''; adminToast('Creada'); loadCats(); }
+    const r = await fetch('/api/categorias', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nombre:n, icono})});
+    if (r.ok) { inp.value = ''; if (ico) ico.value = ''; adminToast('Creada'); loadCats(); }
   } catch(e) {}
 }
 
@@ -1414,28 +1502,43 @@ function buildActiveCard(order, stationItems, si) {
   const hBg   = efect ? 'from-green-700 to-green-800' : 'from-blue-700 to-blue-800';
   const icon  = efect ? '💵' : '📱';
   const tStr  = new Date(order.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
-  const rows  = stationItems.map(it => buildItemRow(it, true)).join('');
-  div.className = 'station-promote bg-gray-900 border border-purple-500/50 rounded-2xl overflow-hidden flex-shrink-0 hero-glow';
+
+  // Auto-compactar según número de ítems para evitar scroll
+  const n = stationItems.length;
+  const dense  = n > 5;   // 6-8 ítems: texto pequeño
+  const ultra  = n > 9;   // 9+ ítems: ultra compacto, 2 columnas
+  const big    = !dense;
+  const rows   = stationItems.map(it => buildItemRow(it, big)).join('');
+  const nameSz = ultra ? 'text-lg' : dense ? 'text-xl' : 'text-2xl';
+  const hdrPy  = dense ? 'py-2' : 'py-3';
+  const itemsGrid = ultra
+    ? `<div class="grid grid-cols-2 gap-x-3 gap-y-0">${rows}</div>`
+    : `<div class="space-y-0">${rows}</div>`;
+
+  // flex flex-col h-full: llena el panel; items usa flex-1+overflow-y-auto como último recurso
+  div.className = 'station-promote bg-gray-900 border border-purple-500/50 rounded-xl overflow-hidden hero-glow flex flex-col h-full';
   div.innerHTML = `
-    <div class="flex items-center gap-2 px-4 pt-3 pb-1">
-      <div class="priority-badge bg-purple-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full tracking-wider">PREPARANDO</div>
+    <div class="flex items-center gap-2 px-3 pt-2 pb-1 shrink-0">
+      <div class="priority-badge bg-purple-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full tracking-wider">PREPARANDO</div>
       <div class="h-px flex-1 bg-gray-800"></div>
     </div>
-    <div class="bg-gradient-to-r ${hBg} px-4 py-3 flex items-start justify-between">
+    <div class="bg-gradient-to-r ${hBg} px-3 ${hdrPy} flex items-start justify-between shrink-0">
       <div class="min-w-0">
-        <div class="flex items-center gap-2 mb-1">
-          <span class="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">${order.numero_factura||('#'+order.id)}</span>
-          <span class="text-white/60 text-xs">${icon} ${order.metodo_pago} · ${tStr}</span>
+        <div class="flex items-center gap-1.5 mb-0.5">
+          <span class="bg-white/20 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">${order.numero_factura||('#'+order.id)}</span>
+          <span class="text-white/60 text-[11px]">${icon} ${tStr}</span>
         </div>
-        <div class="text-white font-extrabold text-2xl leading-tight">${order.cliente}</div>
+        <div class="text-white font-extrabold ${nameSz} leading-tight">${order.cliente}</div>
       </div>
-      <div class="text-white/80 font-bold text-base tabular-nums ml-2 shrink-0">$${Math.round(order.total).toLocaleString('es-CO')}</div>
+      <div class="text-white/80 font-bold text-sm tabular-nums ml-2 shrink-0">$${Math.round(order.total).toLocaleString('es-CO')}</div>
     </div>
-    <div class="px-4 py-3 space-y-1">${rows||'<div class="text-gray-600 text-xs text-center py-2">Sin items</div>'}</div>
-    <div class="px-4 pb-4 pt-1">
+    <div class="flex-1 overflow-y-auto px-3 py-2 min-h-0">
+      ${rows ? itemsGrid : '<div class="text-gray-600 text-xs text-center py-2">Sin items</div>'}
+    </div>
+    <div class="px-3 pb-3 pt-1 shrink-0">
       <button data-oid="${order.id}" data-si="${si}"
         onclick="completeStationOrder(parseInt(this.dataset.oid),parseInt(this.dataset.si))"
-        class="w-full bg-green-500 hover:bg-green-400 active:bg-green-600 text-white font-extrabold py-3.5 rounded-xl text-base transition-colors shadow-lg shadow-green-900/30 tracking-wide">
+        class="w-full bg-green-500 hover:bg-green-400 active:bg-green-600 text-white font-extrabold py-3 rounded-xl text-sm transition-colors shadow-lg shadow-green-900/30 tracking-wide">
         ✓ LISTO — COMPLETAR PEDIDO
       </button>
     </div>`;
@@ -1468,12 +1571,13 @@ function buildQueueMiniCard(order, position) {
 function renderActivePanel(si, activeOrder) {
   const cfg = stationCfg.stations[si];
   const panel = document.createElement('div');
-  panel.className = 'flex flex-col flex-1 border-r border-gray-800/60 overflow-y-auto min-w-0';
+  // overflow-hidden: la tarjeta activa llena el panel y gestiona su propio scroll interno
+  panel.className = 'flex flex-col flex-1 border-r border-gray-800/60 overflow-hidden min-w-0';
   panel.dataset.si = si;
 
   // ── Header editable ────────────────────────────
   const hdr = document.createElement('div');
-  hdr.className = 'sticky top-0 z-10 bg-gray-950/95 backdrop-blur border-b border-gray-800 px-4 py-3 flex items-center gap-2 shrink-0';
+  hdr.className = 'bg-gray-950/95 backdrop-blur border-b border-gray-800 px-4 py-2.5 flex items-center gap-2 shrink-0';
   hdr.innerHTML = `
     <input class="station-col-name bg-transparent text-white font-extrabold text-sm tracking-wide uppercase border-b-2 border-transparent hover:border-gray-600 focus:border-purple-500 focus:outline-none min-w-0 flex-1 transition-colors cursor-text"
       data-si="${si}" value="${cfg.name}"
@@ -1488,7 +1592,8 @@ function renderActivePanel(si, activeOrder) {
     const items = (activeOrder.items||[]).filter(it =>
       catchAll || cfg.catIds.includes(it.categoria_id));
     const wrap = document.createElement('div');
-    wrap.className = 'p-3';
+    // flex-1: ocupa todo el espacio restante del panel
+    wrap.className = 'flex-1 overflow-hidden p-2';
     wrap.appendChild(buildActiveCard(activeOrder, items, si));
     panel.appendChild(wrap);
   } else {

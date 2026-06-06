@@ -340,11 +340,12 @@ function renderCats() {
   </button>`;
   bar.innerHTML = all + categories.map(c => {
     const cfg = catCfg(c.nombre);
+    const icon = c.icono || cfg.icon;  // preferir icono guardado en BD
     const isActive = activeCat === c.id;
     return `<button onclick="selectCat(${c.id})"
       class="cat-pill shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all
         ${isActive ? cfg.pill + ' shadow-lg' : 'bg-gray-800 text-gray-400 border border-gray-700'}">
-      <span>${cfg.icon}</span>${c.nombre}
+      <span>${icon}</span>${c.nombre}
     </button>`;
   }).join('');
 }
