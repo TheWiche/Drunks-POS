@@ -16,7 +16,7 @@ TEMP_UPDATE_DIR = Path(tempfile.gettempdir()) / "drunks_update"
 
 # Versión de este build — se actualiza en cada release.
 # Hardcodeada aquí para que nunca dependa de un archivo externo.
-APP_VERSION = "1.0.8"
+APP_VERSION = "1.0.9"
 
 _update_info: dict = {
     "has_update": False,

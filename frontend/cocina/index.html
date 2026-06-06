@@ -378,7 +378,7 @@ let adminCats = [];
 function connectWS() {
   if (ws && ws.readyState < 2) return;
   const _wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  ws = new WebSocket(_wsProto + '//' + location.host + '/ws');
+  ws = new WebSocket(_wsProto + '//' + location.host + '/api/ws');
   ws.onopen = () => {
     document.getElementById('wsDot').className = 'w-2 h-2 rounded-full bg-green-500 shrink-0 pulse-green';
     document.getElementById('wsTxt').textContent = 'Conectado en vivo';
@@ -1469,6 +1469,7 @@ function renderActivePanel(si, activeOrder) {
   const cfg = stationCfg.stations[si];
   const panel = document.createElement('div');
   panel.className = 'flex flex-col flex-1 border-r border-gray-800/60 overflow-y-auto min-w-0';
+  panel.dataset.si = si;
 
   // ── Header editable ────────────────────────────
   const hdr = document.createElement('div');
@@ -1504,6 +1505,7 @@ function renderActivePanel(si, activeOrder) {
 function renderSharedQueueStrip(queueOrders) {
   const strip = document.createElement('div');
   strip.className = 'border-t border-gray-800 bg-gray-950/80 px-4 py-3 shrink-0';
+  strip.dataset.queueStrip = '1';
   if (!queueOrders.length) {
     strip.innerHTML = '<p class="text-gray-700 text-xs text-center py-0.5">Cola vacía — todos los pedidos están siendo preparados</p>';
     return strip;
@@ -1547,6 +1549,38 @@ function renderMultiStation() {
   container.appendChild(renderSharedQueueStrip(queueOrders));
 }
 
+// Actualiza solo el panel de una estación y la franja de cola — sin re-render completo
+function _updateSingleStation(si) {
+  const allOrders = Object.values(orders).sort((a,b) => a.id - b.id);
+  autoAssignFreeStations(allOrders);
+  const activeIds = new Set(Object.values(stationActive).map(Number));
+  const queueOrders = allOrders.filter(o => !activeIds.has(o.id));
+
+  const multiView = document.getElementById('multiView');
+  if (!multiView) { renderKitchen(); return; }
+
+  // Reemplazar solo el panel de esta estación
+  const panel = multiView.querySelector('[data-si="'+si+'"]');
+  if (panel) {
+    const oid = stationActive[String(si)];
+    const activeOrder = (oid !== undefined && orders[oid]) ? orders[oid] : null;
+    panel.replaceWith(renderActivePanel(si, activeOrder));
+  }
+
+  // Actualizar franja de cola
+  const strip = multiView.querySelector('[data-queue-strip]');
+  if (strip) {
+    strip.replaceWith(renderSharedQueueStrip(queueOrders));
+  }
+
+  updateCount(allOrders.length);
+  const empty = document.getElementById('emptyState');
+  if (empty) {
+    if (allOrders.length === 0) empty.classList.remove('hidden');
+    else empty.classList.add('hidden');
+  }
+}
+
 // Un clic = pedido completado, estación libre, siguiente de la cola sube solo
 async function completeStationOrder(orderId, si) {
   const order = orders[orderId];
@@ -1566,7 +1600,11 @@ async function completeStationOrder(orderId, si) {
   saveSetting('station_active', JSON.stringify(stationActive));
   if (card) { card.classList.remove('completing-flash'); card.classList.add('station-done'); }
   // 4. Re-render — el nuevo activeCard usa station-promote (viene desde la cola)
-  setTimeout(() => { delete orders[orderId]; renderKitchen(); }, 390);
+  setTimeout(() => {
+    delete orders[orderId];
+    if (stationCfg.count >= 2) _updateSingleStation(si);
+    else renderKitchen();
+  }, 390);
 }
 
 // ─── INIT ───

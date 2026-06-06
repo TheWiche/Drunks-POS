@@ -365,6 +365,32 @@ function isActiveProd(id) {
   return lastKey && lastKey.startsWith(id + '|');
 }
 
+function _buildProdCardHTML(p) {
+  const qty    = totalQtyForProd(p.id);
+  const avail  = !!p.disponible;
+  const cfg    = catCfg(p.categoria_nombre || '');
+  const active = isActiveProd(p.id);
+  const isMich = !!p.tiene_base;
+  return `<div id="prod-card-${p.id}"
+      class="card-tap relative rounded-2xl p-3.5 flex flex-col items-center justify-center min-h-[7rem] select-none border cursor-pointer
+        ${avail ? (active ? cfg.active + ' shadow-lg' : cfg.bg) : 'opacity-30 cursor-not-allowed border-gray-800/20 bg-gray-800/10'}"
+      ${avail ? 'onclick="tapProd(' + p.id + ')"' : ''}>
+    ${qty > 0 ? '<div class="badge-pop absolute -top-2.5 -right-2.5 bg-purple-500 text-white text-xs font-extrabold w-7 h-7 rounded-full flex items-center justify-center shadow-xl z-10">' + qty + '</div>' : ''}
+    ${isMich ? '<div class="absolute top-2 left-2 text-[8px] text-amber-400 font-bold tracking-wider bg-amber-900/40 px-1.5 py-0.5 rounded-full">BASE</div>' : ''}
+    <div class="text-2xl mb-1.5">${cfg.icon}</div>
+    <div class="text-white font-extrabold text-xs text-center leading-tight">${p.nombre}</div>
+    <div class="font-extrabold text-sm mt-1.5 tabular-nums ${active ? 'text-white' : 'text-gray-300'}">$${Math.round(p.precio).toLocaleString('es-CO')}</div>
+    ${!avail ? '<div class="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/60"><span class="text-red-400 font-black text-[10px] tracking-widest">AGOTADO</span></div>' : ''}
+  </div>`;
+}
+
+function _refreshProdCard(prodId) {
+  const p  = products.find(x => x.id === prodId);
+  const el = document.getElementById('prod-card-' + prodId);
+  if (!p || !el) { renderProds(); return; }
+  el.outerHTML = _buildProdCardHTML(p);
+}
+
 function renderProds() {
   const grid = document.getElementById('prodsGrid');
   const list = activeCat !== null ? products.filter(p => p.categoria_id === activeCat) : products;
@@ -372,24 +398,7 @@ function renderProds() {
     grid.innerHTML = '<div class="col-span-2 text-gray-700 text-center text-sm py-10">Sin productos en esta categoria</div>';
     return;
   }
-  grid.innerHTML = list.map(p => {
-    const qty    = totalQtyForProd(p.id);
-    const avail  = !!p.disponible;
-    const cfg    = catCfg(p.categoria_nombre || '');
-    const active = isActiveProd(p.id);
-    const isMich = !!p.tiene_base;
-    return `<div
-        class="card-tap relative rounded-2xl p-3.5 flex flex-col items-center justify-center min-h-[7rem] select-none border cursor-pointer
-          ${avail ? (active ? cfg.active + ' shadow-lg' : cfg.bg) : 'opacity-30 cursor-not-allowed border-gray-800/20 bg-gray-800/10'}"
-        ${avail ? 'onclick="tapProd(' + p.id + ')"' : ''}>
-      ${qty > 0 ? '<div class="badge-pop absolute -top-2.5 -right-2.5 bg-purple-500 text-white text-xs font-extrabold w-7 h-7 rounded-full flex items-center justify-center shadow-xl z-10">' + qty + '</div>' : ''}
-      ${isMich ? '<div class="absolute top-2 left-2 text-[8px] text-amber-400 font-bold tracking-wider bg-amber-900/40 px-1.5 py-0.5 rounded-full">BASE</div>' : ''}
-      <div class="text-2xl mb-1.5">${cfg.icon}</div>
-      <div class="text-white font-extrabold text-xs text-center leading-tight">${p.nombre}</div>
-      <div class="font-extrabold text-sm mt-1.5 tabular-nums ${active ? 'text-white' : 'text-gray-300'}">$${Math.round(p.precio).toLocaleString('es-CO')}</div>
-      ${!avail ? '<div class="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/60"><span class="text-red-400 font-black text-[10px] tracking-widest">AGOTADO</span></div>' : ''}
-    </div>`;
-  }).join('');
+  grid.innerHTML = list.map(_buildProdCardHTML).join('');
 }
 
 function tapProd(id) {
@@ -402,7 +411,7 @@ function tapProd(id) {
     lastKey = key;
     if (!cart[key]) { cart[key] = { product: p, qty: 1, base: '', obs: '' }; }
     else { cart[key].qty++; }
-    renderProds(); renderCart(); renderNotes(); updateTotal();
+    _refreshProdCard(id); renderCart(); renderNotes(); updateTotal();
   }
 }
 
@@ -470,7 +479,7 @@ function selectBase(base) {
   if (!cart[key]) { cart[key] = { product: pendingProd, qty: 1, base, obs: '' }; }
   else { cart[key].qty++; }
   closeBase();
-  renderProds(); renderCart(); renderNotes(); updateTotal();
+  _refreshProdCard(pendingProd.id); renderCart(); renderNotes(); updateTotal();
 }
 
 // ── Carrito ──
@@ -525,13 +534,14 @@ function decreaseItem(key) {
   if (!cart[key]) return;
   cart[key].qty--;
   if (cart[key].qty <= 0) { delete cart[key]; if (lastKey === key) lastKey = null; }
-  renderProds(); renderCart(); renderNotes(); updateTotal();
+  _refreshProdCard(parseInt(key.split('|')[0])); renderCart(); renderNotes(); updateTotal();
 }
 
 function removeItem(key) {
+  const prodId = parseInt(key.split('|')[0]);
   delete cart[key];
   if (lastKey === key) lastKey = null;
-  renderProds(); renderCart(); renderNotes(); updateTotal();
+  _refreshProdCard(prodId); renderCart(); renderNotes(); updateTotal();
 }
 
 function clearCart() {
