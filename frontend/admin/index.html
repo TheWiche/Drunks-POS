@@ -60,6 +60,7 @@ html[data-theme=gold] body{background:#0d0900!important}html[data-theme=gold] [c
 /* ─── Emoji Picker ─── */
 .emoji-trigger{ cursor:pointer!important; caret-color:transparent; }
 .emoji-trigger:focus{ outline:none; border-color:#7c3aed!important; }
+button.emoji-trigger{ font-family:'Segoe UI Emoji','Apple Color Emoji',sans-serif; background:none; }
 #emojiPickerPanel{ display:none; }
 #emojiPickerPanel.open{ display:flex; }
 #epTabs::-webkit-scrollbar{ height:3px; }
@@ -869,9 +870,9 @@ setInterval(checkUpdate, 30 * 60 * 1000);
       <!-- ── Categorias ── -->
       <div id="pane-cats" class="hidden">
         <div class="flex gap-2 mb-5">
-          <input id="newCatIcono" type="text" placeholder="🏷️" maxlength="4" readonly
+          <button type="button" id="newCatIcono" data-value=""
             onclick="openEmojiPicker(this)"
-            class="emoji-trigger w-16 text-center bg-gray-800 border border-gray-700 rounded-xl px-2 py-2.5 text-white text-lg transition-colors select-none">
+            class="emoji-trigger w-16 text-center bg-gray-800 border border-gray-700 rounded-xl px-2 py-2.5 text-white text-lg transition-colors select-none">🏷️</button>
           <input id="newCatName" type="text" placeholder="Nueva categoria..."
             class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors">
           <button onclick="addCat()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
@@ -903,9 +904,9 @@ setInterval(checkUpdate, 30 * 60 * 1000);
           </div>
           <!-- Form nuevo tipo (oculto por defecto) -->
           <div id="newTipoForm" class="hidden flex gap-2 mb-3 p-3 bg-gray-800/50 rounded-xl border border-gray-700">
-            <input id="newTipoIcono" type="text" value="🍹" maxlength="4" readonly
+            <button type="button" id="newTipoIcono" data-value="🍹"
               onclick="openEmojiPicker(this)"
-              class="emoji-trigger bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-2 text-white text-sm w-14 text-center transition-colors select-none" placeholder="🍹">
+              class="emoji-trigger bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-2 text-white text-sm w-14 text-center transition-colors select-none">🍹</button>
             <input id="newTipoNombre" type="text" placeholder="Nombre del tipo (ej: Ron)"
               class="flex-1 bg-gray-900 border border-gray-700 focus:border-purple-500 rounded-lg px-3 py-2 text-white text-sm transition-colors"
               onkeydown="if(event.key==='Enter')addTipoBase()">
@@ -1153,7 +1154,8 @@ async function saveAll() {
 
   for (const id of [...dirty.cats]) {
     const n = document.getElementById('cn-'+id)?.value.trim();
-    const icono = document.getElementById('ci-'+id)?.value.trim() || '🏷️';
+    const _ciEl = document.getElementById('ci-'+id);
+    const icono = (_ciEl?.dataset.value?.trim() || _ciEl?.textContent?.trim() || '🏷️');
     if (!n) { errors++; continue; }
     try {
       const r = await fetch('/api/categorias/'+id, {
@@ -1342,10 +1344,10 @@ async function loadCats() {
 function renderCats(cats) {
   document.getElementById('catsList').innerHTML = cats.length ? cats.map(c => `
     <div id="drow-${c.id}" class="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-xl px-3 py-2.5 ${dirty.cats.has(c.id)?'dirty-row border-yellow-700/40':''}">
-      <input id="ci-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.icono||'🏷️')}" maxlength="4" readonly
+      <button type="button" id="ci-${c.id}" data-dirty-id="${c.id}" data-value="${esc(c.icono||'🏷️')}"
         onclick="openEmojiPicker(this)" oninput="markDirty('cats',${c.id})"
         class="emoji-trigger w-11 text-center text-lg bg-gray-900/70 border border-gray-600 hover:border-gray-500 rounded-lg outline-none transition-colors shrink-0 select-none"
-        title="Cambiar emoji">
+        title="Cambiar emoji">${esc(c.icono||'🏷️')}</button>
       <input id="cn-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.nombre)}"
         oninput="markDirty('cats',${c.id})"
         class="flex-1 bg-transparent text-white font-semibold text-sm border-b ${dirty.cats.has(c.id)?'border-yellow-500':'border-transparent'} focus:border-purple-500 transition-colors">
@@ -1363,10 +1365,10 @@ async function addCat() {
   const inp = document.getElementById('newCatName');
   const ico = document.getElementById('newCatIcono');
   const n = inp.value.trim(); if (!n) return;
-  const icono = ico?.value.trim() || '🏷️';
+  const icono = (ico?.dataset.value?.trim() || ico?.textContent?.trim() || '🏷️');
   try {
     const r = await fetch('/api/categorias', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nombre:n, icono})});
-    if (r.ok) { inp.value = ''; if (ico) ico.value = ''; adminToast('Creada'); loadCats(); }
+    if (r.ok) { inp.value = ''; if (ico) { ico.dataset.value = ''; ico.textContent = '🏷️'; } adminToast('Creada'); loadCats(); }
   } catch(e) {}
 }
 
@@ -1494,7 +1496,8 @@ function toggleNewTipoForm() {
 
 async function addTipoBase() {
   const nombre = document.getElementById('newTipoNombre')?.value.trim();
-  const icono  = document.getElementById('newTipoIcono')?.value.trim() || '🍹';
+  const _tiIco = document.getElementById('newTipoIcono');
+  const icono  = (_tiIco?.dataset.value?.trim() || _tiIco?.textContent?.trim() || '🍹');
   if (!nombre) { adminToast('Escribe un nombre para el tipo', false); return; }
   try {
     const r = await fetch('/api/tipos-base', {
@@ -1503,7 +1506,8 @@ async function addTipoBase() {
     });
     if (r.ok) {
       document.getElementById('newTipoNombre').value = '';
-      document.getElementById('newTipoIcono').value = '🍹';
+      const _tiR = document.getElementById('newTipoIcono');
+      if (_tiR) { _tiR.dataset.value = '🍹'; _tiR.textContent = '🍹'; }
       document.getElementById('newTipoForm')?.classList.add('hidden');
       adminToast('Tipo creado');
       await loadBases();
@@ -2068,7 +2072,13 @@ document.getElementById('epTabs').addEventListener('click', function(e) {
 document.getElementById('emojiGrid').addEventListener('click', function(e) {
   const btn = e.target.closest('[data-emoji]');
   if (btn && _epTarget) {
-    _epTarget.value = btn.dataset.emoji;
+    const emoji = btn.dataset.emoji;
+    if (_epTarget.tagName === 'INPUT') {
+      _epTarget.value = emoji;
+    } else {
+      _epTarget.dataset.value = emoji;
+      _epTarget.textContent = emoji;
+    }
     _epTarget.dispatchEvent(new Event('input', {bubbles:true}));
     closeEmojiPicker();
   }
