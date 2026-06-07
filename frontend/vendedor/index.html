@@ -286,13 +286,22 @@ html[data-theme=gold] [class*=glow-purple]{box-shadow:0 0 18px rgba(234,179,8,.4
 </div>
 
 <script>
-// ── Constantes de UI ──
-const CAT_CFG = {
-  'Micheladas': { icon:'🍺', bg:'bg-amber-900/25 border-amber-700/20',    active:'bg-amber-900/60 border-amber-400/50 glow-amber',    pill:'bg-amber-700 text-amber-100' },
-  'Mojitos':    { icon:'🍹', bg:'bg-emerald-900/25 border-emerald-700/20', active:'bg-emerald-900/60 border-emerald-400/50 glow-emerald', pill:'bg-emerald-700 text-emerald-100' },
-  'Especiales': { icon:'✨', bg:'bg-pink-900/20 border-pink-700/20',       active:'bg-pink-900/50 border-pink-400/50 glow-pink',       pill:'bg-pink-700 text-pink-100' },
-};
-const DEF_CFG = { icon:'🍾', bg:'bg-gray-800/50 border-gray-700/20', active:'bg-gray-700/70 border-purple-400/60 glow-purple', pill:'bg-purple-700 text-purple-100' };
+// ── Colores dinámicos por categoría ──
+function hexToRgb(hex) {
+  const h = (hex || '#8b5cf6').replace('#','');
+  const n = parseInt(h.length === 3 ? h.split('').map(x=>x+x).join('') : h, 16);
+  return [(n>>16)&255, (n>>8)&255, n&255];
+}
+function catStyle(cat, active) {
+  const [r,g,b] = hexToRgb(cat?.color);
+  if (active) return `background:rgba(${r},${g},${b},0.55);border-color:rgba(${r},${g},${b},0.8);box-shadow:0 0 18px rgba(${r},${g},${b},0.35)`;
+  return `background:rgba(${r},${g},${b},0.18);border-color:rgba(${r},${g},${b},0.25)`;
+}
+function catPillStyle(cat, active) {
+  const [r,g,b] = hexToRgb(cat?.color);
+  if (active) return `background:rgba(${r},${g},${b},0.85);color:#fff;box-shadow:0 0 12px rgba(${r},${g},${b},0.4)`;
+  return '';
+}
 
 let availBases = [];  // cargadas dinámicamente desde /api/productos/{id}/bases
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -329,7 +338,7 @@ async function loadNotes() {
 }
 
 // ── Categorías ──
-function catCfg(nombre) { return CAT_CFG[nombre] || DEF_CFG; }
+function catById(id) { return categories.find(c => c.id === id) || null; }
 
 function renderCats() {
   const bar = document.getElementById('catBar');
@@ -339,13 +348,13 @@ function renderCats() {
     Todas
   </button>`;
   bar.innerHTML = all + categories.map(c => {
-    const cfg = catCfg(c.nombre);
-    const icon = c.icono || cfg.icon;  // preferir icono guardado en BD
     const isActive = activeCat === c.id;
+    const pillSt = catPillStyle(c, isActive);
     return `<button onclick="selectCat(${c.id})"
-      class="cat-pill shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all
-        ${isActive ? cfg.pill + ' shadow-lg' : 'bg-gray-800 text-gray-400 border border-gray-700'}">
-      <span>${icon}</span>${c.nombre}
+      class="cat-pill shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all border border-transparent
+        ${isActive ? 'text-white' : 'bg-gray-800 text-gray-400 border-gray-700'}"
+      style="${pillSt}">
+      <span>${c.icono || '🏷️'}</span>${c.nombre}
     </button>`;
   }).join('');
 }
@@ -369,16 +378,19 @@ function isActiveProd(id) {
 function _buildProdCardHTML(p) {
   const qty    = totalQtyForProd(p.id);
   const avail  = !!p.disponible;
-  const cfg    = catCfg(p.categoria_nombre || '');
+  const cat    = catById(p.categoria_id);
   const active = isActiveProd(p.id);
   const isMich = !!p.tiene_base;
+  const icon   = cat?.icono || '🍾';
+  const cardSt = avail ? catStyle(cat, active) : '';
   return `<div id="prod-card-${p.id}"
       class="card-tap relative rounded-2xl p-3.5 flex flex-col items-center justify-center min-h-[7rem] select-none border cursor-pointer
-        ${avail ? (active ? cfg.active + ' shadow-lg' : cfg.bg) : 'opacity-30 cursor-not-allowed border-gray-800/20 bg-gray-800/10'}"
+        ${avail ? '' : 'opacity-30 cursor-not-allowed border-gray-800/20 bg-gray-800/10'}"
+      style="${cardSt}"
       ${avail ? 'onclick="tapProd(' + p.id + ')"' : ''}>
     ${qty > 0 ? '<div class="badge-pop absolute -top-2.5 -right-2.5 bg-purple-500 text-white text-xs font-extrabold w-7 h-7 rounded-full flex items-center justify-center shadow-xl z-10">' + qty + '</div>' : ''}
     ${isMich ? '<div class="absolute top-2 left-2 text-[8px] text-amber-400 font-bold tracking-wider bg-amber-900/40 px-1.5 py-0.5 rounded-full">BASE</div>' : ''}
-    <div class="text-2xl mb-1.5">${cfg.icon}</div>
+    <div class="text-2xl mb-1.5">${icon}</div>
     <div class="text-white font-extrabold text-xs text-center leading-tight">${p.nombre}</div>
     <div class="font-extrabold text-sm mt-1.5 tabular-nums ${active ? 'text-white' : 'text-gray-300'}">$${Math.round(p.precio).toLocaleString('es-CO')}</div>
     ${!avail ? '<div class="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/60"><span class="text-red-400 font-black text-[10px] tracking-widest">AGOTADO</span></div>' : ''}
@@ -509,10 +521,10 @@ function renderCart() {
       <div class="flex items-center gap-2 shrink-0 mt-0.5">
         <div class="flex items-center gap-1">
           <button data-key="${key.replace(/"/g,'&quot;')}" onclick="event.stopPropagation();decreaseItem(this.dataset.key)"
-            class="w-6 h-6 rounded-full bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold flex items-center justify-center">-</button>
+            class="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold flex items-center justify-center">-</button>
           <span class="text-white font-extrabold text-sm w-5 text-center tabular-nums">${item.qty}</span>
           <button data-key="${key.replace(/"/g,'&quot;')}" onclick="event.stopPropagation();increaseItem(this.dataset.key)"
-            class="w-6 h-6 rounded-full bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold flex items-center justify-center">+</button>
+            class="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold flex items-center justify-center">+</button>
         </div>
         <div class="text-green-400 text-sm font-extrabold tabular-nums w-16 text-right">$${Math.round(item.product.precio * item.qty).toLocaleString('es-CO')}</div>
         <button data-key="${key.replace(/"/g,'&quot;')}" onclick="event.stopPropagation();removeItem(this.dataset.key)"

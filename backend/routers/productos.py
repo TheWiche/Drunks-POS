@@ -14,7 +14,8 @@ PROD_Q = """
 
 class CategoriaBody(BaseModel):
     nombre: str
-    icono: Optional[str] = None
+    icono:  Optional[str] = None
+    color:  Optional[str] = None
 
 
 class ProductoCreate(BaseModel):
@@ -45,8 +46,11 @@ def get_categorias():
 @router.post("/categorias", status_code=201)
 def create_categoria(data: CategoriaBody):
     icono = data.icono or "🏷️"
+    color = data.color or "#8b5cf6"
     with get_conn() as conn:
-        cur = conn.execute("INSERT INTO categorias (nombre, icono) VALUES (?,?)", (data.nombre, icono))
+        cur = conn.execute(
+            "INSERT INTO categorias (nombre, icono, color) VALUES (?,?,?)",
+            (data.nombre, icono, color))
         conn.commit()
         result = to_dict(conn.execute("SELECT * FROM categorias WHERE id=?", (cur.lastrowid,)).fetchone())
     push_config("categorias")
@@ -58,10 +62,9 @@ def update_categoria(id: int, data: CategoriaBody):
     with get_conn() as conn:
         if not conn.execute("SELECT id FROM categorias WHERE id=?", (id,)).fetchone():
             raise HTTPException(404, "No encontrada")
-        if data.icono is not None:
-            conn.execute("UPDATE categorias SET nombre=?, icono=? WHERE id=?", (data.nombre, data.icono, id))
-        else:
-            conn.execute("UPDATE categorias SET nombre=? WHERE id=?", (data.nombre, id))
+        conn.execute(
+            "UPDATE categorias SET nombre=?, icono=?, color=? WHERE id=?",
+            (data.nombre, data.icono or "🏷️", data.color or "#8b5cf6", id))
         conn.commit()
         result = to_dict(conn.execute("SELECT * FROM categorias WHERE id=?", (id,)).fetchone())
     push_config("categorias")

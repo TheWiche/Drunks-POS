@@ -25,6 +25,12 @@ def init_db():
                 id     INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre TEXT NOT NULL
             )""")
+        # Migraciones de categorias
+        _cols = {r[1] for r in conn.execute("PRAGMA table_info(categorias)").fetchall()}
+        if "icono" not in _cols:
+            conn.execute("ALTER TABLE categorias ADD COLUMN icono TEXT DEFAULT '🏷️'")
+        if "color" not in _cols:
+            conn.execute("ALTER TABLE categorias ADD COLUMN color TEXT DEFAULT '#8b5cf6'")
         conn.execute("""
             CREATE TABLE IF NOT EXISTS productos (
                 id           INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -133,14 +133,16 @@ async def pull_config_from_supabase() -> None:
 
         with get_conn() as conn:
             for tabla in reversed(_CFG_INSERT_ORDER):
-                if tabla in cloud:
+                if tabla in cloud and tabla != "settings":
                     conn.execute(f"DELETE FROM {tabla}")
             for tabla in _CFG_INSERT_ORDER:
                 if tabla not in cloud or not cloud[tabla]:
                     continue
                 cols = _CFG_COLS[tabla]
+                # settings usa upsert para no pisar valores locales como admin_pin
+                on_conflict = "REPLACE" if tabla == "settings" else "IGNORE"
                 conn.executemany(
-                    f"INSERT OR IGNORE INTO {tabla} ({','.join(cols)}) "
+                    f"INSERT OR {on_conflict} INTO {tabla} ({','.join(cols)}) "
                     f"VALUES ({','.join('?' * len(cols))})",
                     [[row.get(c) for c in cols] for row in cloud[tabla]],
                 )

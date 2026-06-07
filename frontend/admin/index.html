@@ -290,12 +290,17 @@ button.emoji-trigger{font-family:'Segoe UI Emoji','Apple Color Emoji',sans-serif
       </div>
       <!-- Pane categorias -->
       <div id="pane-cats" class="hidden flex-1 overflow-y-auto px-6 pt-4 pb-4">
-        <div class="flex gap-2 mb-5">
+        <div class="flex gap-2 mb-5 items-center">
           <button type="button" id="newCatIcono" data-value=""
             onclick="openEmojiPicker(this)"
-            class="emoji-trigger w-16 text-center bg-gray-800 border border-gray-700 rounded-xl px-2 py-2.5 text-white text-lg transition-colors select-none">🏷️</button>
+            class="emoji-trigger w-14 text-center bg-gray-800 border border-gray-700 rounded-xl px-2 py-2.5 text-white text-lg transition-colors select-none">🏷️</button>
           <input id="newCatName" type="text" placeholder="Nueva categoria..."
             class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors">
+          <label title="Color" class="cursor-pointer shrink-0">
+            <input id="newCatColor" type="color" value="#8b5cf6" class="sr-only">
+            <div id="newCatColorSwatch" onclick="document.getElementById('newCatColor').click();document.getElementById('newCatColor').oninput=function(){document.getElementById('newCatColorSwatch').style.background=this.value}"
+              class="w-9 h-9 rounded-xl border-2 border-gray-600 hover:border-white cursor-pointer transition-colors" style="background:#8b5cf6"></div>
+          </label>
           <button onclick="addCat()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
         </div>
         <div id="catsList" class="space-y-2"></div>
@@ -914,8 +919,9 @@ async function saveAll() {
     const n=document.getElementById('cn-'+id)?.value.trim();
     const _ciEl=document.getElementById('ci-'+id);
     const icono=(_ciEl?.dataset.value?.trim()||_ciEl?.textContent?.trim()||'🏷️');
+    const color=document.getElementById('cc-'+id)?.value||'#8b5cf6';
     if (!n) { errors++; continue; }
-    try { const r=await fetch('/api/categorias/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:n,icono})}); if(r.ok){dirty.cats.delete(id);ok++;}else errors++; } catch(e){errors++;}
+    try { const r=await fetch('/api/categorias/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:n,icono,color})}); if(r.ok){dirty.cats.delete(id);ok++;}else errors++; } catch(e){errors++;}
   }
   updateSaveBar();
   if (errors===0) adminToast('Todo guardado ('+ok+' cambios)');
@@ -1017,6 +1023,14 @@ function renderCats(cats) {
         class="emoji-trigger w-11 text-center text-lg bg-gray-900/70 border border-gray-600 hover:border-gray-500 rounded-lg outline-none transition-colors shrink-0 select-none">${esc(c.icono||'🏷️')}</button>
       <input id="cn-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.nombre)}" oninput="markDirty('cats',${c.id})"
         class="flex-1 bg-transparent text-white font-semibold text-sm border-b ${dirty.cats.has(c.id)?'border-yellow-500':'border-transparent'} focus:border-purple-500 transition-colors">
+      <label title="Color de tarjetas" class="shrink-0 cursor-pointer">
+        <input id="cc-${c.id}" type="color" value="${c.color||'#8b5cf6'}"
+          oninput="markDirty('cats',${c.id});document.getElementById('ccs-${c.id}').style.background=this.value"
+          class="sr-only">
+        <div id="ccs-${c.id}" onclick="document.getElementById('cc-${c.id}').click()"
+          class="w-7 h-7 rounded-lg border-2 border-gray-600 hover:border-white cursor-pointer transition-colors"
+          style="background:${c.color||'#8b5cf6'}"></div>
+      </label>
       <button data-id="${c.id}" onclick="deleteCat(parseInt(this.dataset.id))" class="bg-gray-700 hover:bg-red-800 text-white text-xs px-2 py-1.5 rounded-lg transition-colors shrink-0">×</button>
     </div>`).join('') : '<div class="text-gray-600 text-sm text-center py-6">Sin categorias.</div>';
 }
@@ -1027,9 +1041,11 @@ async function deleteCat(id) {
 }
 async function addCat() {
   const inp=document.getElementById('newCatName'), ico=document.getElementById('newCatIcono');
+  const colorEl=document.getElementById('newCatColor');
   const n=inp.value.trim(); if(!n) return;
   const icono=(ico?.dataset.value?.trim()||ico?.textContent?.trim()||'🏷️');
-  try{const r=await fetch('/api/categorias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:n,icono})});if(r.ok){inp.value='';if(ico){ico.dataset.value='';ico.textContent='🏷️';}adminToast('Creada');loadCats();}}catch(e){}
+  const color=colorEl?.value||'#8b5cf6';
+  try{const r=await fetch('/api/categorias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:n,icono,color})});if(r.ok){inp.value='';if(ico){ico.dataset.value='';ico.textContent='🏷️';}if(colorEl)colorEl.value='#8b5cf6';adminToast('Creada');loadCats();}}catch(e){}
 }
 
 // ── Notas ──

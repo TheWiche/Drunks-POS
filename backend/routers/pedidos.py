@@ -70,18 +70,20 @@ async def create_pedido(data: PedidoCreate, background_tasks: BackgroundTasks):
                 (pedido_id, item.producto_id, item.cantidad, item.observaciones))
             prod = conn.execute("""
                 SELECT p.nombre, p.precio, p.categoria_id,
-                       COALESCE(c.nombre,'Sin Categoria') AS categoria
+                       COALESCE(c.nombre,'Sin Categoria') AS categoria,
+                       COALESCE(c.color,'#8b5cf6') AS categoria_color
                 FROM productos p LEFT JOIN categorias c ON p.categoria_id=c.id
                 WHERE p.id=?
             """, (item.producto_id,)).fetchone()
             items_detail.append({
-                "producto_id":   item.producto_id,
-                "nombre":        prod["nombre"]       if prod else "Desconocido",
-                "cantidad":      item.cantidad,
-                "precio":        prod["precio"]       if prod else 0,
-                "categoria_id":  prod["categoria_id"] if prod else None,
-                "categoria":     prod["categoria"]    if prod else "Sin Categoria",
-                "observaciones": item.observaciones,
+                "producto_id":    item.producto_id,
+                "nombre":         prod["nombre"]          if prod else "Desconocido",
+                "cantidad":       item.cantidad,
+                "precio":         prod["precio"]          if prod else 0,
+                "categoria_id":   prod["categoria_id"]    if prod else None,
+                "categoria":      prod["categoria"]       if prod else "Sin Categoria",
+                "categoria_color":prod["categoria_color"] if prod else "#8b5cf6",
+                "observaciones":  item.observaciones,
             })
         conn.commit()
 
@@ -111,8 +113,11 @@ def get_pendientes():
             pd["items"] = [dict(d) for d in conn.execute("""
                 SELECT dp.producto_id, dp.cantidad, dp.observaciones,
                        COALESCE(pr.nombre,'Producto eliminado') AS nombre,
-                       pr.categoria_id
-                FROM detalle_pedidos dp LEFT JOIN productos pr ON dp.producto_id=pr.id
+                       pr.categoria_id,
+                       COALESCE(c.color,'#8b5cf6') AS categoria_color
+                FROM detalle_pedidos dp
+                LEFT JOIN productos pr ON dp.producto_id=pr.id
+                LEFT JOIN categorias c ON pr.categoria_id=c.id
                 WHERE dp.pedido_id=?""", (p["id"],)).fetchall()]
             result.append(pd)
     return result
