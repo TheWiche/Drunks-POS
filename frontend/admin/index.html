@@ -1385,6 +1385,7 @@ async function checkUpdate(manual=true) {
   const btn=document.getElementById('upCheckBtn');
   if(btn){btn.disabled=true;}
   try {
+    if (manual) await fetch('/api/update/check', {method:'POST'}).catch(()=>{});
     const d = await fetch('/api/update/check').then(r=>r.json());
     const verEl=document.getElementById('upCurrentVersion');
     if(verEl) verEl.textContent = 'v'+(d.current||'—');
@@ -1472,7 +1473,10 @@ customElements.whenDefined('emoji-picker').then(() => {
   async function initPin() {
     const pin=await getAdminPin();
     if (!pin || sessionStorage.getItem(BYPASS_KEY)==='1') { showAdminContent(); }
-    else { document.getElementById('pinOverlay').style.display=''; }
+    else {
+      document.getElementById('pinOverlay').style.display='';
+      setTimeout(()=>document.getElementById('pinInput').focus(), 100);
+    }
   }
   window.checkPin = function() {
     getAdminPin().then(pin => {

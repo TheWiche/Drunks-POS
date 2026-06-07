@@ -13,6 +13,13 @@ except Exception:
     APP_VERSION = "0.0.0"
 
 
+@router.post("/update/check")
+def api_trigger_check():
+    if _updater and not _updater._update_info.get("checking"):
+        _updater.start_background_check()
+    return {"ok": True}
+
+
 @router.get("/update/check")
 def api_check_update():
     if _updater is None:

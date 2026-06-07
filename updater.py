@@ -16,7 +16,7 @@ TEMP_UPDATE_DIR = Path(tempfile.gettempdir()) / "drunks_update"
 
 # Version de este build -- se actualiza en cada release.
 # Hardcodeada aqui para que nunca dependa de un archivo externo.
-APP_VERSION = "1.0.21"
+APP_VERSION = "1.0.22"
 
 _update_info: dict = {
     "has_update": False,
@@ -210,13 +210,8 @@ def download_and_apply(url: str, progress_cb=None) -> None:
         )
         _prog(100, "Cerrando aplicacion...")
         _download_progress["done"] = True
-
-        # Cerrar el proceso actual para que PowerShell pueda copiar los archivos sin conflictos
-        def _exit_after_delay():
-            time.sleep(2.5)
-            import os
-            os._exit(0)
-        threading.Thread(target=_exit_after_delay, daemon=True).start()
+        time.sleep(2.5)
+        os._exit(0)
 
     except Exception as exc:
         _update_info["error"] = f"Error al aplicar actualizacion: {exc}"

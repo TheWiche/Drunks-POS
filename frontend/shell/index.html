@@ -69,7 +69,9 @@ function go(url, name) {
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active')});
   var btn = document.getElementById('btn-' + name);
   if (btn) btn.classList.add('active');
-  document.getElementById('frame').src = url;
+  var frame = document.getElementById('frame');
+  frame.src = 'about:blank';
+  setTimeout(function() { frame.src = url + '?r=' + Date.now(); }, 30);
 }
 document.getElementById('frame').addEventListener('load', function() {
   try {
