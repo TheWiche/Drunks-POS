@@ -1,0 +1,13 @@
+dist/
+build/
+*.zip
+*.spec
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+drunks_error.log
+drunks.db
+_update.ps1
