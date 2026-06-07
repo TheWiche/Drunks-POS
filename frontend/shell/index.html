@@ -38,6 +38,14 @@ html,body{height:100%;overflow:hidden;background:#0d0d1a}
 .upd-pill:hover{background:#7c3aed44}
 .upd-dot{width:8px;height:8px;background:#7c3aed;border-radius:50%;flex-shrink:0}
 .upd-txt{font-size:.75rem;font-weight:700;color:#c4b5fd;font-family:'Segoe UI',sans-serif}
+.lan-pill{
+  display:none;align-items:center;gap:6px;
+  background:#0f2a1a;border:1px solid #166534;border-radius:99px;
+  padding:4px 11px 4px 9px;cursor:pointer;user-select:all
+}
+.lan-pill:hover{background:#166534}
+.lan-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;flex-shrink:0}
+.lan-txt{font-size:.7rem;font-weight:600;color:#86efac;font-family:monospace}
 @keyframes pulse{
   0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.4)}
   50%{box-shadow:0 0 0 6px rgba(124,58,237,0)}
@@ -54,6 +62,10 @@ iframe{flex:1;border:none;width:100%}
     <button class="nav-btn"        id="btn-admin"     onclick="go('/admin','admin')">🔐 Admin</button>
     <div class="spacer"></div>
     <button class="fs-btn" id="btn-fs" onclick="toggleFullscreen()" title="Pantalla completa (F11)">⛶</button>
+    <div class="lan-pill" id="lan-pill" title="URL para acceso en red local — toca para copiar">
+      <div class="lan-dot"></div>
+      <span class="lan-txt" id="lan-txt">red local</span>
+    </div>
     <div class="upd-pill" id="upd-pill" onclick="reqUpdate()">
       <div class="upd-dot"></div>
       <span class="upd-txt" id="upd-txt">Actualización disponible</span>
@@ -87,6 +99,18 @@ document.getElementById('frame').addEventListener('load', function() {
     if (btn) btn.classList.add('active');
   } catch(e) {}
 });
+fetch('/api/sync/info').then(function(r){return r.json();}).then(function(d){
+  if (d.local_ip && d.local_ip !== '127.0.0.1') {
+    var url = 'http://' + d.local_ip + ':' + d.port;
+    var pill = document.getElementById('lan-pill');
+    var txt  = document.getElementById('lan-txt');
+    txt.textContent = url;
+    pill.style.display = 'flex';
+    pill.onclick = function() {
+      navigator.clipboard && navigator.clipboard.writeText(url);
+    };
+  }
+}).catch(function(){});
 function showUpdate(ver) {
   document.getElementById('upd-txt').textContent = 'v' + ver + ' disponible';
   document.getElementById('upd-pill').style.display = 'flex';

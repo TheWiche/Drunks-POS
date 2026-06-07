@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ..database import get_conn
-from ..config import SUPABASE_URL, SUPABASE_KEY
+from ..config import SUPABASE_URL, SUPABASE_KEY, PORT
 from ..supabase import HTTPX_AVAILABLE
 
 router = APIRouter()
@@ -9,6 +9,19 @@ try:
     import httpx
 except ImportError:
     httpx = None
+
+
+@router.get("/sync/info")
+def get_info():
+    import socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+    except Exception:
+        ip = "127.0.0.1"
+    return {"local_ip": ip, "port": PORT}
 
 
 @router.get("/sync/status")

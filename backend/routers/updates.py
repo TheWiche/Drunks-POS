@@ -1,3 +1,4 @@
+import os
 import threading
 
 from fastapi import APIRouter, HTTPException
@@ -36,6 +37,8 @@ def api_update_progress():
 
 @router.post("/update/apply")
 def api_apply_update():
+    if os.getenv("FLY_APP_NAME"):
+        raise HTTPException(503, "Updates no disponibles en instancia cloud")
     if _updater is None:
         raise HTTPException(503, "Modulo de actualizacion no disponible")
     info = _updater._update_info

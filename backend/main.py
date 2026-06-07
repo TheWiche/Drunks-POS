@@ -1,11 +1,15 @@
 import asyncio
+import os
+import secrets
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 
-from .config import FRONTEND_DIR
+from .config import FRONTEND_DIR, IS_CLOUD
 from .database import init_db
 from .supabase import pull_config_from_supabase, download_from_supabase, sync_pending_loop
 from .routers import (
@@ -25,9 +29,34 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Drunks POS", lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 _static_dir = FRONTEND_DIR / "static"
 _static_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(_static_dir)), name="static")
+
+# ── Auth HTTP Basic para instancia cloud ──────────────────────────────────────
+_security  = HTTPBasic(auto_error=False)
+_CLOUD_PASS = os.getenv("CLOUD_PASS", "")
+
+def _cloud_auth(credentials: HTTPBasicCredentials = Depends(_security)):
+    if not IS_CLOUD or not _CLOUD_PASS:
+        return
+    if credentials is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED,
+                            headers={"WWW-Authenticate": "Basic"})
+    ok = secrets.compare_digest(
+        (credentials.password or "").encode(),
+        _CLOUD_PASS.encode(),
+    )
+    if not ok:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED,
+                            headers={"WWW-Authenticate": "Basic"})
 
 app.include_router(pedidos.router,   prefix="/api")
 app.include_router(productos.router, prefix="/api")
@@ -40,22 +69,22 @@ app.include_router(sync.router,      prefix="/api")
 
 
 @app.get("/vendedor")
-def page_vendedor():
+def page_vendedor(_=Depends(_cloud_auth)):
     return FileResponse(str(FRONTEND_DIR / "vendedor" / "index.html"))
 
 
 @app.get("/cocina")
-def page_cocina():
+def page_cocina(_=Depends(_cloud_auth)):
     return FileResponse(str(FRONTEND_DIR / "cocina" / "index.html"))
 
 
 @app.get("/admin")
-def page_admin():
+def page_admin(_=Depends(_cloud_auth)):
     return FileResponse(str(FRONTEND_DIR / "admin" / "index.html"))
 
 
 @app.get("/dashboard")
-def page_dashboard():
+def page_dashboard(_=Depends(_cloud_auth)):
     return FileResponse(str(FRONTEND_DIR / "admin" / "index.html"))
 
 
