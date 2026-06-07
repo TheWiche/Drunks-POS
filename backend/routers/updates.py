@@ -1,4 +1,6 @@
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+import threading
+
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter()
 
@@ -14,16 +16,32 @@ except Exception:
 @router.get("/update/check")
 def api_check_update():
     if _updater is None:
-        return {"has_update": False, "current": APP_VERSION, "latest": None, "url": None}
+        return {"has_update": False, "current": APP_VERSION, "latest": None, "url": None, "checking": False, "error": None}
     return _updater._update_info
 
 
-@router.post("/update/apply")
-async def api_apply_update(background_tasks: BackgroundTasks):
+@router.get("/update/progress")
+def api_update_progress():
     if _updater is None:
-        raise HTTPException(503, "Módulo de actualización no disponible")
+        return {"active": False, "pct": 0, "msg": "", "error": None, "done": False}
+    return _updater.get_progress()
+
+
+@router.post("/update/apply")
+def api_apply_update():
+    if _updater is None:
+        raise HTTPException(503, "Modulo de actualizacion no disponible")
     info = _updater._update_info
     if not info.get("has_update") or not info.get("url"):
-        raise HTTPException(400, "No hay actualización disponible o URL no encontrada")
-    background_tasks.add_task(_updater.download_and_apply, info["url"])
-    return {"ok": True, "message": "Descargando actualización, la app se reiniciará en breve..."}
+        raise HTTPException(400, "No hay actualizacion disponible o URL no encontrada")
+    if _updater._download_progress.get("active"):
+        return {"ok": True, "message": "Ya hay una descarga en progreso"}
+
+    t = threading.Thread(
+        target=_updater.download_and_apply,
+        args=(info["url"],),
+        daemon=True,
+        name="update-apply",
+    )
+    t.start()
+    return {"ok": True, "message": "Descarga iniciada"}

@@ -135,6 +135,11 @@ def init_db():
             )""")
         conn.commit()
 
+        conn.execute(
+            "INSERT INTO settings (key, value) VALUES ('admin_pin', '0401') ON CONFLICT(key) DO NOTHING"
+        )
+        conn.commit()
+
         if conn.execute("SELECT COUNT(*) FROM tipos_base").fetchone()[0] == 0:
             conn.executemany("INSERT INTO tipos_base (nombre, icono) VALUES (?,?)", [
                 ("Cerveza", "🍺"), ("Gaseosa", "🧃"), ("Soda", "🫧"),

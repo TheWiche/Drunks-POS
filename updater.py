@@ -16,7 +16,7 @@ TEMP_UPDATE_DIR = Path(tempfile.gettempdir()) / "drunks_update"
 
 # Version de este build -- se actualiza en cada release.
 # Hardcodeada aqui para que nunca dependa de un archivo externo.
-APP_VERSION = "1.0.18"
+APP_VERSION = "1.0.19"
 
 _update_info: dict = {
     "has_update": False,
@@ -95,15 +95,31 @@ def start_background_check() -> None:
     t.start()
 
 
+_download_progress: dict = {
+    "active": False,
+    "pct": 0,
+    "msg": "",
+    "error": None,
+    "done": False,
+}
+
+
+def get_progress() -> dict:
+    return dict(_download_progress)
+
+
 def download_and_apply(url: str, progress_cb=None) -> None:
     """
-    Descarga el ZIP, extrae Drunks.exe y usa VBScript silencioso para reemplazarlo.
-    progress_cb(pct: int, msg: str) se llama con 0-100 durante el proceso.
-    El llamador (app_launcher._run_update_with_ui) maneja el cierre del proceso.
+    Descarga el ZIP, extrae los archivos y usa un script PowerShell para
+    reemplazar la instalacion completa y reiniciar — sin VBScript ni robocopy.
     """
     import shutil
 
+    _download_progress.update({"active": True, "pct": 0, "msg": "", "error": None, "done": False})
+
     def _prog(pct: int, msg: str = "") -> None:
+        _download_progress["pct"] = pct
+        _download_progress["msg"] = msg
         if progress_cb:
             try:
                 progress_cb(pct, msg)
@@ -130,7 +146,7 @@ def download_and_apply(url: str, progress_cb=None) -> None:
                     f.write(chunk)
                     downloaded += len(chunk)
                     if total:
-                        pct = 5 + int(downloaded * 65 / total)  # 5-70%
+                        pct = 5 + int(downloaded * 65 / total)
                         _prog(pct, f"Descargando... {downloaded // (1024*1024)} MB")
 
         # 2. Extraer
@@ -140,7 +156,7 @@ def download_and_apply(url: str, progress_cb=None) -> None:
             z.extractall(extract_dir)
         zip_path.unlink(missing_ok=True)
 
-        # 3. Localizar la carpeta del update (build COLLECT: carpeta con Drunks.exe + DLLs)
+        # 3. Localizar la carpeta del update
         _prog(80, "Preparando instalacion...")
         app_root = get_app_root()
         exe_name = "Drunks.exe"
@@ -152,44 +168,58 @@ def download_and_apply(url: str, progress_cb=None) -> None:
         if not new_exe_src:
             raise FileNotFoundError(f"No se encontro {exe_name} en el archivo descargado.")
 
-        src_folder = new_exe_src.parent  # carpeta que contiene el exe y las DLLs
+        src_folder = new_exe_src.parent
+        main_exe   = app_root / exe_name
 
-        _prog(92, "Preparando reinicio...")
+        _prog(92, "Preparando script de instalacion...")
 
-        # 4. VBScript silencioso: espera, copia toda la carpeta, reinicia -- sin ventana CMD
-        main_exe = app_root / exe_name
-        vbs_path = app_root / "_update_exe.vbs"
+        # 4. PowerShell: espera, copia todos los archivos, reinicia.
+        #    Copy-Item -Recurse -Force es mas confiable que robocopy en este contexto.
+        src_str = str(src_folder).replace("'", "''")
+        dst_str = str(app_root).replace("'", "''")
+        tmp_str = str(TEMP_UPDATE_DIR).replace("'", "''")
+        exe_str = str(main_exe).replace("'", "''")
 
-        src_str = str(src_folder)
-        dst_str = str(app_root)
-        tmp_str = str(TEMP_UPDATE_DIR)
+        ps_script = (
+            "Start-Sleep -Seconds 6\r\n"
+            "try {\r\n"
+            f"    Copy-Item -Path '{src_str}\\*' -Destination '{dst_str}' -Recurse -Force -ErrorAction Stop\r\n"
+            "} catch {\r\n"
+            f"    $_ | Out-File '{tmp_str}\\update_error.log' -Force\r\n"
+            "}\r\n"
+            f"Remove-Item -Path '{tmp_str}' -Recurse -Force -ErrorAction SilentlyContinue\r\n"
+            f"Start-Process -FilePath '{exe_str}'\r\n"
+        )
+        ps_path = app_root / "_update.ps1"
+        ps_path.write_text(ps_script, encoding="utf-8")
 
-        # robocopy maneja archivos bloqueados con reintentos (/R:5 /W:2)
-        # y no borra archivos extra en destino (conserva drunks.db, logs, etc.)
-        vbs_lines = [
-            'WScript.Sleep 8000',
-            'Dim sh, fso',
-            'Set sh = CreateObject("WScript.Shell")',
-            f'sh.Run "robocopy ""{src_str}"" ""{dst_str}"" /E /IS /R:5 /W:2", 0, True',
-            'Set fso = CreateObject("Scripting.FileSystemObject")',
-            f'If fso.FolderExists("{tmp_str}") Then fso.DeleteFolder "{tmp_str}", True',
-            f'sh.Run Chr(34) & "{main_exe}" & Chr(34)',
-            'fso.DeleteFile WScript.ScriptFullName',
-        ]
-        vbs_path.write_text("\r\n".join(vbs_lines), encoding="utf-8")
-
-        _prog(98, "Reiniciando...")
+        _prog(98, "Reiniciando en 6 segundos...")
         subprocess.Popen(
-            ["wscript.exe", str(vbs_path)],
+            [
+                "powershell",
+                "-ExecutionPolicy", "Bypass",
+                "-NonInteractive",
+                "-WindowStyle", "Hidden",
+                "-File", str(ps_path),
+            ],
             creationflags=(
                 subprocess.DETACHED_PROCESS
                 | subprocess.CREATE_NEW_PROCESS_GROUP
                 | subprocess.CREATE_NO_WINDOW
             ),
         )
-        _prog(100, "Cerrando...")
+        _prog(100, "Cerrando aplicacion...")
+        _download_progress["done"] = True
+
+        # Cerrar el proceso actual para que PowerShell pueda copiar los archivos sin conflictos
+        def _exit_after_delay():
+            time.sleep(2.5)
+            import os
+            os._exit(0)
+        threading.Thread(target=_exit_after_delay, daemon=True).start()
 
     except Exception as exc:
         _update_info["error"] = f"Error al aplicar actualizacion: {exc}"
+        _download_progress["error"] = str(exc)
+        _download_progress["active"] = False
         raise
-    # El llamador (app_launcher._run_update_with_ui) maneja el cierre del proceso
