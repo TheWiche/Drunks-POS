@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Drunks · Admin</title>
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('drunksPalette')||'dark')</script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
 <style>
 /* ── Temas ── */
 html[data-theme=light] body{background:#f0ebff!important;color:#1e1b4b!important}
@@ -110,12 +111,9 @@ body{background:#06060f;font-family:'Segoe UI',system-ui,sans-serif}
 .emoji-trigger{cursor:pointer!important;caret-color:transparent}
 .emoji-trigger:focus{outline:none;border-color:#7c3aed!important}
 button.emoji-trigger{font-family:'Segoe UI Emoji','Apple Color Emoji',sans-serif;background:none}
-#emojiPickerPanel{display:none;position:fixed;z-index:300;background:#111827;border:1px solid #374151;border-radius:16px;padding:12px;box-shadow:0 20px 60px rgba(0,0,0,.8);flex-direction:column;gap:8px;width:320px}
-#emojiPickerPanel.open{display:flex}
-#epGrid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;max-height:200px;overflow-y:auto}
-#epGrid::-webkit-scrollbar{width:4px}#epGrid::-webkit-scrollbar-thumb{background:#374151;border-radius:2px}
-.ep-btn{font-size:1.3rem;padding:4px;border-radius:8px;cursor:pointer;text-align:center;line-height:1;background:none;border:none;transition:background .1s}
-.ep-btn:hover{background:rgba(124,58,237,.25)}
+#emojiPickerPanel{display:none;position:fixed;z-index:300;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8);width:352px}
+#emojiPickerPanel.open{display:block}
+emoji-picker{--background:#111827;--border-color:#374151;--indicator-color:#7c3aed;--input-border-color:#374151;--input-font-color:#fff;--input-placeholder-color:#6b7280;--category-font-color:#9ca3af;--emoji-size:1.5rem;--num-columns:8;width:352px;height:380px}
 /* ── Animations ── */
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeIn .3s ease forwards}
@@ -449,6 +447,21 @@ button.emoji-trigger{font-family:'Segoe UI Emoji','Apple Color Emoji',sans-serif
             <button onclick="checkSupabase(true)" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-lg transition-colors">Verificar ahora</button>
           </div>
         </div>
+        <!-- Zona de peligro -->
+        <div class="bg-gray-900 border border-red-900/40 rounded-2xl p-5">
+          <h3 class="text-red-400 font-bold text-sm mb-1">Zona de peligro</h3>
+          <p class="text-gray-500 text-xs mb-4">Acciones irreversibles. No se pueden deshacer.</p>
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <div class="text-white text-sm font-semibold">Limpiar historial de pedidos</div>
+              <div class="text-gray-500 text-xs mt-1">Elimina todos los pedidos registrados. No afecta productos ni configuración.</div>
+            </div>
+            <button onclick="openClearHistorial()"
+              class="shrink-0 bg-red-900/40 hover:bg-red-800 border border-red-700/50 text-red-300 hover:text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors">
+              Limpiar historial
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -570,10 +583,33 @@ button.emoji-trigger{font-family:'Segoe UI Emoji','Apple Color Emoji',sans-serif
   </div>
 </div>
 
+<!-- MODAL: LIMPIAR HISTORIAL -->
+<div id="clearHistorialModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+  <div class="bg-gray-900 border border-red-800/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+    <div class="text-center mb-5">
+      <div class="text-4xl mb-3">⚠️</div>
+      <h3 class="text-white font-extrabold text-lg">¿Eliminar todo el historial?</h3>
+      <p class="text-gray-400 text-sm mt-2">Esto eliminará <strong class="text-white">todos los pedidos</strong> registrados en el sistema. Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="mb-4">
+      <p class="text-gray-500 text-xs mb-2">Escribe <span class="text-red-400 font-bold font-mono">Aceptar</span> para confirmar:</p>
+      <input id="clearHistorialInput" type="text" placeholder="Aceptar" autocomplete="off"
+        oninput="document.getElementById('clearHistorialBtn').disabled = this.value !== 'Aceptar'"
+        class="w-full bg-gray-800 border border-gray-700 focus:border-red-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors outline-none">
+    </div>
+    <div class="flex gap-2">
+      <button onclick="closeClearHistorial()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 py-2.5 rounded-xl text-sm font-bold transition-colors">Cancelar</button>
+      <button id="clearHistorialBtn" onclick="confirmClearHistorial()" disabled
+        class="flex-1 bg-red-700 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-white py-2.5 rounded-xl text-sm font-bold transition-colors">
+        Eliminar todo
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- EMOJI PICKER PANEL -->
 <div id="emojiPickerPanel">
-  <div class="flex gap-1 overflow-x-auto pb-1" id="epCatBar"></div>
-  <div id="epGrid"></div>
+  <emoji-picker></emoji-picker>
 </div>
 <!-- THEME PICKER DROPDOWN -->
 <div id="themePicker" class="hidden fixed z-[90]" style="top:4.5rem;right:1rem">
@@ -1243,6 +1279,25 @@ async function savePin() {
   globalToast(p1 ? 'PIN actualizado' : 'PIN eliminado');
 }
 
+// ── Limpiar historial ──
+function openClearHistorial() {
+  document.getElementById('clearHistorialInput').value = '';
+  document.getElementById('clearHistorialBtn').disabled = true;
+  document.getElementById('clearHistorialModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('clearHistorialInput').focus(), 50);
+}
+function closeClearHistorial() {
+  document.getElementById('clearHistorialModal').classList.add('hidden');
+}
+async function confirmClearHistorial() {
+  try {
+    const r = await fetch('/api/pedidos/historial', { method: 'DELETE' });
+    closeClearHistorial();
+    if (r.ok) globalToast('Historial eliminado correctamente');
+    else globalToast('Error al eliminar el historial', false);
+  } catch(e) { globalToast('Error de conexión', false); }
+}
+
 // ── Settings ──
 function saveSetting(key, value) {
   localStorage.setItem(key, value);
@@ -1375,30 +1430,16 @@ function startUpdatePolling() {
 }
 
 // ── Emoji picker ──
-const EP_CATS = [
-  {label:'🍹',name:'bebidas',emojis:['🍹','🍺','🍻','🥂','🍾','🧃','🥤','☕','🧋','🍵','🧉','🍶','🍷','🥃','🍸','🍊','🍋','🫖']},
-  {label:'🍕',name:'comida',emojis:['🍕','🌮','🍔','🌯','🥗','🍣','🍜','🍝','🥩','🍗','🍖','🧆','🥙','🥞','🧇','🥓','🍟','🌭']},
-  {label:'⭐',name:'simbolos',emojis:['⭐','🔥','💯','✅','❌','❤️','💚','💙','💛','🏷️','📌','📍','🔑','💎','🏆','🎯','🎉','⚡']},
-  {label:'😀',name:'emojis',emojis:['😀','😎','🤩','🥳','😍','🤤','😋','🤑','😤','💪','👍','🙌','👏','🤝','🎊','🎁','🛒','📦']},
-];
 let _epTarget = null;
 
 function openEmojiPicker(trigger) {
   _epTarget = trigger;
   const panel = document.getElementById('emojiPickerPanel');
-  renderEpCats(0);
   const rect = trigger.getBoundingClientRect();
   panel.style.top  = (rect.bottom + 6) + 'px';
-  panel.style.left = Math.min(rect.left, window.innerWidth - 330) + 'px';
+  panel.style.left = Math.min(rect.left, window.innerWidth - 356) + 'px';
   panel.classList.add('open');
   setTimeout(() => document.addEventListener('click', outsideEp), 0);
-}
-
-function renderEpCats(catIdx) {
-  const catBar = document.getElementById('epCatBar');
-  catBar.innerHTML = EP_CATS.map((c,i) => `<button onclick="renderEpCats(${i})" class="ep-btn text-lg px-2 py-1 rounded-lg ${i===catIdx?'bg-purple-800':''}">${c.label}</button>`).join('');
-  const grid = document.getElementById('epGrid');
-  grid.innerHTML = EP_CATS[catIdx].emojis.map(e => `<button class="ep-btn" onclick="pickEmoji('${e}')">${e}</button>`).join('');
 }
 
 function pickEmoji(e) {
@@ -1416,6 +1457,10 @@ function outsideEp(e) {
   if (!e.target.closest('#emojiPickerPanel') && !e.target.classList.contains('emoji-trigger'))
     closeEmojiPicker();
 }
+
+customElements.whenDefined('emoji-picker').then(() => {
+  document.querySelector('emoji-picker').addEventListener('emoji-click', e => pickEmoji(e.detail.unicode));
+});
 
 // ── PIN protection ──
 (function() {

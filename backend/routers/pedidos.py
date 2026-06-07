@@ -102,6 +102,15 @@ async def create_pedido(data: PedidoCreate, background_tasks: BackgroundTasks):
     return payload
 
 
+@router.delete("/pedidos/historial")
+def clear_historial():
+    with get_conn() as conn:
+        conn.execute("DELETE FROM detalle_pedidos")
+        conn.execute("DELETE FROM pedidos")
+        conn.commit()
+    return {"ok": True}
+
+
 @router.get("/pedidos/pendientes")
 def get_pendientes():
     with get_conn() as conn:

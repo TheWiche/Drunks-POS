@@ -176,10 +176,10 @@ html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[dat
 <!-- Modo multi-estacion (columnas) -->
 <div id="multiView" class="hidden flex flex-col" style="height:calc(100vh - 5rem)"></div>
 <!-- Empty state (compartido) -->
-<div id="emptyState" class="hidden flex flex-col items-center justify-center py-40 text-gray-800">
-  <div class="text-8xl mb-6 opacity-15">🍹</div>
+<div id="emptyState" class="hidden flex flex-col items-center justify-center py-40 text-gray-400">
+  <div class="text-8xl mb-6 opacity-30">🍹</div>
   <p class="text-2xl font-bold">Todo listo</p>
-  <p class="text-sm mt-2 text-gray-700">Los pedidos aparecen aqui en tiempo real</p>
+  <p class="text-sm mt-2 text-gray-500">Los pedidos aparecen aqui en tiempo real</p>
 </div>
 
 <!-- ═══ STATION PANEL ═══ -->
@@ -364,9 +364,11 @@ function renderKitchen() {
   if (!list.length) {
     heroSec.innerHTML = ''; qGrid.innerHTML = '';
     qLabel.classList.add('hidden');
+    document.getElementById('singleView').classList.add('hidden');
     empty.classList.remove('hidden');
     return;
   }
+  document.getElementById('singleView').classList.remove('hidden');
   empty.classList.add('hidden');
 
   const hide = () => { qLabel.classList.add('hidden'); };
