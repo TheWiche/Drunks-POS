@@ -1066,7 +1066,7 @@ function renderMultiStation() {
   const container = document.getElementById('multiView');
   container.innerHTML = '';
   const empty = document.getElementById('emptyState');
-  if (!list.length) { empty.classList.remove('hidden'); return; }
+  // Siempre renderizar los paneles de estaciones, vacíos o no
   empty.classList.add('hidden');
 
   autoAssignFreeStations(list);
@@ -1134,6 +1134,9 @@ async function completeStationOrder(orderId, si) {
 
 // ─── INIT ───
 loadSettings().then(() => {
+  // Marcar botón de vista activo desde el inicio
+  document.querySelectorAll('.view-btn').forEach(b =>
+    b.classList.toggle('active', b.id === 'vBtn-' + viewMode));
   applyStationLayout();
   loadPending();
   connectWS();
