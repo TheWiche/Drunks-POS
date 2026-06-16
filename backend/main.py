@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 
@@ -24,7 +24,15 @@ async def lifespan(app: FastAPI):
     asyncio.create_task(download_from_supabase())
     asyncio.create_task(pull_config_from_supabase())
     asyncio.create_task(sync_pending_loop())
+    if IS_CLOUD:
+        asyncio.create_task(_cloud_sync_loop())
     yield
+
+
+async def _cloud_sync_loop():
+    while True:
+        await asyncio.sleep(300)
+        pull_config_from_supabase()
 
 
 app = FastAPI(title="Drunks POS", lifespan=lifespan)
@@ -70,11 +78,15 @@ app.include_router(sync.router,      prefix="/api")
 
 @app.get("/vendedor")
 def page_vendedor(_=Depends(_cloud_auth)):
+    if IS_CLOUD:
+        return RedirectResponse("/admin", status_code=302)
     return FileResponse(str(FRONTEND_DIR / "vendedor" / "index.html"))
 
 
 @app.get("/cocina")
 def page_cocina(_=Depends(_cloud_auth)):
+    if IS_CLOUD:
+        return RedirectResponse("/admin", status_code=302)
     return FileResponse(str(FRONTEND_DIR / "cocina" / "index.html"))
 
 
@@ -89,10 +101,14 @@ def page_dashboard(_=Depends(_cloud_auth)):
 
 
 @app.get("/app")
-def page_app():
+def page_app(_=Depends(_cloud_auth)):
+    if IS_CLOUD:
+        return RedirectResponse("/admin", status_code=302)
     return FileResponse(str(FRONTEND_DIR / "shell" / "index.html"))
 
 
 @app.get("/")
-def root():
+def root(_=Depends(_cloud_auth)):
+    if IS_CLOUD:
+        return RedirectResponse("/admin", status_code=302)
     return FileResponse(str(FRONTEND_DIR / "shell" / "index.html"))
