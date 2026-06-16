@@ -97,60 +97,87 @@ html[data-theme=gold] [class*=glow-purple]{box-shadow:0 0 18px rgba(234,179,8,.4
   *{-webkit-tap-highlight-color:transparent;box-sizing:border-box}
   body{background:#08080f;color:#fff;font-family:'Segoe UI',system-ui,sans-serif;overscroll-behavior:none}
   ::-webkit-scrollbar{display:none}
-  input::placeholder{color:#4b5563}
+  input::placeholder{color:#374151}
   input:focus{outline:none}
 
   .card-tap{transition:transform .12s ease,box-shadow .12s ease}
-  .card-tap:active{transform:scale(.91)}
+  .card-tap:active{transform:scale(.93)}
 
   @keyframes badgePop{0%{transform:scale(.2)}65%{transform:scale(1.35)}100%{transform:scale(1)}}
   .badge-pop{animation:badgePop .2s cubic-bezier(.175,.885,.32,1.275) forwards}
 
-  @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-  .slide-up{animation:slideUp .2s ease}
+  @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .slide-up{animation:slideUp .18s ease}
 
   @keyframes sheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
   .sheet-in{animation:sheetIn .28s cubic-bezier(.32,0,.15,1)}
 
-  @keyframes modalIn{from{opacity:0;transform:scale(.94) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
-  .modal-in{animation:modalIn .22s cubic-bezier(.175,.885,.32,1.275)}
+  @keyframes modalIn{from{opacity:0;transform:scale(.94) translateY(24px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .modal-in{animation:modalIn .24s cubic-bezier(.175,.885,.32,1.275)}
 
   @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
   .shake{animation:shake .3s ease}
+
+  /* Festival Dark Premium */
+  @keyframes totalBump{0%,100%{transform:scale(1)}40%{transform:scale(1.16)}75%{transform:scale(0.96)}}
+  .total-bump{animation:totalBump .22s cubic-bezier(.175,.885,.32,1.275)}
+
+  @keyframes neonFlicker{0%,100%{opacity:1}92%{opacity:.88}95%{opacity:1}}
+  .neon-flicker{animation:neonFlicker 4s ease infinite}
 
   .cat-pill{transition:all .15s ease}
   .glow-amber{box-shadow:0 0 18px rgba(217,119,6,.4)}
   .glow-emerald{box-shadow:0 0 18px rgba(16,185,129,.4)}
   .glow-purple{box-shadow:0 0 18px rgba(147,51,234,.4)}
   .glow-pink{box-shadow:0 0 18px rgba(236,72,153,.4)}
+  .neon-purple{box-shadow:0 0 22px rgba(168,85,247,.55),0 0 48px rgba(168,85,247,.15)}
+  .neon-emerald{box-shadow:0 0 22px rgba(52,211,153,.5),0 0 48px rgba(52,211,153,.12)}
+
+  /* Agotado ribbon */
+  .ribbon-sold::before{
+    content:'AGOTADO';
+    position:absolute;top:14px;left:-22px;
+    background:rgba(220,38,38,.92);
+    color:#fff;font-size:8.5px;font-weight:900;letter-spacing:.14em;
+    padding:2.5px 36px;
+    transform:rotate(-45deg);
+    box-shadow:0 2px 8px rgba(0,0,0,.5);
+    pointer-events:none;z-index:10;
+  }
 </style>
 </head>
 <body class="min-h-screen pb-28">
 
 <!-- ═══ TOP STICKY ═══ -->
-<div class="sticky top-0 z-40 bg-gray-950/97 backdrop-blur-md border-b border-gray-800/60 shadow-xl shadow-black/40">
-  <!-- Logo + total -->
-  <div class="flex items-center gap-2.5 px-4 pt-3 pb-1.5">
-    <div class="w-8 h-8 rounded-xl bg-purple-600 flex items-center justify-center text-base shadow-lg shadow-purple-900/60 shrink-0">🍹</div>
-    <span class="font-black tracking-widest text-purple-300 text-xs">DRUNKS POS</span>
-    <div class="ml-auto flex items-center gap-2">
+<div class="sticky top-0 z-40 border-b border-white/5 shadow-2xl shadow-black/60" style="background:rgba(8,8,15,.82);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)">
+  <div class="flex items-center gap-3 px-4 pt-3 pb-1.5">
+    <div class="w-9 h-9 rounded-xl bg-purple-600 flex items-center justify-center text-base shrink-0 neon-flicker" style="box-shadow:0 0 18px rgba(168,85,247,.55),0 0 36px rgba(168,85,247,.2)">🍹</div>
+    <div class="flex flex-col">
+      <span class="font-black tracking-[.22em] text-purple-400 text-[9px] leading-none">DRUNKS POS</span>
+      <span class="text-gray-600 text-[8px] tracking-wider">VENDEDOR</span>
+    </div>
+    <div class="ml-auto flex items-center gap-2.5">
       <button onclick="toggleThemePicker()" title="Paleta de colores"
-        class="w-8 h-8 rounded-xl bg-gray-800/80 border border-gray-700 text-sm flex items-center justify-center hover:bg-gray-700 transition-colors">🎨</button>
-      <span class="text-gray-600 text-[10px]">TOTAL</span>
-      <div id="totalDisplay" class="text-white font-extrabold text-xl leading-none tabular-nums">$0</div>
+        class="w-8 h-8 rounded-xl border border-white/8 text-sm flex items-center justify-center transition-all hover:border-white/20 active:scale-90"
+        style="background:rgba(255,255,255,.04)">🎨</button>
+      <div class="flex flex-col items-end">
+        <span class="text-gray-600 text-[9px] tracking-[.18em] font-bold">TOTAL</span>
+        <div id="totalDisplay" class="text-white font-extrabold text-2xl leading-none tabular-nums" style="text-shadow:0 0 20px rgba(168,85,247,.4)">$0</div>
+      </div>
     </div>
   </div>
-  <!-- Nombre del cliente — PROMINENTE -->
+  <!-- Nombre del cliente -->
   <div class="px-4 pb-3">
-    <div class="text-purple-400 font-black text-[10px] tracking-[0.22em] mb-1.5">PARA QUIEN ES EL PEDIDO</div>
-    <input id="clientName" type="text" placeholder="Escribe el nombre del cliente..."
+    <div class="text-purple-400 font-black text-[9px] tracking-[.22em] mb-1.5">PARA QUIEN ES EL PEDIDO</div>
+    <input id="clientName" type="text" placeholder="Nombre del cliente..."
       autocomplete="off" autocorrect="off" spellcheck="false"
-      class="w-full bg-gray-800/90 border-2 border-gray-700 focus:border-purple-400 rounded-2xl px-4 py-3 text-white text-[15px] font-bold transition-all placeholder-gray-600">
+      class="w-full border-2 border-white/8 focus:border-purple-500/70 rounded-2xl px-4 py-2.5 text-white text-[15px] font-bold transition-all placeholder-gray-700"
+      style="background:rgba(255,255,255,.04);backdrop-filter:blur(12px)">
   </div>
 </div>
 
 <!-- ═══ CATEGORÍAS ═══ -->
-<div class="sticky top-[115px] z-30 bg-gray-950/95 backdrop-blur-sm border-b border-gray-800/40">
+<div class="sticky top-[107px] z-30 border-b border-white/5" style="background:rgba(8,8,15,.75);backdrop-filter:blur(16px)">
   <div id="catBar" class="flex gap-2 px-4 py-2.5 overflow-x-auto" style="-webkit-overflow-scrolling:touch;scrollbar-width:none">
     <span class="text-gray-700 text-xs py-1 shrink-0">Cargando...</span>
   </div>
@@ -162,65 +189,71 @@ html[data-theme=gold] [class*=glow-purple]{box-shadow:0 0 18px rgba(234,179,8,.4
 </div>
 
 <!-- ═══ CARRITO ═══ -->
-<div class="px-3 pb-3 mt-1">
-  <div class="flex items-center justify-between mb-1.5">
-    <span class="text-[10px] text-gray-500 tracking-widest font-bold">CARRITO</span>
-    <button id="clearCartBtn" onclick="clearCart()" class="hidden text-[10px] text-gray-600 hover:text-red-400 transition-colors">Limpiar todo</button>
+<div class="px-3 pb-3 mt-2">
+  <div class="flex items-center justify-between mb-2">
+    <span class="text-[9px] text-gray-600 tracking-[.2em] font-bold">CARRITO</span>
+    <button id="clearCartBtn" onclick="clearCart()" class="hidden text-[10px] text-gray-700 hover:text-red-400 transition-colors font-semibold">✕ Limpiar</button>
   </div>
   <div id="cartList"></div>
 </div>
 
 <!-- ═══ NOTAS ═══ -->
 <div class="px-3 pb-28">
-  <div id="notesLabel" class="text-[10px] text-gray-500 tracking-widest font-bold mb-2">NOTAS RAPIDAS</div>
+  <div id="notesLabel" class="text-[9px] text-gray-600 tracking-[.2em] font-bold mb-2">NOTAS RAPIDAS</div>
   <div id="notesBar" class="flex flex-wrap gap-1.5 mb-3"></div>
   <div class="flex gap-2">
     <input id="freeNote" type="text" placeholder="Nota manual para la bebida seleccionada..."
-      class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors">
+      class="flex-1 border border-white/8 focus:border-purple-500/50 rounded-xl px-3 py-2.5 text-white text-sm transition-colors"
+      style="background:rgba(255,255,255,.04)">
     <button onclick="applyFreeNote()"
-      class="card-tap bg-purple-700 hover:bg-purple-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold shrink-0">+</button>
+      class="card-tap bg-purple-700 hover:bg-purple-600 text-white px-4 py-2.5 rounded-xl text-sm font-black shrink-0 transition-colors"
+      style="box-shadow:0 0 14px rgba(168,85,247,.3)">+</button>
   </div>
 </div>
 
 <!-- ═══ BARRA INFERIOR ═══ -->
-<div class="fixed bottom-0 left-0 right-0 z-40 bg-gray-950/97 backdrop-blur-md border-t border-gray-800/60 px-3 py-3 shadow-2xl shadow-black">
+<div class="fixed bottom-0 left-0 right-0 z-40 border-t border-white/5 px-3 py-3 shadow-2xl shadow-black" style="background:rgba(6,6,12,.88);backdrop-filter:blur(28px)">
   <div class="grid grid-cols-2 gap-3">
     <button onclick="openConfirm('Efectivo')"
-      class="card-tap bg-gradient-to-br from-green-600 to-green-700 text-white font-black py-4 rounded-2xl text-sm shadow-lg shadow-green-950/60">
-      <div class="text-xl mb-0.5">💵</div>EFECTIVO
+      class="card-tap relative overflow-hidden border border-emerald-500/40 text-white font-black py-4 rounded-2xl text-sm transition-all duration-150 active:scale-95"
+      style="background:rgba(52,211,153,.12);box-shadow:0 0 20px rgba(52,211,153,.15)">
+      <div class="text-2xl mb-0.5">💵</div>
+      <div class="text-emerald-300 font-black tracking-wider">EFECTIVO</div>
     </button>
     <button onclick="openConfirm('Transferencia')"
-      class="card-tap bg-gradient-to-br from-blue-600 to-blue-700 text-white font-black py-4 rounded-2xl text-sm shadow-lg shadow-blue-950/60">
-      <div class="text-xl mb-0.5">📱</div>TRANSFERENCIA
+      class="card-tap relative overflow-hidden border border-blue-500/40 text-white font-black py-4 rounded-2xl text-sm transition-all duration-150 active:scale-95"
+      style="background:rgba(59,130,246,.12);box-shadow:0 0 20px rgba(59,130,246,.15)">
+      <div class="text-2xl mb-0.5">📱</div>
+      <div class="text-blue-300 font-black tracking-wider">TRANSFERENCIA</div>
     </button>
   </div>
 </div>
 
 <!-- ═══ THEME PICKER ═══ -->
 <div id="themePicker" class="hidden fixed z-[90]" style="top:4.5rem;right:1rem">
-  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl shadow-black/60 w-56">
+  <div class="border border-white/8 rounded-2xl p-4 shadow-2xl shadow-black/80 w-56" style="background:rgba(10,10,20,.92);backdrop-filter:blur(24px)">
     <div class="text-gray-500 text-[10px] tracking-[.2em] font-bold mb-3">PALETA DE COLORES</div>
     <div class="space-y-0.5">
-      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span><span class="text-white text-sm font-semibold">Oscuro</span></button>
-      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span><span class="text-white text-sm font-semibold">Claro</span></button>
-      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span><span class="text-white text-sm font-semibold">Océano</span></button>
-      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span><span class="text-white text-sm font-semibold">Esmeralda</span></button>
-      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span><span class="text-white text-sm font-semibold">Ámbar</span></button>
-      <button data-theme="neon"    onclick="applyTheme('neon')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#16a34a"></span><span class="text-white text-sm font-semibold">Neón</span></button>
-      <button data-theme="rose"    onclick="applyTheme('rose')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#e11d48"></span><span class="text-white text-sm font-semibold">Rosa</span></button>
-      <button data-theme="violet"  onclick="applyTheme('violet')"  class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#6d28d9"></span><span class="text-white text-sm font-semibold">Violeta</span></button>
-      <button data-theme="slate"   onclick="applyTheme('slate')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#475569"></span><span class="text-white text-sm font-semibold">Gris Pizarra</span></button>
-      <button data-theme="gold"    onclick="applyTheme('gold')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#ca8a04"></span><span class="text-white text-sm font-semibold">Dorado</span></button>
+      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span><span class="text-white text-sm font-semibold">Oscuro</span></button>
+      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span><span class="text-white text-sm font-semibold">Claro</span></button>
+      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span><span class="text-white text-sm font-semibold">Océano</span></button>
+      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span><span class="text-white text-sm font-semibold">Esmeralda</span></button>
+      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span><span class="text-white text-sm font-semibold">Ámbar</span></button>
+      <button data-theme="neon"    onclick="applyTheme('neon')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#16a34a"></span><span class="text-white text-sm font-semibold">Neón</span></button>
+      <button data-theme="rose"    onclick="applyTheme('rose')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#e11d48"></span><span class="text-white text-sm font-semibold">Rosa</span></button>
+      <button data-theme="violet"  onclick="applyTheme('violet')"  class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#6d28d9"></span><span class="text-white text-sm font-semibold">Violeta</span></button>
+      <button data-theme="slate"   onclick="applyTheme('slate')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#475569"></span><span class="text-white text-sm font-semibold">Gris Pizarra</span></button>
+      <button data-theme="gold"    onclick="applyTheme('gold')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#ca8a04"></span><span class="text-white text-sm font-semibold">Dorado</span></button>
     </div>
-    <div class="mt-3 pt-3 border-t border-gray-800">
-      <div class="text-gray-500 text-[10px] font-bold mb-2">COLOR PERSONALIZADO</div>
+    <div class="mt-3 pt-3 border-t border-white/6">
+      <div class="text-gray-600 text-[10px] font-bold mb-2">COLOR PERSONALIZADO</div>
       <div class="flex items-center gap-2">
         <input type="color" id="customColorPicker" value="#9333ea"
           oninput="applyCustomTheme(this.value)"
           style="display:none;width:2rem;height:2rem;border-radius:.5rem;border:none;cursor:pointer;background:transparent;padding:0">
         <button onclick="document.getElementById('customColorPicker').style.display='inline-block';document.getElementById('customColorPicker').click()"
-          class="flex items-center gap-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-xl text-xs text-gray-300 transition-colors">
-          <span>🎨</span> Elegir color
+          class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs text-gray-400 transition-colors hover:bg-white/5 border border-white/8">
+          🎨 Elegir color
         </button>
       </div>
     </div>
@@ -229,19 +262,18 @@ html[data-theme=gold] [class*=glow-purple]{box-shadow:0 0 18px rgba(234,179,8,.4
 
 <!-- ═══ SELECTOR DE BASE (bottom sheet) ═══ -->
 <div id="baseSheet" class="fixed inset-0 z-50 hidden items-end">
-  <div class="absolute inset-0 bg-black/75" onclick="closeBase()"></div>
-  <div class="sheet-in relative w-full bg-gray-900 rounded-t-3xl border-t border-gray-700 shadow-2xl pb-safe">
+  <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeBase()"></div>
+  <div class="sheet-in relative w-full rounded-t-3xl border-t border-white/8 shadow-2xl pb-safe overflow-hidden" style="background:rgba(10,8,22,.95);backdrop-filter:blur(32px)">
     <div class="flex justify-center pt-3 pb-1">
-      <div class="w-12 h-1.5 bg-gray-700 rounded-full"></div>
+      <div class="w-10 h-1 rounded-full" style="background:rgba(255,255,255,.12)"></div>
     </div>
     <div class="px-5 pb-7">
-      <div id="baseProdName" class="text-2xl font-extrabold text-center text-white mt-1 leading-tight"></div>
-      <div class="text-gray-500 text-[10px] text-center tracking-[0.25em] mt-1 mb-5">SELECCIONA LA BASE</div>
-
+      <div id="baseProdName" class="text-2xl font-extrabold text-center text-white mt-2 leading-tight"></div>
+      <div class="text-purple-500 text-[9px] text-center tracking-[.28em] mt-1 mb-5 font-black">SELECCIONA LA BASE</div>
       <div id="baseTypeSections"></div>
-
       <button onclick="closeBase()"
-        class="mt-5 w-full bg-gray-800 hover:bg-gray-700 text-gray-400 font-semibold py-3 rounded-2xl text-sm transition-colors">
+        class="mt-5 w-full border border-white/8 text-gray-500 font-semibold py-3 rounded-2xl text-sm transition-colors hover:border-white/15 hover:text-gray-300"
+        style="background:rgba(255,255,255,.04)">
         Cancelar
       </button>
     </div>
@@ -249,37 +281,42 @@ html[data-theme=gold] [class*=glow-purple]{box-shadow:0 0 18px rgba(234,179,8,.4
 </div>
 
 <!-- ═══ MODAL CONFIRMACIÓN ═══ -->
-<div id="confirmModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center p-3 bg-black/85 backdrop-blur-sm">
-  <div class="modal-in bg-gray-900 border border-gray-700 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
-    <div class="bg-gradient-to-r from-purple-900 via-purple-800 to-purple-900 px-6 py-5 text-center">
-      <div class="text-3xl mb-1">📋</div>
-      <h2 class="text-xl font-extrabold">Resumen del Pedido</h2>
-      <p class="text-purple-300 text-xs mt-1 tracking-wide">Revisa antes de mandar a cocina</p>
+<div id="confirmModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center p-3 bg-black/85 backdrop-blur-md">
+  <div class="modal-in border border-white/8 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden" style="background:rgba(10,8,22,.96)">
+    <div class="relative px-6 py-5 text-center overflow-hidden" style="background:linear-gradient(135deg,rgba(88,28,135,.7),rgba(109,40,217,.5),rgba(88,28,135,.7))">
+      <div class="absolute inset-0 opacity-20" style="background:radial-gradient(circle at 50% 0%,rgba(168,85,247,.6),transparent 70%)"></div>
+      <div class="relative">
+        <div class="text-3xl mb-1.5">📋</div>
+        <h2 class="text-xl font-extrabold tracking-wide">Resumen del Pedido</h2>
+        <p class="text-purple-300/70 text-xs mt-1 tracking-wider">Revisa antes de mandar a cocina</p>
+      </div>
     </div>
     <div class="px-5 py-4 max-h-64 overflow-y-auto space-y-3">
       <div class="flex items-start justify-between gap-3">
         <div>
-          <div class="text-gray-500 text-[10px] tracking-widest">CLIENTE</div>
+          <div class="text-gray-600 text-[9px] tracking-[.2em] font-bold">CLIENTE</div>
           <div id="smCliente" class="text-white font-extrabold text-2xl leading-tight"></div>
         </div>
-        <div id="smMetodo" class="px-3 py-1.5 rounded-full text-sm font-bold shrink-0 mt-1"></div>
+        <div id="smMetodo" class="px-3 py-1.5 rounded-full text-sm font-bold shrink-0 mt-1 border"></div>
       </div>
-      <div class="border-t border-gray-800 pt-2">
+      <div class="border-t border-white/6 pt-2">
         <div id="smItems" class="space-y-2"></div>
       </div>
-      <div class="border-t border-gray-700 pt-3 flex justify-between items-center">
-        <span class="text-gray-400 font-semibold text-sm">TOTAL</span>
+      <div class="border-t border-white/8 pt-3 flex justify-between items-center">
+        <span class="text-gray-500 font-semibold text-sm tracking-wider">TOTAL</span>
         <span id="smTotal" class="text-white font-extrabold text-2xl tabular-nums"></span>
       </div>
     </div>
     <div class="px-5 pb-5 pt-1 space-y-2">
       <button id="confirmBtn" onclick="sendOrder()"
-        class="card-tap w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-extrabold py-4 rounded-2xl text-base shadow-xl shadow-green-950/50">
-        Confirmar y Mandar a Preparacion
+        class="card-tap w-full text-white font-extrabold py-4 rounded-2xl text-base border border-emerald-500/50 transition-all active:scale-95"
+        style="background:rgba(52,211,153,.18);box-shadow:0 0 24px rgba(52,211,153,.2)">
+        ✓ Confirmar y Mandar a Preparacion
       </button>
       <button onclick="closeConfirm()"
-        class="w-full bg-gray-800 hover:bg-gray-700 text-gray-400 font-semibold py-3 rounded-2xl text-sm transition-colors">
-        Cancelar - Seguir Editando
+        class="w-full border border-white/8 text-gray-500 font-semibold py-3 rounded-2xl text-sm transition-colors hover:text-gray-300"
+        style="background:rgba(255,255,255,.04)">
+        Cancelar — Seguir Editando
       </button>
     </div>
   </div>
@@ -294,24 +331,24 @@ function hexToRgb(hex) {
 }
 function catStyle(cat, active) {
   const [r,g,b] = hexToRgb(cat?.color);
-  if (active) return `background:rgba(${r},${g},${b},0.55);border-color:rgba(${r},${g},${b},0.8);box-shadow:0 0 18px rgba(${r},${g},${b},0.35)`;
-  return `background:rgba(${r},${g},${b},0.18);border-color:rgba(${r},${g},${b},0.25)`;
+  if (active) return `background:rgba(${r},${g},${b},0.52);border-color:rgba(${r},${g},${b},0.85);box-shadow:0 0 22px rgba(${r},${g},${b},0.4)`;
+  return `background:rgba(${r},${g},${b},0.14);border-color:rgba(${r},${g},${b},0.22)`;
 }
 function catPillStyle(cat, active) {
   const [r,g,b] = hexToRgb(cat?.color);
-  if (active) return `background:rgba(${r},${g},${b},0.85);color:#fff;box-shadow:0 0 12px rgba(${r},${g},${b},0.4)`;
+  if (active) return `background:rgba(${r},${g},${b},0.88);color:#fff;box-shadow:0 0 14px rgba(${r},${g},${b},0.45)`;
   return '';
 }
 
-let availBases = [];  // cargadas dinámicamente desde /api/productos/{id}/bases
+let availBases = [];
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ── Estado ──
 let products = [], categories = [], quickNotes = [];
-let cart = {};          // key: "prodId|base" → { product, qty, base, obs }
-let lastKey  = null;    // clave del item activo en carrito
-let activeCat = null;   // categoría activa
-let pendingProd = null; // producto esperando base
+let cart = {};
+let lastKey  = null;
+let activeCat = null;
+let pendingProd = null;
 let pendingMethod = null;
 
 // ── Init ──
@@ -343,17 +380,20 @@ function catById(id) { return categories.find(c => c.id === id) || null; }
 function renderCats() {
   const bar = document.getElementById('catBar');
   const all = `<button onclick="selectCat(null)"
-    class="cat-pill shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all
-      ${activeCat === null ? 'bg-purple-600 text-white shadow-lg glow-purple' : 'bg-gray-800 text-gray-400 border border-gray-700'}">
+    class="cat-pill shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all border
+      ${activeCat === null
+        ? 'bg-purple-600 text-white border-purple-500/60 glow-purple'
+        : 'text-gray-500 border-white/8 hover:border-white/15 hover:text-gray-300'}"
+    style="${activeCat === null ? '' : 'background:rgba(255,255,255,.04)'}">
     Todas
   </button>`;
   bar.innerHTML = all + categories.map(c => {
     const isActive = activeCat === c.id;
     const pillSt = catPillStyle(c, isActive);
     return `<button onclick="selectCat(${c.id})"
-      class="cat-pill shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all border border-transparent
-        ${isActive ? 'text-white' : 'bg-gray-800 text-gray-400 border-gray-700'}"
-      style="${pillSt}">
+      class="cat-pill shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all border
+        ${isActive ? 'text-white' : 'text-gray-500 hover:text-gray-300'}"
+      style="${isActive ? pillSt : 'background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);' + pillSt}">
       <span>${c.icono || '🏷️'}</span>${c.nombre}
     </button>`;
   }).join('');
@@ -384,16 +424,17 @@ function _buildProdCardHTML(p) {
   const icon   = cat?.icono || '🍾';
   const cardSt = avail ? catStyle(cat, active) : '';
   return `<div id="prod-card-${p.id}"
-      class="card-tap relative rounded-2xl p-3.5 flex flex-col items-center justify-center min-h-[7rem] select-none border cursor-pointer
-        ${avail ? '' : 'opacity-30 cursor-not-allowed border-gray-800/20 bg-gray-800/10'}"
+      class="card-tap relative rounded-2xl p-3.5 flex flex-col items-center justify-center min-h-[7.5rem] select-none border cursor-pointer overflow-hidden
+        ${avail
+          ? 'active:scale-95 active:brightness-90 transition-all duration-150'
+          : 'grayscale opacity-30 cursor-not-allowed border-white/5 ribbon-sold'}"
       style="${cardSt}"
       ${avail ? 'onclick="tapProd(' + p.id + ')"' : ''}>
-    ${qty > 0 ? '<div class="badge-pop absolute -top-2.5 -right-2.5 bg-purple-500 text-white text-xs font-extrabold w-7 h-7 rounded-full flex items-center justify-center shadow-xl z-10">' + qty + '</div>' : ''}
-    ${isMich ? '<div class="absolute top-2 left-2 text-[8px] text-amber-400 font-bold tracking-wider bg-amber-900/40 px-1.5 py-0.5 rounded-full">BASE</div>' : ''}
-    <div class="text-2xl mb-1.5">${icon}</div>
+    ${qty > 0 ? `<div class="badge-pop absolute -top-2 -right-2 bg-purple-500 text-white text-xs font-extrabold w-7 h-7 rounded-full flex items-center justify-center z-10 ring-2 ring-[#08080f]" style="box-shadow:0 0 10px rgba(168,85,247,.6)">${qty}</div>` : ''}
+    ${isMich ? '<div class="absolute top-1.5 left-1.5 text-[8px] text-amber-300 font-black tracking-wider px-1.5 py-0.5 rounded-full border border-amber-500/30" style="background:rgba(120,83,0,.45)">BASE</div>' : ''}
+    <div class="text-3xl mb-1.5 drop-shadow-lg">${icon}</div>
     <div class="text-white font-extrabold text-xs text-center leading-tight">${p.nombre}</div>
-    <div class="font-extrabold text-sm mt-1.5 tabular-nums ${active ? 'text-white' : 'text-gray-300'}">$${Math.round(p.precio).toLocaleString('es-CO')}</div>
-    ${!avail ? '<div class="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/60"><span class="text-red-400 font-black text-[10px] tracking-widest">AGOTADO</span></div>' : ''}
+    <div class="font-bold text-xs mt-1.5 tabular-nums ${active ? 'text-purple-300' : 'text-gray-500'}">$${Math.round(p.precio).toLocaleString('es-CO')}</div>
   </div>`;
 }
 
@@ -433,7 +474,7 @@ async function openBase(product) {
   pendingProd = product;
   document.getElementById('baseProdName').textContent = product.nombre;
   const container = document.getElementById('baseTypeSections');
-  container.innerHTML = '<div class="text-gray-500 text-xs text-center py-4">Cargando...</div>';
+  container.innerHTML = '<div class="text-gray-600 text-xs text-center py-4">Cargando...</div>';
   const s = document.getElementById('baseSheet');
   s.classList.remove('hidden'); s.classList.add('flex');
   try {
@@ -445,12 +486,11 @@ async function openBase(product) {
   try {
     renderBaseSheet();
   } catch(e) {
-    container.innerHTML = '<div class="text-red-400 text-xs text-center py-4">Error al cargar bases. Revisa la configuración.</div>';
+    container.innerHTML = '<div class="text-red-400 text-xs text-center py-4">Error al cargar bases.</div>';
   }
 }
 
 function renderBaseSheet() {
-  // Agrupar por tipo usando tipo_nombre + tipo_icono del API
   const byTipo = {};
   availBases.filter(b => b.disponible).forEach(b => {
     const key = b.tipo_nombre || b.tipo || 'Otros';
@@ -466,13 +506,14 @@ function renderBaseSheet() {
 
   container.innerHTML = Object.entries(byTipo).map(([tipoNombre, { icono, items }]) => `
     <div class="mb-5">
-      <div class="flex items-center gap-2 text-gray-400 text-[10px] tracking-widest font-bold mb-2.5">
+      <div class="flex items-center gap-2 text-gray-500 text-[9px] tracking-[.2em] font-black mb-2.5">
         <span class="text-lg">${icono}</span> ${tipoNombre.toUpperCase()}
       </div>
       <div class="grid grid-cols-${Math.min(items.length,3)} gap-2">
         ${items.map(b => `
           <button data-base="${b.tipo_nombre||b.tipo}: ${b.nombre}" onclick="selectBase(this.dataset.base)"
-            class="card-tap bg-gray-800/60 border border-gray-700 hover:bg-gray-700/60 hover:border-purple-500/40 rounded-2xl py-4 text-white font-bold text-sm transition-colors leading-tight">
+            class="card-tap border border-white/8 hover:border-purple-500/40 rounded-2xl py-4 text-white font-bold text-sm transition-all leading-tight active:scale-95"
+            style="background:rgba(255,255,255,.04)">
             ${icono}<br>${esc(b.nombre)}
           </button>`).join('')}
       </div>
@@ -502,7 +543,10 @@ function renderCart() {
   const items = Object.entries(cart);
   const btn   = document.getElementById('clearCartBtn');
   if (!items.length) {
-    el.innerHTML = '<div class="text-gray-700 text-center text-sm py-4 border border-gray-800/50 rounded-2xl">Toca un producto para agregarlo</div>';
+    el.innerHTML = `<div class="text-gray-700 text-center text-sm py-6 border border-dashed border-white/6 rounded-2xl">
+      <div class="text-2xl mb-2 opacity-30">🛒</div>
+      Toca un producto para agregarlo
+    </div>`;
     btn.classList.add('hidden');
     return;
   }
@@ -510,25 +554,28 @@ function renderCart() {
   el.innerHTML = items.map(([key, item]) => {
     const isActive = key === lastKey;
     return `<div
-        class="slide-up flex items-start gap-2.5 rounded-2xl px-3 py-2.5 mb-1.5 border cursor-pointer transition-all
-          ${isActive ? 'bg-purple-900/40 border-purple-500/50 shadow-md' : 'bg-gray-800/50 border-gray-700/40'}"
+        class="slide-up flex items-start gap-2.5 rounded-2xl px-3 py-2.5 mb-1.5 border cursor-pointer transition-all duration-150
+          ${isActive
+            ? 'border-purple-500/40'
+            : 'border-white/6 hover:border-white/10'}"
+        style="${isActive ? 'background:rgba(88,28,135,.22);box-shadow:0 0 14px rgba(168,85,247,.12)' : 'background:rgba(255,255,255,.04)'}"
         onclick="selectCartItem('${key.replace(/'/g,"\'")}')">
       <div class="flex-1 min-w-0">
         <div class="text-white text-sm font-extrabold truncate">${item.product.nombre}</div>
         ${item.base ? '<div class="text-amber-400 text-xs font-bold mt-0.5">📌 ' + item.base + '</div>' : ''}
-        ${item.obs  ? '<div class="text-yellow-300 text-xs mt-0.5">📝 ' + item.obs + '</div>' : ''}
+        ${item.obs  ? '<div class="text-yellow-300/70 text-xs mt-0.5">📝 ' + item.obs + '</div>' : ''}
       </div>
       <div class="flex items-center gap-2 shrink-0 mt-0.5">
-        <div class="flex items-center gap-1">
+        <div class="flex items-center rounded-full p-0.5 gap-0.5 border border-white/8" style="background:rgba(255,255,255,.06)">
           <button data-key="${key.replace(/"/g,'&quot;')}" onclick="event.stopPropagation();decreaseItem(this.dataset.key)"
-            class="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold flex items-center justify-center">-</button>
+            class="w-7 h-7 rounded-full text-white text-base font-bold flex items-center justify-center transition-colors hover:bg-white/10 active:scale-90">−</button>
           <span class="text-white font-extrabold text-sm w-5 text-center tabular-nums">${item.qty}</span>
           <button data-key="${key.replace(/"/g,'&quot;')}" onclick="event.stopPropagation();increaseItem(this.dataset.key)"
-            class="w-8 h-8 rounded-full bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold flex items-center justify-center">+</button>
+            class="w-7 h-7 rounded-full text-white text-base font-bold flex items-center justify-center transition-colors hover:bg-white/10 active:scale-90">+</button>
         </div>
-        <div class="text-green-400 text-sm font-extrabold tabular-nums w-16 text-right">$${Math.round(item.product.precio * item.qty).toLocaleString('es-CO')}</div>
+        <div class="text-emerald-400 text-sm font-extrabold tabular-nums w-16 text-right">$${Math.round(item.product.precio * item.qty).toLocaleString('es-CO')}</div>
         <button data-key="${key.replace(/"/g,'&quot;')}" onclick="event.stopPropagation();removeItem(this.dataset.key)"
-          class="text-gray-600 hover:text-red-400 text-lg leading-none ml-0.5 transition-colors">x</button>
+          class="text-gray-700 hover:text-red-400 text-lg leading-none ml-0.5 transition-colors w-6 h-6 flex items-center justify-center">✕</button>
       </div>
     </div>`;
   }).join('');
@@ -566,7 +613,11 @@ async function clearCart() {
 
 function updateTotal() {
   const t = Object.values(cart).reduce((s, i) => s + i.product.precio * i.qty, 0);
-  document.getElementById('totalDisplay').textContent = '$' + Math.round(t).toLocaleString('es-CO');
+  const el = document.getElementById('totalDisplay');
+  el.textContent = '$' + Math.round(t).toLocaleString('es-CO');
+  el.classList.remove('total-bump');
+  void el.offsetWidth;
+  el.classList.add('total-bump');
 }
 
 // ── Notas ──
@@ -597,16 +648,20 @@ function renderNotes() {
   bar.innerHTML = shown.map(n => {
     const isCtx     = n.categoria_id !== null;
     const isApplied = appliedNotes.includes(n.texto);
-    let cls;
+    let cls, st;
     if (isApplied) {
-      cls = 'bg-purple-700 border-purple-500 text-white shadow-md shadow-purple-900/40';
+      cls = 'border-purple-500/60 text-white';
+      st = 'background:rgba(88,28,135,.55);box-shadow:0 0 10px rgba(168,85,247,.25)';
     } else if (isCtx) {
-      cls = 'bg-amber-900/30 border-amber-700/40 text-amber-300 hover:bg-amber-800/50';
+      cls = 'border-amber-700/40 text-amber-300 hover:bg-amber-900/20';
+      st = 'background:rgba(120,53,15,.25)';
     } else {
-      cls = 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-500';
+      cls = 'border-white/8 text-gray-400 hover:border-white/15 hover:text-gray-300';
+      st = 'background:rgba(255,255,255,.04)';
     }
     return `<button data-note="${n.texto.replace(/"/g,'&quot;')}" onclick="applyNote(this.dataset.note)"
-      class="card-tap text-xs px-3 py-1.5 rounded-full border font-semibold transition-all ${cls}">
+      class="card-tap text-xs px-3 py-1.5 rounded-full border font-semibold transition-all ${cls}"
+      style="${st}">
       ${isApplied ? '✓ ' : ''}${n.texto}
     </button>`;
   }).join('');
@@ -659,18 +714,20 @@ function openConfirm(method) {
   document.getElementById('smCliente').textContent = nombre;
   const mb = document.getElementById('smMetodo');
   mb.textContent = (method === 'Efectivo' ? '💵 ' : '📱 ') + method;
-  mb.className   = 'px-3 py-1.5 rounded-full text-sm font-bold shrink-0 mt-1 ' +
-    (method === 'Efectivo' ? 'bg-green-700 text-green-100' : 'bg-blue-700 text-blue-100');
+  mb.className   = 'px-3 py-1.5 rounded-full text-sm font-bold shrink-0 mt-1 border ' +
+    (method === 'Efectivo'
+      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+      : 'bg-blue-500/20 text-blue-400 border-blue-500/40');
 
   document.getElementById('smItems').innerHTML = items.map(i => `
-    <div class="flex items-start gap-2 bg-gray-800/50 rounded-xl px-3 py-2">
+    <div class="flex items-start gap-2 rounded-xl px-3 py-2 border border-white/6" style="background:rgba(255,255,255,.04)">
       <span class="bg-purple-700 text-white text-xs font-extrabold px-2 py-0.5 rounded-md shrink-0">${i.qty}x</span>
       <div class="flex-1 min-w-0">
         <div class="text-white text-sm font-bold">${i.product.nombre}</div>
         ${i.base ? '<div class="text-amber-400 text-xs font-bold">📌 ' + i.base + '</div>' : ''}
-        ${i.obs  ? '<div class="text-yellow-300 text-xs">📝 ' + i.obs + '</div>' : ''}
+        ${i.obs  ? '<div class="text-yellow-300/70 text-xs">📝 ' + i.obs + '</div>' : ''}
       </div>
-      <div class="text-green-400 text-sm font-bold tabular-nums shrink-0">$${Math.round(i.product.precio * i.qty).toLocaleString('es-CO')}</div>
+      <div class="text-emerald-400 text-sm font-bold tabular-nums shrink-0">$${Math.round(i.product.precio * i.qty).toLocaleString('es-CO')}</div>
     </div>`).join('');
 
   document.getElementById('smTotal').textContent = '$' + Math.round(total).toLocaleString('es-CO');
@@ -693,7 +750,6 @@ async function sendOrder() {
 
   btn.disabled = true; btn.textContent = 'Enviando...';
 
-  // Limpiar UI de inmediato — no esperar al servidor
   const cartSnapshot = { ...cart };
   cart = {}; lastKey = null;
   document.getElementById('clientName').value = '';
@@ -723,20 +779,22 @@ async function sendOrder() {
     renderProds(); renderCart(); renderNotes(); updateTotal();
     showToast('Sin conexion — carrito restaurado', 'error');
   }
-  btn.disabled = false; btn.textContent = 'Confirmar y Mandar a Preparacion';
+  btn.disabled = false; btn.textContent = '✓ Confirmar y Mandar a Preparacion';
 }
 
 function showToast(msg, type) {
-  const c = { ok:'bg-green-700 border-green-600', error:'bg-red-800 border-red-700', warn:'bg-yellow-700 border-yellow-600' };
+  const c = { ok:'border-emerald-500/50 text-emerald-300', error:'border-red-500/50 text-red-300', warn:'border-yellow-500/40 text-yellow-300' };
+  const bg = { ok:'rgba(5,46,22,.9)', error:'rgba(69,10,10,.9)', warn:'rgba(66,32,6,.9)' };
   const t = document.createElement('div');
-  t.className = `fixed top-6 left-1/2 -translate-x-1/2 ${c[type]||'bg-gray-700 border-gray-600'} border text-white text-sm font-bold px-5 py-2.5 rounded-2xl z-[80] shadow-2xl pointer-events-none whitespace-nowrap`;
+  t.className = `fixed top-6 left-1/2 -translate-x-1/2 ${c[type]||'border-gray-500/40 text-gray-300'} border text-sm font-bold px-5 py-2.5 rounded-2xl z-[80] shadow-2xl pointer-events-none whitespace-nowrap backdrop-blur-xl`;
+  t.style.background = bg[type] || 'rgba(30,30,40,.9)';
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 2200);
 }
 
 window.addEventListener('focus', loadNotes);
-window.addEventListener('focus', loadProducts); // refresca disponibilidad y bases al volver al tab
+window.addEventListener('focus', loadProducts);
 
 // ── Settings persistidos en DB ──
 function saveSetting(key, value) {
@@ -818,12 +876,10 @@ async function checkUpdate() {
 function applyUpdate() {
   const btn = document.getElementById('updateBtn');
   btn.textContent = 'Actualizando...'; btn.disabled = true;
-  // Delega al shell (ventana pywebview padre) para mostrar ventana de progreso
   try {
     if (window.top && window.top.pywebview && window.top.pywebview.api) {
       window.top.pywebview.api.open_update_window();
     } else {
-      // Fallback en modo dev (sin pywebview)
       fetch('/api/update/apply', {method:'POST'}).catch(() => {});
     }
   } catch(e) { btn.textContent = 'Error'; btn.disabled = false; }
@@ -831,10 +887,11 @@ function applyUpdate() {
 checkUpdate();
 setInterval(checkUpdate, 30 * 60 * 1000);
 </script>
+
 <!-- ═══ BANNER DE ACTUALIZACIÓN ═══ -->
-<div id="updateBanner" class="hidden fixed bottom-0 left-0 right-0 z-[100] bg-purple-950/97 border-t border-purple-500/50 backdrop-blur px-5 py-3 flex items-center justify-between gap-3 shadow-2xl">
+<div id="updateBanner" class="hidden fixed bottom-0 left-0 right-0 z-[100] border-t border-purple-500/40 backdrop-blur-xl px-5 py-3 flex items-center justify-between gap-3 shadow-2xl" style="background:rgba(46,16,101,.92)">
   <div class="flex items-center gap-3">
-    <span class="text-2xl">🔄</span>
+    <span class="text-xl">🔄</span>
     <div>
       <div class="text-white font-bold text-sm">Nueva versión disponible</div>
       <div id="updateVersion" class="text-purple-300 text-xs font-mono"></div>
@@ -842,7 +899,8 @@ setInterval(checkUpdate, 30 * 60 * 1000);
   </div>
   <div class="flex gap-2 shrink-0">
     <button id="updateBtn" onclick="applyUpdate()"
-      class="bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-extrabold px-4 py-2 rounded-xl transition-colors shadow-lg">
+      class="bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-extrabold px-4 py-2 rounded-xl transition-colors"
+      style="box-shadow:0 0 14px rgba(168,85,247,.4)">
       Actualizar ahora
     </button>
     <button onclick="document.getElementById('updateBanner').classList.add('hidden')"
@@ -853,11 +911,11 @@ setInterval(checkUpdate, 30 * 60 * 1000);
 </div>
 
 <!-- App Confirm Modal -->
-<div id="appConfirmModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/70 backdrop-blur-sm">
-  <div class="bg-gray-900 border border-gray-700/80 rounded-2xl p-6 max-w-xs w-full mx-4 shadow-2xl">
+<div id="appConfirmModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/75 backdrop-blur-md">
+  <div class="border border-white/8 rounded-2xl p-6 max-w-xs w-full mx-4 shadow-2xl" style="background:rgba(10,8,20,.96)">
     <p id="appConfirmMsg" class="text-white text-sm font-semibold leading-relaxed mb-5"></p>
     <div class="flex gap-3 justify-end">
-      <button onclick="_appCR(false)" class="px-4 py-2 rounded-xl bg-gray-800 text-gray-300 text-sm font-bold hover:bg-gray-700 transition-colors">Cancelar</button>
+      <button onclick="_appCR(false)" class="px-4 py-2 rounded-xl border border-white/8 text-gray-400 text-sm font-bold hover:bg-white/5 transition-colors">Cancelar</button>
       <button id="appConfirmOk" onclick="_appCR(true)" class="px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-500 transition-colors">Confirmar</button>
     </div>
   </div>

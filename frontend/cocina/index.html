@@ -73,15 +73,14 @@ html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[dat
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   body{background:#06060f;font-family:'Segoe UI',system-ui,sans-serif}
+
   /* ── Animaciones core ── */
   @keyframes heroIn{from{transform:translateY(-30px) scale(.95);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
   .hero-in{animation:heroIn .42s cubic-bezier(.175,.885,.32,1.275) both}
-  /* Ascenso desde la cola: empieza pequeño y abajo, sube y se expande */
   @keyframes promoteHero{0%{transform:translateY(72px) scale(.76);opacity:0}55%{transform:translateY(-6px) scale(1.015);opacity:1}100%{transform:none;opacity:1}}
   .promote-hero{animation:promoteHero .52s cubic-bezier(.175,.885,.32,1.275) both}
   @keyframes cardIn{from{transform:translateY(-18px) scale(.93);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
   .card-in{animation:cardIn .32s cubic-bezier(.175,.885,.32,1.275) both}
-  /* Entrada lateral de tarjetas en cola cuando suben posición */
   @keyframes queueIn{from{transform:translateX(18px) scale(.95);opacity:0}to{transform:none;opacity:1}}
   .queue-in{animation:queueIn .26s cubic-bezier(.175,.885,.32,1.275) both}
   #queueGrid>.queue-in:nth-child(2){animation-delay:.04s}
@@ -89,13 +88,10 @@ html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[dat
   #queueGrid>.queue-in:nth-child(4){animation-delay:.12s}
   #queueGrid>.queue-in:nth-child(5){animation-delay:.16s}
   #queueGrid>.queue-in:nth-child(n+6){animation-delay:.20s}
-  /* Flash de éxito al completar */
   @keyframes completeFlash{0%{box-shadow:none}35%{box-shadow:0 0 0 16px rgba(74,222,128,.28),0 0 50px rgba(74,222,128,.18),inset 0 0 24px rgba(74,222,128,.06)}80%{box-shadow:0 0 0 4px rgba(74,222,128,.1)}100%{box-shadow:none;opacity:.75}}
   .completing-flash{animation:completeFlash .3s ease-out both;pointer-events:none}
-  /* Salida del hero completado */
-  @keyframes completeExit{0%{transform:scale(1);opacity:1}12%{transform:scale(1.02)}100%{transform:translateY(-36px) scale(.88);opacity:0;max-height:0;padding:0;margin:0;overflow:hidden}}
+  @keyframes completeExit{0%{transform:scale(1) translateY(0);opacity:1}10%{transform:scale(1.02) translateY(-3px)}100%{transform:scale(.88) translateY(-36px);opacity:0;max-height:0;padding:0;margin:0;overflow:hidden}}
   .completing-exit{animation:completeExit .42s cubic-bezier(.55,0,1,.45) both;overflow:hidden}
-  /* Estación multi-preparador */
   @keyframes stationDone{0%{transform:scale(1);opacity:1}12%{transform:scale(1.02)}100%{transform:translateY(-20px) scale(.9);opacity:0}}
   .station-done{animation:stationDone .35s cubic-bezier(.55,0,1,.45) both}
   @keyframes stationPromote{0%{transform:translateY(36px) scale(.88);opacity:0}60%{transform:translateY(-4px) scale(1.01)}100%{transform:none;opacity:1}}
@@ -106,42 +102,50 @@ html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[dat
   .priority-badge{animation:badgePulse 2.5s ease infinite}
   @keyframes activeCardIn{from{opacity:0;transform:translateY(-10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
   .active-card-in{animation:activeCardIn .35s cubic-bezier(.175,.885,.32,1.275)}
+
+  /* ── Semáforo de tiempo ── */
+  @keyframes urgentPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0),0 20px 52px var(--acc-glow,rgba(147,51,234,.4)),0 0 0 2px var(--acc-border,rgba(147,51,234,.35))}50%{box-shadow:0 0 0 5px rgba(239,68,68,.35),0 0 32px rgba(239,68,68,.25),0 0 0 2px rgba(239,68,68,.5)}}
+  .timer-urgent{animation:urgentPulse 1.4s ease infinite!important;border-color:rgba(239,68,68,.55)!important}
+  @keyframes urgentCardPulse{0%,100%{border-color:rgba(239,68,68,.4)}50%{border-color:rgba(239,68,68,.85)}}
+  .timer-urgent-card{animation:urgentCardPulse 1.4s ease infinite!important}
+
   /* ── Clases temáticas con CSS vars ── */
   .hero-glow{box-shadow:0 20px 52px var(--acc-glow,rgba(147,51,234,.4)),0 0 0 2px var(--acc-border,rgba(147,51,234,.35))}
   .view-btn.active{background:var(--acc-muted,rgba(147,51,234,.18));color:var(--acc-light,#c4b5fd);box-shadow:0 0 14px var(--acc-glow,rgba(147,51,234,.45))}
   .tab-active{border-bottom-color:var(--acc-hex,#9333ea)!important;color:var(--acc-light,#c4b5fd)!important}
   ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--acc-hex,#374151);border-radius:4px;opacity:.6}
+
   /* ── Fijos ── */
   .queue-mini-card{min-width:148px;max-width:172px;flex-shrink:0}
   .station-col{display:flex;flex-direction:column;border-right:1px solid rgba(31,41,55,.6);min-width:300px;flex:1;height:100%}
   input:focus,select:focus{outline:none}
-.view-btn{color:#4b5563;transition:all .15s ease;width:2.25rem;height:2.25rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center}
-  .view-btn:not(.active):hover{background:rgba(75,85,99,.45);color:#d1d5db}
+  .view-btn{color:#4b5563;transition:all .15s ease;width:2.25rem;height:2.25rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center}
+  .view-btn:not(.active):hover{background:rgba(255,255,255,.06);color:#d1d5db}
 </style>
 </head>
 <body class="min-h-screen text-white">
 
 <!-- ═══ HEADER ═══ -->
-<div class="sticky top-0 z-30 bg-gray-950/96 backdrop-blur border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+<div class="sticky top-0 z-30 border-b border-white/5 px-6 py-4 flex items-center justify-between" style="background:rgba(6,6,15,.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)">
   <div class="flex items-center gap-3">
-    <div class="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-xl shadow-lg shadow-purple-900/60 shrink-0">🍹</div>
+    <div class="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-xl shrink-0" style="box-shadow:0 0 20px rgba(168,85,247,.5),0 0 40px rgba(168,85,247,.15)">🍹</div>
     <div>
       <h1 class="font-extrabold text-lg tracking-wider leading-none">DRUNKS <span class="text-purple-400 font-light text-sm">· COCINA</span></h1>
       <div class="flex items-center gap-2 mt-0.5 flex-wrap">
         <div id="wsDot" class="w-2 h-2 rounded-full bg-red-500 shrink-0"></div>
-        <span id="wsTxt" class="text-xs text-gray-500">Conectando...</span>
-        <span class="text-gray-700 text-xs">·</span>
-        <div id="sbDot" class="w-2 h-2 rounded-full bg-gray-600 shrink-0"></div>
-        <span id="sbTxt" class="text-xs text-gray-600">Nube...</span>
+        <span id="wsTxt" class="text-xs text-gray-600">Conectando...</span>
+        <span class="text-gray-800 text-xs">·</span>
+        <div id="sbDot" class="w-2 h-2 rounded-full bg-gray-700 shrink-0"></div>
+        <span id="sbTxt" class="text-xs text-gray-700">Nube...</span>
       </div>
     </div>
   </div>
   <div class="flex items-center gap-3">
     <div class="text-center hidden sm:block">
-      <div class="text-3xl font-extrabold text-purple-400 tabular-nums leading-none" id="orderCount">0</div>
-      <div class="text-[10px] text-gray-600 tracking-widest mt-0.5">ACTIVOS</div>
+      <div class="text-3xl font-extrabold text-purple-400 tabular-nums leading-none" id="orderCount" style="text-shadow:0 0 20px rgba(168,85,247,.5)">0</div>
+      <div class="text-[9px] text-gray-700 tracking-[.2em] mt-0.5">ACTIVOS</div>
     </div>
-    <div id="viewModeBar" class="flex items-center bg-gray-800/60 border border-gray-700 rounded-xl p-1 gap-0.5">
+    <div id="viewModeBar" class="flex items-center border border-white/8 rounded-xl p-1 gap-0.5" style="background:rgba(255,255,255,.04)">
       <button class="view-btn" id="vBtn-priority" onclick="setView('priority')" title="Prioridad — #1 destacado">
         <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0" width="16" height="8" rx="1.5"/><rect x="0" y="9.5" width="7.5" height="6.5" rx="1.2"/><rect x="8.5" y="9.5" width="7.5" height="6.5" rx="1.2"/></svg>
       </button>
@@ -156,51 +160,51 @@ html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[dat
       </button>
     </div>
     <button onclick="toggleStationPanel()" title="Configurar Preparadores"
-      class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">👥</button>
+      class="border border-white/8 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors hover:border-white/16"
+      style="background:rgba(255,255,255,.04)">👥</button>
     <button onclick="toggleThemePicker()" title="Paleta de colores"
-      class="bg-gray-800 hover:bg-gray-700 border border-gray-700 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors">🎨</button>
+      class="border border-white/8 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors hover:border-white/16"
+      style="background:rgba(255,255,255,.04)">🎨</button>
   </div>
 </div>
 
 <!-- ═══ KITCHEN VIEW ═══ -->
-<!-- Modo una estacion (comportamiento actual) -->
 <div id="singleView" class="p-5">
   <div id="heroSection" class="mb-5"></div>
   <div id="queueLabel" class="hidden flex items-center gap-3 mb-3">
-    <div class="h-px flex-1 bg-gray-800"></div>
-    <span id="queueTitle" class="text-gray-600 text-[10px] tracking-[0.2em] font-bold shrink-0">EN FILA</span>
-    <div class="h-px flex-1 bg-gray-800"></div>
+    <div class="h-px flex-1" style="background:rgba(255,255,255,.06)"></div>
+    <span id="queueTitle" class="text-gray-700 text-[9px] tracking-[.22em] font-black shrink-0">EN FILA</span>
+    <div class="h-px flex-1" style="background:rgba(255,255,255,.06)"></div>
   </div>
   <div id="queueGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
 </div>
-<!-- Modo multi-estacion (columnas) -->
 <div id="multiView" class="hidden flex flex-col" style="height:calc(100vh - 5rem)"></div>
-<!-- Empty state (compartido) -->
-<div id="emptyState" class="hidden flex flex-col items-center justify-center py-40 text-gray-400">
-  <div class="text-8xl mb-6 opacity-30">🍹</div>
-  <p class="text-2xl font-bold">Todo listo</p>
-  <p class="text-sm mt-2 text-gray-500">Los pedidos aparecen aqui en tiempo real</p>
+<div id="emptyState" class="hidden flex flex-col items-center justify-center py-40 text-gray-700">
+  <div class="text-8xl mb-6 opacity-15">🍹</div>
+  <p class="text-2xl font-bold text-gray-600">Todo listo</p>
+  <p class="text-sm mt-2 text-gray-700">Los pedidos aparecen aqui en tiempo real</p>
 </div>
 
 <!-- ═══ STATION PANEL ═══ -->
 <div id="stationPanel" class="hidden fixed z-[91]" style="top:4.5rem;right:1rem">
-  <div class="bg-gray-900 border border-gray-700 rounded-2xl p-5 shadow-2xl shadow-black/70 w-80">
+  <div class="border border-white/8 rounded-2xl p-5 shadow-2xl shadow-black/80 w-80" style="background:rgba(10,8,20,.95);backdrop-filter:blur(24px)">
     <div class="flex items-center justify-between mb-4">
-      <div class="text-gray-400 text-[10px] tracking-[.2em] font-bold">PREPARADORES / ESTACIONES</div>
-      <button onclick="toggleStationPanel()" class="text-gray-500 hover:text-white text-xl leading-none">x</button>
+      <div class="text-gray-500 text-[9px] tracking-[.2em] font-black">PREPARADORES / ESTACIONES</div>
+      <button onclick="toggleStationPanel()" class="text-gray-600 hover:text-white text-xl leading-none transition-colors">✕</button>
     </div>
     <div class="mb-4">
-      <div class="text-gray-400 text-xs font-semibold mb-2">Numero de estaciones</div>
+      <div class="text-gray-500 text-xs font-semibold mb-2">Numero de estaciones</div>
       <div class="flex gap-2">
-        <button onclick="setStationCount(1)" id="sCnt-1" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-gray-700 bg-gray-800 text-gray-400 transition-colors">1</button>
-        <button onclick="setStationCount(2)" id="sCnt-2" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-gray-700 bg-gray-800 text-gray-400 transition-colors">2</button>
-        <button onclick="setStationCount(3)" id="sCnt-3" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-gray-700 bg-gray-800 text-gray-400 transition-colors">3</button>
-        <button onclick="setStationCount(4)" id="sCnt-4" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-gray-700 bg-gray-800 text-gray-400 transition-colors">4</button>
+        <button onclick="setStationCount(1)" id="sCnt-1" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-white/8 text-gray-500 transition-colors" style="background:rgba(255,255,255,.04)">1</button>
+        <button onclick="setStationCount(2)" id="sCnt-2" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-white/8 text-gray-500 transition-colors" style="background:rgba(255,255,255,.04)">2</button>
+        <button onclick="setStationCount(3)" id="sCnt-3" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-white/8 text-gray-500 transition-colors" style="background:rgba(255,255,255,.04)">3</button>
+        <button onclick="setStationCount(4)" id="sCnt-4" class="station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border border-white/8 text-gray-500 transition-colors" style="background:rgba(255,255,255,.04)">4</button>
       </div>
     </div>
     <div id="stationFormBlock" class="space-y-3 mb-4 max-h-64 overflow-y-auto pr-1"></div>
     <button onclick="saveStationConfig()"
-      class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">
+      class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl text-sm transition-colors"
+      style="box-shadow:0 0 14px rgba(168,85,247,.3)">
       Aplicar configuracion
     </button>
   </div>
@@ -208,57 +212,122 @@ html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[dat
 
 <!-- ═══ THEME PICKER ═══ -->
 <div id="themePicker" class="hidden fixed z-[90]" style="top:4.5rem;right:1rem">
-  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl shadow-black/60 w-56 max-h-[85vh] overflow-y-auto">
-    <div class="text-gray-500 text-[10px] tracking-[.2em] font-bold mb-3">PALETA DE COLORES</div>
+  <div class="border border-white/8 rounded-2xl p-4 shadow-2xl shadow-black/80 w-56 max-h-[85vh] overflow-y-auto" style="background:rgba(10,8,20,.95);backdrop-filter:blur(24px)">
+    <div class="text-gray-600 text-[9px] tracking-[.2em] font-black mb-3">PALETA DE COLORES</div>
     <div class="space-y-0.5">
-      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span><span class="text-white text-sm font-semibold">Oscuro</span></button>
-      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span><span class="text-white text-sm font-semibold">Claro</span></button>
-      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span><span class="text-white text-sm font-semibold">Océano</span></button>
-      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span><span class="text-white text-sm font-semibold">Esmeralda</span></button>
-      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span><span class="text-white text-sm font-semibold">Ámbar</span></button>
-      <button data-theme="neon"    onclick="applyTheme('neon')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#16a34a"></span><span class="text-white text-sm font-semibold">Neón</span></button>
-      <button data-theme="rose"    onclick="applyTheme('rose')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#e11d48"></span><span class="text-white text-sm font-semibold">Rosa</span></button>
-      <button data-theme="violet"  onclick="applyTheme('violet')"  class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#6d28d9"></span><span class="text-white text-sm font-semibold">Violeta</span></button>
-      <button data-theme="slate"   onclick="applyTheme('slate')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#475569"></span><span class="text-white text-sm font-semibold">Gris Pizarra</span></button>
-      <button data-theme="gold"    onclick="applyTheme('gold')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#ca8a04"></span><span class="text-white text-sm font-semibold">Dorado</span></button>
+      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span><span class="text-white text-sm font-semibold">Oscuro</span></button>
+      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span><span class="text-white text-sm font-semibold">Claro</span></button>
+      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span><span class="text-white text-sm font-semibold">Océano</span></button>
+      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span><span class="text-white text-sm font-semibold">Esmeralda</span></button>
+      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span><span class="text-white text-sm font-semibold">Ámbar</span></button>
+      <button data-theme="neon"    onclick="applyTheme('neon')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#16a34a"></span><span class="text-white text-sm font-semibold">Neón</span></button>
+      <button data-theme="rose"    onclick="applyTheme('rose')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#e11d48"></span><span class="text-white text-sm font-semibold">Rosa</span></button>
+      <button data-theme="violet"  onclick="applyTheme('violet')"  class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#6d28d9"></span><span class="text-white text-sm font-semibold">Violeta</span></button>
+      <button data-theme="slate"   onclick="applyTheme('slate')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#475569"></span><span class="text-white text-sm font-semibold">Gris Pizarra</span></button>
+      <button data-theme="gold"    onclick="applyTheme('gold')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#ca8a04"></span><span class="text-white text-sm font-semibold">Dorado</span></button>
     </div>
-    <div class="mt-3 pt-3 border-t border-gray-800">
-      <div class="text-gray-500 text-[10px] font-bold mb-2">COLOR PERSONALIZADO</div>
+    <div class="mt-3 pt-3 border-t border-white/6">
+      <div class="text-gray-600 text-[9px] font-black mb-2">COLOR PERSONALIZADO</div>
       <div class="flex items-center gap-2">
         <input type="color" id="customColorPicker" value="#9333ea"
           oninput="applyCustomTheme(this.value)"
           style="display:none;width:2rem;height:2rem;border-radius:.5rem;border:none;cursor:pointer;background:transparent;padding:0">
         <button onclick="document.getElementById('customColorPicker').style.display='inline-block';document.getElementById('customColorPicker').click()"
-          class="flex items-center gap-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-xl text-xs text-gray-300 transition-colors">
-          <span>🎨</span> Elegir color
+          class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs text-gray-500 transition-colors hover:bg-white/5 border border-white/8">
+          🎨 Elegir color
         </button>
       </div>
     </div>
   </div>
 </div>
 
-
 <script>
+// ─── TIMER SEMÁFORO ───
+function _getTimerInfo(fecha) {
+  const min = (Date.now() - new Date(fecha || Date.now()).getTime()) / 60000;
+  if (min < 3) return {
+    fill: 'bg-emerald-500',
+    fillSt: 'background:#10b981;box-shadow:0 0 8px rgba(16,185,129,.5)',
+    width: '100%',
+    label: Math.floor(min) + 'm',
+    labelCls: 'text-emerald-400',
+    urgent: false
+  };
+  if (min < 5) return {
+    fill: 'bg-yellow-400',
+    fillSt: 'background:#facc15;box-shadow:0 0 10px rgba(250,204,21,.6)',
+    width: '60%',
+    label: Math.floor(min) + 'm',
+    labelCls: 'text-yellow-400',
+    urgent: false
+  };
+  return {
+    fill: 'bg-red-500',
+    fillSt: 'background:#ef4444;box-shadow:0 0 14px rgba(239,68,68,.8)',
+    width: '28%',
+    label: Math.floor(min) + 'm ⚠',
+    labelCls: 'text-red-400 font-black',
+    urgent: true
+  };
+}
+
+function _timerBarHTML(fecha) {
+  const t = _getTimerInfo(fecha);
+  return `<div class="px-4 pt-2.5 pb-0">
+    <div class="flex items-center justify-between mb-1">
+      <span class="text-[9px] font-bold tracking-widest text-gray-700">TIEMPO</span>
+      <span class="text-[10px] font-bold ${t.labelCls}">${t.label}</span>
+    </div>
+    <div class="w-full h-1 rounded-full overflow-hidden" style="background:rgba(255,255,255,.06)">
+      <div class="timer-fill h-full rounded-full transition-all duration-1000" style="${t.fillSt};width:${t.width}"></div>
+    </div>
+  </div>`;
+}
+
+function updateTimers() {
+  document.querySelectorAll('[data-fecha]').forEach(el => {
+    const t = _getTimerInfo(el.dataset.fecha);
+    const fill = el.querySelector('.timer-fill');
+    if (fill) {
+      fill.style.cssText = t.fillSt + ';width:' + t.width + ';transition:all 1s ease';
+    }
+    const lbl = el.querySelector('.timer-label');
+    if (lbl) { lbl.textContent = t.label; lbl.className = 'timer-label text-[10px] font-bold ' + t.labelCls; }
+    if (t.urgent) {
+      el.classList.add('timer-urgent');
+      el.classList.remove('timer-urgent-card');
+    } else {
+      el.classList.remove('timer-urgent', 'timer-urgent-card');
+    }
+  });
+}
+setInterval(updateTimers, 30000);
+
 // ─── STATE ───
 let ws = null, wsTimer = null;
 let orders = {};
-let _promoting = false;  // true durante la transición hero→cola→nuevo-hero
+let _promoting = false;
 let viewMode = localStorage.getItem('kitchenView') || 'priority';
 
 // ─── WEBSOCKET ───
+let _wsEverConnected = false;
 function connectWS() {
   if (ws && ws.readyState < 2) return;
   const _wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
   ws = new WebSocket(_wsProto + '//' + location.host + '/api/ws');
   ws.onopen = () => {
-    document.getElementById('wsDot').className = 'w-2 h-2 rounded-full bg-green-500 shrink-0 pulse-green';
+    document.getElementById('wsDot').className = 'w-2 h-2 rounded-full bg-emerald-500 shrink-0 pulse-green';
     document.getElementById('wsTxt').textContent = 'Conectado en vivo';
+    document.getElementById('wsTxt').style.color = '#4ade80';
     if (wsTimer) { clearTimeout(wsTimer); wsTimer = null; }
+    if (_wsEverConnected) loadPending();
+    _wsEverConnected = true;
   };
   ws.onmessage = e => { try { const d = JSON.parse(e.data); if (d.type === 'new_order') addOrder(d.order); } catch(_){} };
   ws.onclose = ws.onerror = () => {
     document.getElementById('wsDot').className = 'w-2 h-2 rounded-full bg-red-500 shrink-0';
     document.getElementById('wsTxt').textContent = 'Reconectando...';
+    document.getElementById('wsTxt').style.color = '';
     wsTimer = setTimeout(connectWS, 3000);
   };
 }
@@ -279,24 +348,20 @@ function addOrder(order) {
   updateCount(Object.keys(orders).length);
 }
 
-// Agrega un pedido a la vista multi-estación sin re-renderizar todo
 function _addOrderMultiStation(order) {
   const allOrders = Object.values(orders).sort((a,b) => a.id - b.id);
   const activeIdsBefore = new Set(Object.values(stationActive).map(Number));
   autoAssignFreeStations(allOrders);
   const activeIdsAfter = new Set(Object.values(stationActive).map(Number));
 
-  // Si el pedido fue asignado a una estación libre, actualizar solo ese panel
   if (activeIdsAfter.has(order.id) && !activeIdsBefore.has(order.id)) {
     const si = parseInt(Object.keys(stationActive).find(k => Number(stationActive[k]) === order.id));
     if (!isNaN(si)) { _updateSingleStation(si); return; }
   }
 
-  // Pedido va a la cola — agregar solo la mini-card al strip
   const strip = document.querySelector('[data-queue-strip]');
   if (!strip) { renderKitchen(); return; }
 
-  // Si el strip mostraba "cola vacía", reconstruirlo
   const emptyMsg = strip.querySelector('p.text-gray-700');
   if (emptyMsg) {
     const activeIds2 = new Set(Object.values(stationActive).map(Number));
@@ -316,20 +381,15 @@ function _addOrderMultiStation(order) {
   if (label) label.textContent = `En cola (${queueOrders.length})`;
 }
 
-// Agrega un pedido a la vista de estación única sin re-renderizar todo
 function _addOrderSingleStation(order) {
   const allOrders = Object.values(orders).sort((a,b) => a.id - b.id);
 
-  // Primer pedido — re-render total está bien (estaba vacío)
   if (allOrders.length === 1) { renderKitchen(); return; }
-
-  // Modo duo con 1 pedido previo → el layout cambia (hero → 2 medianos) → re-render
   if (viewMode === 'duo' && allOrders.length === 2) { renderKitchen(); return; }
 
   const qGrid = document.getElementById('queueGrid');
   if (!qGrid) { renderKitchen(); return; }
 
-  // Nuevo pedido siempre tiene el id más alto → va al final de la cola
   let card;
   if (viewMode === 'compact') {
     card = buildCompactCard(order);
@@ -340,7 +400,6 @@ function _addOrderSingleStation(order) {
   }
   qGrid.appendChild(card);
 
-  // Actualizar etiqueta de fila en modos que la muestran
   if (viewMode === 'priority' || viewMode === 'duo') {
     const n = qGrid.children.length;
     document.getElementById('queueTitle').textContent = 'EN FILA — ' + n + ' pedido' + (n !== 1 ? 's' : '');
@@ -349,10 +408,9 @@ function _addOrderSingleStation(order) {
 }
 
 function renderKitchen() {
-
   if (stationCfg.count >= 2) { renderMultiStation(); return; }
 
-  const list    = Object.values(orders).sort((a, b) => a.id - b.id); // FIFO
+  const list    = Object.values(orders).sort((a, b) => a.id - b.id);
   const heroSec = document.getElementById('heroSection');
   const qLabel  = document.getElementById('queueLabel');
   const qTitle  = document.getElementById('queueTitle');
@@ -378,7 +436,6 @@ function renderKitchen() {
   };
 
   if (viewMode === 'priority') {
-    // ── Modo Prioridad: #1 hero full-width, resto grilla ──
     heroSec.innerHTML = '';
     heroSec.appendChild(buildHeroCard(list[0]));
     qGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3';
@@ -389,7 +446,6 @@ function renderKitchen() {
     } else { hide(); }
 
   } else if (viewMode === 'duo') {
-    // ── Modo Doble: top-2 medianos lado a lado, resto grilla compacta ──
     heroSec.innerHTML = '';
     if (list.length === 1) {
       heroSec.appendChild(buildHeroCard(list[0]));
@@ -409,14 +465,12 @@ function renderKitchen() {
     }
 
   } else if (viewMode === 'grid') {
-    // ── Modo Parrilla: todos iguales, sin jerarquía ──
     heroSec.innerHTML = ''; hide();
     qGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3';
     qGrid.innerHTML = '';
     list.forEach(o => qGrid.appendChild(buildQueueCard(o)));
 
   } else if (viewMode === 'compact') {
-    // ── Modo Compacto: máxima densidad ──
     heroSec.innerHTML = ''; hide();
     qGrid.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2';
     qGrid.innerHTML = '';
@@ -429,6 +483,7 @@ function hexToRgb(hex) {
   const n = parseInt(h.length===3?h.split('').map(x=>x+x).join(''):h,16);
   return [(n>>16)&255,(n>>8)&255,n&255];
 }
+
 function buildItemRow(it, big) {
   const parts = (it.observaciones||'').split(' | ');
   const isBase = s => s && /^[^:]+: /.test(s);
@@ -436,10 +491,10 @@ function buildItemRow(it, big) {
   const notas = base ? parts.slice(1).join(' | ') : (it.observaciones||'');
   const [r,g,b] = hexToRgb(it.categoria_color||'#8b5cf6');
   const badgeSt = `background:rgba(${r},${g},${b},0.85)`;
-  return `<div class="flex items-start gap-3 py-${big?3:2} border-b border-gray-800/70 last:border-0">
+  return `<div class="flex items-start gap-3 py-${big?3:2} border-b last:border-0" style="border-color:rgba(255,255,255,.06)">
     <span class="${big?'text-sm':'text-xs'} font-extrabold px-2.5 py-0.5 rounded-lg shrink-0 mt-0.5 text-white" style="${badgeSt}">${it.cantidad}x</span>
     <div class="flex-1">
-      <div class="text-white font-bold ${big?'text-base':'text-sm'}">${it.nombre}</div>
+      <div class="text-white font-bold ${big?'text-lg':'text-sm'}">${it.nombre}</div>
       ${base  ? '<div class="text-amber-400 font-bold text-xs mt-0.5">📌 ' + base + '</div>' : ''}
       ${notas ? '<div class="text-yellow-300 font-extrabold text-' + (big?'sm':'xs') + ' mt-0.5">⚠ ' + notas + '</div>' : ''}
     </div>
@@ -449,33 +504,39 @@ function buildItemRow(it, big) {
 function buildHeroCard(o) {
   const div = document.createElement('div');
   div.id = 'order-' + o.id;
+  div.dataset.fecha = o.fecha || new Date().toISOString();
   div.className = _promoting ? 'promote-hero' : 'hero-in';
+  const timerInfo = _getTimerInfo(o.fecha);
+  if (timerInfo.urgent) div.classList.add('timer-urgent');
+
   const efect = o.metodo_pago === 'Efectivo';
-  const hBg   = efect ? 'from-green-700 to-green-800' : 'from-blue-700 to-blue-800';
+  const hBg   = efect ? 'from-emerald-700/80 to-emerald-900/80' : 'from-blue-700/80 to-blue-900/80';
   const icon  = efect ? '💵' : '📱';
   const tStr  = new Date(o.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   const rows  = (o.items||[]).map(it => buildItemRow(it, true)).join('');
   div.innerHTML = `
     <div class="flex items-center gap-3 mb-3">
-      <div class="priority-badge bg-red-500 text-white text-xs font-extrabold px-3 py-1 rounded-full tracking-wider shadow-lg shadow-red-900/50">#1 PRIORIDAD</div>
-      <div class="h-px flex-1 bg-gray-800"></div>
+      <div class="priority-badge bg-red-500 text-white text-xs font-extrabold px-3 py-1 rounded-full tracking-wider" style="box-shadow:0 0 14px rgba(239,68,68,.5)">#1 PRIORIDAD</div>
+      <div class="h-px flex-1" style="background:rgba(255,255,255,.07)"></div>
     </div>
-    <div class="bg-gray-900 border-2 border-purple-500/40 rounded-3xl overflow-hidden hero-glow">
-      <div class="bg-gradient-to-r ${hBg} px-6 py-5 flex items-start justify-between">
+    <div class="border-2 rounded-3xl overflow-hidden hero-glow" style="background:rgba(10,8,22,.75);backdrop-filter:blur(20px)">
+      ${_timerBarHTML(o.fecha)}
+      <div class="bg-gradient-to-r ${hBg} px-6 py-5 flex items-start justify-between mt-2">
         <div>
-          <div class="flex items-center gap-2 mb-1.5">
-            <span class="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full tracking-wider">${o.numero_factura||('#'+o.id)}</span>
-            <span class="text-white/60 text-xs">${icon} ${o.metodo_pago} &middot; ${tStr}</span>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-white/40 text-[10px] font-extrabold px-2 py-0.5 rounded-full tracking-wider border border-white/15">${o.numero_factura||('#'+o.id)}</span>
+            <span class="text-white/50 text-xs">${icon} ${o.metodo_pago} · ${tStr}</span>
           </div>
-          <div class="text-white font-extrabold text-4xl leading-none">${o.cliente}</div>
+          <div class="text-white font-extrabold text-4xl leading-none tracking-tight">${o.cliente}</div>
         </div>
-        <div class="text-white font-extrabold text-4xl tabular-nums leading-none">$${Math.round(o.total).toLocaleString('es-CO')}</div>
+        <div class="text-white font-extrabold text-3xl tabular-nums leading-none opacity-90">$${Math.round(o.total).toLocaleString('es-CO')}</div>
       </div>
-      <div class="px-6 py-5">${rows||'<div class="text-gray-600 text-sm text-center py-4">Sin detalle</div>'}</div>
+      <div class="px-6 py-4">${rows||'<div class="text-gray-700 text-sm text-center py-4">Sin detalle</div>'}</div>
       <div class="px-6 pb-6">
         <button data-id="${o.id}" onclick="completeOrder(parseInt(this.dataset.id))"
-          class="w-full bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-extrabold py-5 rounded-2xl text-xl transition-colors shadow-xl shadow-green-950/40">
-          ✓ COMPLETADO
+          class="w-full font-extrabold py-5 rounded-2xl text-xl transition-all duration-200 border active:scale-95 relative overflow-hidden"
+          style="background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.5);color:#6ee7b7;box-shadow:0 0 24px rgba(52,211,153,.2)">
+          <span class="relative z-10">✓ LISTO — DESPACHAR</span>
         </button>
       </div>
     </div>`;
@@ -485,28 +546,37 @@ function buildHeroCard(o) {
 function buildQueueCard(o) {
   const div = document.createElement('div');
   div.id = 'order-' + o.id;
-  div.className = (_promoting ? 'queue-in ' : 'card-in ') + 'bg-gray-900 border border-gray-700 rounded-2xl overflow-hidden flex flex-col';
+  div.dataset.fecha = o.fecha || new Date().toISOString();
+  const timerInfo = _getTimerInfo(o.fecha);
+  div.className = (_promoting ? 'queue-in ' : 'card-in ') + 'border rounded-2xl overflow-hidden flex flex-col' + (timerInfo.urgent ? ' timer-urgent-card' : '');
+  div.style.cssText = timerInfo.urgent
+    ? 'background:rgba(10,8,22,.8);backdrop-filter:blur(16px);border-color:rgba(239,68,68,.4)'
+    : 'background:rgba(10,8,22,.8);backdrop-filter:blur(16px);border-color:rgba(255,255,255,.08)';
+  if (timerInfo.urgent) div.classList.add('timer-urgent');
+
   const efect = o.metodo_pago === 'Efectivo';
-  const hBg   = efect ? 'from-green-800/60 to-green-900/60' : 'from-blue-800/60 to-blue-900/60';
+  const hBg   = efect ? 'from-emerald-800/55 to-emerald-900/55' : 'from-blue-800/55 to-blue-900/55';
   const icon  = efect ? '💵' : '📱';
   const tStr  = new Date(o.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   const rows  = (o.items||[]).map(it => buildItemRow(it, false)).join('');
   div.innerHTML = `
-    <div class="bg-gradient-to-r ${hBg} px-4 py-3 flex justify-between items-start">
+    ${_timerBarHTML(o.fecha)}
+    <div class="bg-gradient-to-r ${hBg} px-4 py-3 flex justify-between items-start mt-1">
       <div>
         <div class="text-white font-extrabold text-xl leading-tight">${o.cliente}</div>
         <div class="flex items-center gap-1.5 mt-0.5">
-          <span class="bg-white/15 text-white/80 text-[9px] font-bold px-1.5 py-0.5 rounded-full">${o.numero_factura||('#'+o.id)}</span>
-          <span class="text-white/50 text-xs">${icon} ${o.metodo_pago} &middot; ${tStr}</span>
+          <span class="text-white/30 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-white/10">${o.numero_factura||('#'+o.id)}</span>
+          <span class="text-white/40 text-xs">${icon} ${o.metodo_pago} · ${tStr}</span>
         </div>
       </div>
-      <div class="text-white font-extrabold text-lg tabular-nums">$${Math.round(o.total).toLocaleString('es-CO')}</div>
+      <div class="text-white font-extrabold text-lg tabular-nums opacity-80">$${Math.round(o.total).toLocaleString('es-CO')}</div>
     </div>
-    <div class="flex-1 px-4 py-3">${rows||'<div class="text-gray-600 text-xs text-center py-3">Sin detalle</div>'}</div>
+    <div class="flex-1 px-4 py-3">${rows||'<div class="text-gray-700 text-xs text-center py-3">Sin detalle</div>'}</div>
     <div class="px-4 pb-4">
       <button data-id="${o.id}" onclick="completeOrder(parseInt(this.dataset.id))"
-        class="w-full bg-green-700 hover:bg-green-600 active:bg-green-800 text-white font-bold py-3 rounded-xl text-sm transition-colors">
-        ✓ Completado
+        class="w-full font-bold py-3.5 rounded-xl text-base transition-all border active:scale-95"
+        style="background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.4);color:#6ee7b7">
+        ✓ LISTO
       </button>
     </div>`;
   return div;
@@ -515,37 +585,42 @@ function buildQueueCard(o) {
 function buildMediumCard(o, priority) {
   const div   = document.createElement('div');
   div.id      = 'order-' + o.id;
+  div.dataset.fecha = o.fecha || new Date().toISOString();
   div.className = _promoting ? 'promote-hero' : 'hero-in';
+  const timerInfo = _getTimerInfo(o.fecha);
+  if (timerInfo.urgent) div.classList.add('timer-urgent');
+
   const efect = o.metodo_pago === 'Efectivo';
-  const hBg   = efect ? 'from-green-700 to-green-800' : 'from-blue-700 to-blue-800';
+  const hBg   = efect ? 'from-emerald-700/75 to-emerald-900/75' : 'from-blue-700/75 to-blue-900/75';
   const icon  = efect ? '💵' : '📱';
   const tStr  = new Date(o.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   const rows  = (o.items||[]).map(it => buildItemRow(it, false)).join('');
   const isFirst = priority === 1;
   const badgeCls  = isFirst ? 'priority-badge bg-red-500 shadow-red-900/50' : 'bg-orange-600 shadow-orange-900/50';
-  const borderCls = isFirst ? 'border-purple-500/40' : 'border-orange-500/30';
   const badgeTxt  = isFirst ? '#1 PRIORIDAD' : '#2 EN CURSO';
   div.innerHTML = `
     <div class="flex items-center gap-2 mb-2">
       <div class="${badgeCls} text-white text-xs font-extrabold px-2.5 py-0.5 rounded-full tracking-wider shadow-lg">${badgeTxt}</div>
-      <div class="h-px flex-1 bg-gray-800"></div>
+      <div class="h-px flex-1" style="background:rgba(255,255,255,.06)"></div>
     </div>
-    <div class="bg-gray-900 border-2 ${borderCls} rounded-2xl overflow-hidden shadow-xl h-full flex flex-col">
-      <div class="bg-gradient-to-r ${hBg} px-4 py-3 flex items-start justify-between">
+    <div class="border-2 rounded-2xl overflow-hidden shadow-xl h-full flex flex-col" style="background:rgba(10,8,22,.8);backdrop-filter:blur(16px);border-color:${isFirst ? 'rgba(168,85,247,.35)' : 'rgba(249,115,22,.25)'}">
+      ${_timerBarHTML(o.fecha)}
+      <div class="bg-gradient-to-r ${hBg} px-4 py-3 flex items-start justify-between mt-1">
         <div class="min-w-0">
           <div class="flex items-center gap-2 mb-1">
-            <span class="bg-white/20 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full tracking-wider">${o.numero_factura||('#'+o.id)}</span>
-            <span class="text-white/60 text-xs">${icon} ${o.metodo_pago} &middot; ${tStr}</span>
+            <span class="text-white/30 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-white/10">${o.numero_factura||('#'+o.id)}</span>
+            <span class="text-white/50 text-xs">${icon} · ${tStr}</span>
           </div>
           <div class="text-white font-extrabold text-2xl leading-tight truncate">${o.cliente}</div>
         </div>
-        <div class="text-white font-extrabold text-xl tabular-nums ml-3 shrink-0">$${Math.round(o.total).toLocaleString('es-CO')}</div>
+        <div class="text-white/80 font-bold text-xl tabular-nums ml-3 shrink-0">$${Math.round(o.total).toLocaleString('es-CO')}</div>
       </div>
-      <div class="flex-1 px-4 py-3">${rows||'<div class="text-gray-600 text-sm text-center py-3">Sin detalle</div>'}</div>
+      <div class="flex-1 px-4 py-3">${rows||'<div class="text-gray-700 text-sm text-center py-3">Sin detalle</div>'}</div>
       <div class="px-4 pb-4">
         <button data-id="${o.id}" onclick="completeOrder(parseInt(this.dataset.id))"
-          class="w-full bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-extrabold py-3 rounded-xl text-base transition-colors shadow-lg shadow-green-950/40">
-          ✓ COMPLETADO
+          class="w-full font-extrabold py-3.5 rounded-xl text-base transition-all border active:scale-95"
+          style="background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.45);color:#6ee7b7;box-shadow:0 0 16px rgba(52,211,153,.15)">
+          ✓ LISTO
         </button>
       </div>
     </div>`;
@@ -555,9 +630,15 @@ function buildMediumCard(o, priority) {
 function buildCompactCard(o) {
   const div   = document.createElement('div');
   div.id      = 'order-' + o.id;
-  div.className = (_promoting ? 'queue-in ' : 'card-in ') + 'bg-gray-900 border border-gray-700/60 rounded-xl overflow-hidden';
+  div.dataset.fecha = o.fecha || new Date().toISOString();
+  const timerInfo = _getTimerInfo(o.fecha);
+  div.className = (_promoting ? 'queue-in ' : 'card-in ') + 'border rounded-xl overflow-hidden' + (timerInfo.urgent ? ' timer-urgent-card' : '');
+  div.style.cssText = timerInfo.urgent
+    ? 'background:rgba(10,8,22,.8);backdrop-filter:blur(12px);border-color:rgba(239,68,68,.4)'
+    : 'background:rgba(10,8,22,.8);backdrop-filter:blur(12px);border-color:rgba(255,255,255,.07)';
+
   const efect = o.metodo_pago === 'Efectivo';
-  const hBg   = efect ? 'from-green-800/55 to-green-900/55' : 'from-blue-800/55 to-blue-900/55';
+  const hBg   = efect ? 'from-emerald-800/50 to-emerald-900/50' : 'from-blue-800/50 to-blue-900/50';
   const icon  = efect ? '💵' : '📱';
   const tStr  = new Date(o.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   const itemRows = (o.items||[]).map(it => {
@@ -571,17 +652,21 @@ function buildCompactCard(o) {
     </div>`;
   }).join('');
   div.innerHTML = `
+    <div class="w-full h-1 overflow-hidden" style="background:rgba(255,255,255,.05)">
+      <div class="timer-fill h-full rounded-r-full transition-all duration-1000" style="${timerInfo.fillSt};width:${timerInfo.width}"></div>
+    </div>
     <div class="bg-gradient-to-r ${hBg} px-3 py-2 flex items-center justify-between gap-2">
       <div class="min-w-0">
         <div class="text-white font-extrabold text-base leading-tight truncate">${o.cliente}</div>
-        <div class="text-white/50 text-[10px] leading-none mt-0.5">${o.numero_factura||('#'+o.id)} &middot; ${icon} ${tStr}</div>
+        <div class="text-white/40 text-[10px] leading-none mt-0.5">${o.numero_factura||('#'+o.id)} · ${icon} ${tStr}</div>
       </div>
-      <div class="text-white font-extrabold text-sm tabular-nums shrink-0">$${Math.round(o.total).toLocaleString('es-CO')}</div>
+      <div class="text-white font-extrabold text-sm tabular-nums shrink-0 opacity-80">$${Math.round(o.total).toLocaleString('es-CO')}</div>
     </div>
     <div class="px-3 py-2 space-y-0.5">${itemRows||'<div class="text-gray-700 text-xs py-1">Sin detalle</div>'}</div>
     <div class="px-3 pb-3">
       <button data-id="${o.id}" onclick="completeOrder(parseInt(this.dataset.id))"
-        class="w-full bg-green-700 hover:bg-green-600 active:bg-green-800 text-white font-bold py-1.5 rounded-lg text-xs transition-colors">
+        class="w-full font-bold py-2 rounded-lg text-sm transition-all border active:scale-95"
+        style="background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.35);color:#6ee7b7">
         ✓ Listo
       </button>
     </div>`;
@@ -589,7 +674,7 @@ function buildCompactCard(o) {
 }
 
 function setView(mode) {
-  if (stationCfg && stationCfg.count >= 2) return; // no-op en modo multi-estacion
+  if (stationCfg && stationCfg.count >= 2) return;
   viewMode = mode;
   saveSetting('kitchenView', mode);
   saveSetting('kitchen_view', mode);
@@ -601,19 +686,14 @@ function setView(mode) {
 async function completeOrder(id) {
   const card = document.getElementById('order-' + id);
   if (!card) return;
-  // 1. Flash + UI inmediato (optimistic — SQLite local no falla)
   card.classList.add('completing-flash'); card.style.pointerEvents = 'none';
   fetch('/api/pedidos/' + id + '/entregar', { method: 'PUT' }).catch(() => {});
-  // 2. Determinar si el hero fue completado (el siguiente debe "ascender desde la cola")
   const heroSec = document.getElementById('heroSection');
   const isHero = !!(heroSec && card && heroSec.contains(card));
   const remaining = Object.values(orders).filter(o => o.id !== id).length;
   _promoting = isHero && remaining > 0;
-  // 4. Animar salida del hero completado
   if (card) { card.classList.remove('completing-flash'); card.classList.add('completing-exit'); }
-  // 5. Reset flag después de que la animación de entrada termina
   if (_promoting) setTimeout(() => { _promoting = false; }, 700);
-  // 6. Re-render cuando termina la salida
   setTimeout(() => { delete orders[id]; renderKitchen(); }, 430);
 }
 
@@ -626,13 +706,16 @@ async function loadPending() {
   try {
     const r    = await fetch('/api/pedidos/pendientes');
     const list = await r.json();
+    const beforeIds = new Set(Object.keys(orders).map(Number));
+    const afterIds  = new Set(list.map(o => o.id));
     list.forEach(o => { orders[o.id] = o; });
-    renderKitchen();
+    for (const id of beforeIds) { if (!afterIds.has(id)) delete orders[id]; }
+    const changed = list.some(o => !beforeIds.has(o.id)) || [...beforeIds].some(id => !afterIds.has(id));
+    if (changed) renderKitchen();
   } catch(e) {}
 }
 
-
-// ─── SETTINGS (DB como fuente de verdad) ───
+// ─── SETTINGS ───
 function saveSetting(key, value) {
   localStorage.setItem(key, value);
   fetch('/api/settings/'+key, {
@@ -701,9 +784,9 @@ async function checkSupabase() {
     const r = await fetch('/api/sync/status');
     const d = await r.json();
     if (!d.configured) {
-      dot.className = 'w-2 h-2 rounded-full bg-gray-600 shrink-0';
+      dot.className = 'w-2 h-2 rounded-full bg-gray-700 shrink-0';
       txt.textContent = 'Nube no configurada';
-      txt.style.color = '#4b5563';
+      txt.style.color = '#374151';
     } else if (!d.reachable) {
       dot.className = 'w-2 h-2 rounded-full bg-red-500 shrink-0';
       txt.textContent = d.pending > 0 ? `Sin nube · ${d.pending} sin subir` : 'Sin conexión a la nube';
@@ -713,7 +796,7 @@ async function checkSupabase() {
       txt.textContent = `Subiendo ${d.pending} pedido${d.pending !== 1 ? 's' : ''}...`;
       txt.style.color = '#fbbf24';
     } else {
-      dot.className = 'w-2 h-2 rounded-full bg-green-500 shrink-0';
+      dot.className = 'w-2 h-2 rounded-full bg-emerald-500 shrink-0';
       txt.textContent = 'Nube sincronizada';
       txt.style.color = '#4ade80';
     }
@@ -726,14 +809,12 @@ let stationCfg = JSON.parse(localStorage.getItem('stationCfg') || 'null') || {
   stations: [{ name: 'Preparador 1', catIds: [] }]
 };
 let stationActive = JSON.parse(localStorage.getItem('stationActive') || '{}');
-// { "0": orderId, "1": orderId } — pedido activo por estación
-let stationCats  = [];   // cached from /api/categorias
+let stationCats  = [];
 
 function toggleStationPanel() {
   const p = document.getElementById('stationPanel');
   p.classList.toggle('hidden');
   if (!p.classList.contains('hidden')) {
-    // Load cats and render form
     if (!stationCats.length) {
       fetch('/api/categorias').then(r=>r.json()).then(c=>{
         stationCats = c; renderStationForm();
@@ -741,29 +822,31 @@ function toggleStationPanel() {
     } else {
       renderStationForm();
     }
-    // Highlight active count button
     for (let i=1;i<=4;i++) {
       const btn = document.getElementById('sCnt-'+i);
       if (btn) btn.className = 'station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border transition-colors '
         + (i===stationCfg.count
           ? 'border-purple-500 bg-purple-700 text-white'
-          : 'border-gray-700 bg-gray-800 text-gray-400');
+          : 'border-white/8 text-gray-500')
+        + (i!==stationCfg.count ? '' : '');
+      if (btn && i!==stationCfg.count) btn.style.background='rgba(255,255,255,.04)';
     }
   }
 }
 
 function setStationCount(n) {
-  // Adjust stations array
   while (stationCfg.stations.length < n)
     stationCfg.stations.push({ name: 'Preparador '+(stationCfg.stations.length+1), catIds: [] });
   stationCfg.stations = stationCfg.stations.slice(0, n);
   stationCfg.count = n;
   for (let i=1;i<=4;i++) {
     const btn = document.getElementById('sCnt-'+i);
-    if (btn) btn.className = 'station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border transition-colors '
-      + (i===n
-        ? 'border-purple-500 bg-purple-700 text-white'
-        : 'border-gray-700 bg-gray-800 text-gray-400');
+    if (btn) {
+      btn.className = 'station-cnt-btn flex-1 py-2 rounded-xl text-sm font-bold border transition-colors '
+        + (i===n ? 'border-purple-500 bg-purple-700 text-white' : 'border-white/8 text-gray-500');
+      if (i!==n) btn.style.background='rgba(255,255,255,.04)';
+      else btn.style.background='';
+    }
   }
   renderStationForm();
 }
@@ -772,24 +855,23 @@ function renderStationForm() {
   const block = document.getElementById('stationFormBlock');
   block.innerHTML = stationCfg.stations.map((s, si) => {
     const catChecks = stationCats.map(c =>
-      `<label class="flex items-center gap-1.5 text-xs text-gray-300 cursor-pointer">
+      `<label class="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer">
         <input type="checkbox" data-si="${si}" data-cat="${c.id}"
           ${s.catIds.includes(c.id)?'checked':''} class="scat-chk rounded accent-purple-500">
         <span>${c.nombre}</span>
       </label>`).join('');
-    return `<div class="bg-gray-800/60 border border-gray-700 rounded-xl p-3">
+    return `<div class="border border-white/8 rounded-xl p-3" style="background:rgba(255,255,255,.04)">
       <input data-si="${si}" type="text" value="${s.name.replace(/"/g,'&quot;')}"
         placeholder="Nombre de la estacion"
-        class="sname-inp w-full bg-transparent text-white text-sm font-semibold border-b border-gray-700 focus:border-purple-500 outline-none mb-2 pb-1">
+        class="sname-inp w-full bg-transparent text-white text-sm font-semibold border-b border-white/8 focus:border-purple-500 outline-none mb-2 pb-1">
       ${stationCats.length
-        ? '<div class="text-gray-500 text-[10px] tracking-widest font-bold mb-1.5">CATEGORIAS</div><div class="flex flex-wrap gap-2">'+catChecks+'</div>'
-        : '<div class="text-gray-600 text-xs">Sin categorias (atiende todos los pedidos)</div>'}
+        ? '<div class="text-gray-600 text-[9px] tracking-widest font-black mb-1.5">CATEGORIAS</div><div class="flex flex-wrap gap-2">'+catChecks+'</div>'
+        : '<div class="text-gray-700 text-xs">Sin categorias (atiende todos los pedidos)</div>'}
     </div>`;
   }).join('');
 }
 
 function saveStationConfig() {
-  // Read names and categories from form
   document.querySelectorAll('.sname-inp').forEach(inp => {
     const si = parseInt(inp.dataset.si);
     if (stationCfg.stations[si]) stationCfg.stations[si].name = inp.value.trim() || ('Preparador '+(si+1));
@@ -816,19 +898,12 @@ function applyStationLayout() {
   renderKitchen();
 }
 
-// ─── COLA COMPARTIDA — asignación automática FIFO ────────────────────────────
-
-// Asigna pedidos de la cola a estaciones libres. Se llama en cada render.
 function autoAssignFreeStations(allOrders) {
-  // Limpiar asignaciones de pedidos que ya no existen
   Object.keys(stationActive).forEach(si => {
     if (!orders[Number(stationActive[si])]) delete stationActive[si];
   });
-
   const activeIds = new Set(Object.values(stationActive).map(Number));
-  // Cola: pedidos no activos en ninguna estación, orden FIFO
   const queue = allOrders.filter(o => !activeIds.has(o.id));
-
   for (let si = 0; si < stationCfg.count; si++) {
     if (stationActive[String(si)] === undefined && queue.length) {
       const next = queue.shift();
@@ -840,32 +915,29 @@ function autoAssignFreeStations(allOrders) {
   saveSetting('station_active', JSON.stringify(stationActive));
 }
 
-// Save station name edited inline in the column header
 function saveStationName(si, value) {
   if (!stationCfg.stations[si]) return;
   stationCfg.stations[si].name = value.trim() || ('Preparador ' + (si + 1));
   saveSetting('stationCfg', JSON.stringify(stationCfg));
   saveSetting('station_cfg', JSON.stringify(stationCfg));
-  // Also sync the config panel input if open
   const inp = document.querySelector('.sname-inp[data-si="'+si+'"]');
   if (inp) inp.value = stationCfg.stations[si].name;
 }
 
-// ─── STATION RENDERING ────────────────────────────────────────────────────────
-
-// Hero card — el pedido activo que está preparando ahora el preparador
 function buildActiveCard(order, stationItems, si) {
   const div = document.createElement('div');
   div.id = 'active-order-'+order.id+'-'+si;
+  div.dataset.fecha = order.fecha || new Date().toISOString();
+  const timerInfo = _getTimerInfo(order.fecha);
+
   const efect = order.metodo_pago === 'Efectivo';
-  const hBg   = efect ? 'from-green-700 to-green-800' : 'from-blue-700 to-blue-800';
+  const hBg   = efect ? 'from-emerald-700/75 to-emerald-900/75' : 'from-blue-700/75 to-blue-900/75';
   const icon  = efect ? '💵' : '📱';
   const tStr  = new Date(order.fecha||Date.now()).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
 
-  // Auto-compactar según número de ítems para evitar scroll
   const n = stationItems.length;
-  const dense  = n > 5;   // 6-8 ítems: texto pequeño
-  const ultra  = n > 9;   // 9+ ítems: ultra compacto, 2 columnas
+  const dense  = n > 5;
+  const ultra  = n > 9;
   const big    = !dense;
   const rows   = stationItems.map(it => buildItemRow(it, big)).join('');
   const nameSz = ultra ? 'text-lg' : dense ? 'text-xl' : 'text-2xl';
@@ -874,46 +946,49 @@ function buildActiveCard(order, stationItems, si) {
     ? `<div class="grid grid-cols-2 gap-x-3 gap-y-0">${rows}</div>`
     : `<div class="space-y-0">${rows}</div>`;
 
-  // flex flex-col h-full: llena el panel; items usa flex-1+overflow-y-auto como último recurso
-  div.className = 'station-promote bg-gray-900 border border-purple-500/50 rounded-xl overflow-hidden hero-glow flex flex-col h-full';
+  div.className = 'station-promote border rounded-xl overflow-hidden hero-glow flex flex-col h-full' + (timerInfo.urgent ? ' timer-urgent' : '');
+  div.style.cssText = 'background:rgba(10,8,22,.85);backdrop-filter:blur(20px)';
+
   div.innerHTML = `
     <div class="flex items-center gap-2 px-3 pt-2 pb-1 shrink-0">
-      <div class="priority-badge bg-purple-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full tracking-wider">PREPARANDO</div>
-      <div class="h-px flex-1 bg-gray-800"></div>
+      <div class="priority-badge bg-purple-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full tracking-wider" style="box-shadow:0 0 10px rgba(168,85,247,.4)">PREPARANDO</div>
+      <div class="h-px flex-1" style="background:rgba(255,255,255,.06)"></div>
     </div>
-    <div class="bg-gradient-to-r ${hBg} px-3 ${hdrPy} flex items-start justify-between shrink-0">
+    ${_timerBarHTML(order.fecha)}
+    <div class="bg-gradient-to-r ${hBg} px-3 ${hdrPy} flex items-start justify-between shrink-0 mt-1">
       <div class="min-w-0">
         <div class="flex items-center gap-1.5 mb-0.5">
-          <span class="bg-white/20 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">${order.numero_factura||('#'+order.id)}</span>
-          <span class="text-white/60 text-[11px]">${icon} ${tStr}</span>
+          <span class="text-white/30 text-[10px] font-extrabold px-1.5 py-0.5 rounded-full border border-white/10">${order.numero_factura||('#'+order.id)}</span>
+          <span class="text-white/50 text-[11px]">${icon} ${tStr}</span>
         </div>
         <div class="text-white font-extrabold ${nameSz} leading-tight">${order.cliente}</div>
       </div>
-      <div class="text-white/80 font-bold text-sm tabular-nums ml-2 shrink-0">$${Math.round(order.total).toLocaleString('es-CO')}</div>
+      <div class="text-white/70 font-bold text-sm tabular-nums ml-2 shrink-0">$${Math.round(order.total).toLocaleString('es-CO')}</div>
     </div>
     <div class="flex-1 overflow-y-auto px-3 py-2 min-h-0">
-      ${rows ? itemsGrid : '<div class="text-gray-600 text-xs text-center py-2">Sin items</div>'}
+      ${rows ? itemsGrid : '<div class="text-gray-700 text-xs text-center py-2">Sin items</div>'}
     </div>
     <div class="px-3 pb-3 pt-1 shrink-0">
       <button data-oid="${order.id}" data-si="${si}"
         onclick="completeStationOrder(parseInt(this.dataset.oid),parseInt(this.dataset.si))"
-        class="w-full bg-green-500 hover:bg-green-400 active:bg-green-600 text-white font-extrabold py-3 rounded-xl text-sm transition-colors shadow-lg shadow-green-900/30 tracking-wide">
+        class="w-full font-extrabold py-3.5 rounded-xl text-sm transition-all border active:scale-95 tracking-wide"
+        style="background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.45);color:#6ee7b7;box-shadow:0 0 16px rgba(52,211,153,.15)">
         ✓ LISTO — COMPLETAR PEDIDO
       </button>
     </div>`;
   return div;
 }
 
-// Mini card — pedidos esperando en la cola de este preparador
 function buildQueueMiniCard(order, position) {
   const div = document.createElement('div');
-  div.className = 'queue-mini-card bg-gray-800/70 border border-gray-700 rounded-xl overflow-hidden';
+  div.className = 'queue-mini-card border rounded-xl overflow-hidden' ;
+  div.style.cssText = 'background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.08)';
   const itemCount = (order.items||[]).length;
   const efect = order.metodo_pago === 'Efectivo';
-  const dot = efect ? 'bg-green-500' : 'bg-blue-500';
+  const dot = efect ? 'bg-emerald-500' : 'bg-blue-500';
   div.innerHTML = `
     <div class="px-3 pt-2.5 pb-1 flex items-center gap-1.5">
-      <span class="text-gray-500 text-[10px] font-bold">#${position+1}</span>
+      <span class="text-gray-700 text-[10px] font-bold">#${position+1}</span>
       <span class="text-purple-400 text-[10px] font-extrabold">${order.numero_factura||('#'+order.id)}</span>
     </div>
     <div class="px-3 pb-1">
@@ -921,61 +996,58 @@ function buildQueueMiniCard(order, position) {
     </div>
     <div class="px-3 pb-2.5 flex items-center gap-1.5">
       <span class="w-1.5 h-1.5 rounded-full ${dot} shrink-0"></span>
-      <span class="text-gray-400 text-[10px]">${itemCount} ${itemCount===1?'bebida':'bebidas'}</span>
+      <span class="text-gray-600 text-[10px]">${itemCount} ${itemCount===1?'bebida':'bebidas'}</span>
     </div>`;
   return div;
 }
 
-// Panel de un preparador: header editable + tarjeta activa o placeholder
 function renderActivePanel(si, activeOrder) {
   const cfg = stationCfg.stations[si];
   const panel = document.createElement('div');
-  // overflow-hidden: la tarjeta activa llena el panel y gestiona su propio scroll interno
-  panel.className = 'flex flex-col flex-1 border-r border-gray-800/60 overflow-hidden min-w-0';
+  panel.className = 'flex flex-col flex-1 overflow-hidden min-w-0';
+  panel.style.borderRight = '1px solid rgba(255,255,255,.06)';
   panel.dataset.si = si;
 
-  // ── Header editable ────────────────────────────
   const hdr = document.createElement('div');
-  hdr.className = 'bg-gray-950/95 backdrop-blur border-b border-gray-800 px-4 py-2.5 flex items-center gap-2 shrink-0';
+  hdr.className = 'border-b border-white/5 px-4 py-2.5 flex items-center gap-2 shrink-0';
+  hdr.style.cssText = 'background:rgba(6,6,15,.9);backdrop-filter:blur(16px)';
   hdr.innerHTML = `
-    <input class="station-col-name bg-transparent text-white font-extrabold text-sm tracking-wide uppercase border-b-2 border-transparent hover:border-gray-600 focus:border-purple-500 focus:outline-none min-w-0 flex-1 transition-colors cursor-text"
+    <input class="station-col-name bg-transparent text-white font-extrabold text-sm tracking-wide uppercase border-b-2 border-transparent hover:border-white/15 focus:border-purple-500 focus:outline-none min-w-0 flex-1 transition-colors cursor-text"
       data-si="${si}" value="${cfg.name}"
       onblur="saveStationName(${si},this.value)"
       onkeydown="if(event.key==='Enter')this.blur()"
       title="Clic para editar nombre">`;
   panel.appendChild(hdr);
 
-  // ── Pedido activo o placeholder ────────────────
   if (activeOrder) {
     const catchAll = !cfg.catIds || cfg.catIds.length === 0;
     const items = (activeOrder.items||[]).filter(it =>
       catchAll || cfg.catIds.includes(it.categoria_id));
     const wrap = document.createElement('div');
-    // flex-1: ocupa todo el espacio restante del panel
     wrap.className = 'flex-1 overflow-hidden p-2';
     wrap.appendChild(buildActiveCard(activeOrder, items, si));
     panel.appendChild(wrap);
   } else {
     const empty = document.createElement('div');
-    empty.className = 'flex flex-col items-center justify-center flex-1 text-gray-700 py-16';
-    empty.innerHTML = '<div class="text-4xl mb-3 opacity-20">🍹</div><p class="text-xs">Libre</p>';
+    empty.className = 'flex flex-col items-center justify-center flex-1 text-gray-800 py-16';
+    empty.innerHTML = '<div class="text-4xl mb-3 opacity-15">🍹</div><p class="text-xs text-gray-700">Libre</p>';
     panel.appendChild(empty);
   }
 
   return panel;
 }
 
-// Franja inferior: cola compartida de todos los pedidos en espera
 function renderSharedQueueStrip(queueOrders) {
   const strip = document.createElement('div');
-  strip.className = 'border-t border-gray-800 bg-gray-950/80 px-4 py-3 shrink-0';
+  strip.className = 'border-t border-white/5 px-4 py-3 shrink-0';
+  strip.style.cssText = 'background:rgba(6,6,15,.85);backdrop-filter:blur(16px)';
   strip.dataset.queueStrip = '1';
   if (!queueOrders.length) {
-    strip.innerHTML = '<p class="text-gray-700 text-xs text-center py-0.5">Cola vacía — todos los pedidos están siendo preparados</p>';
+    strip.innerHTML = '<p class="text-gray-800 text-xs text-center py-0.5">Cola vacía — todos los pedidos están siendo preparados</p>';
     return strip;
   }
   const label = document.createElement('div');
-  label.className = 'text-gray-500 text-[10px] font-extrabold uppercase tracking-widest mb-2';
+  label.className = 'text-gray-700 text-[9px] font-black uppercase tracking-[.2em] mb-2';
   label.textContent = `En cola (${queueOrders.length})`;
   strip.appendChild(label);
   const row = document.createElement('div');
@@ -999,7 +1071,6 @@ function renderMultiStation() {
   const activeIds = new Set(Object.values(stationActive).map(Number));
   const queueOrders = list.filter(o => !activeIds.has(o.id));
 
-  // ── Fila superior: paneles de cada preparador ──
   const topRow = document.createElement('div');
   topRow.className = 'flex flex-1 min-h-0 overflow-hidden';
   for (let si = 0; si < stationCfg.count; si++) {
@@ -1008,12 +1079,9 @@ function renderMultiStation() {
     topRow.appendChild(renderActivePanel(si, activeOrder));
   }
   container.appendChild(topRow);
-
-  // ── Franja inferior: cola compartida ───────────
   container.appendChild(renderSharedQueueStrip(queueOrders));
 }
 
-// Actualiza solo el panel de una estación y la franja de cola — sin re-render completo
 function _updateSingleStation(si) {
   const allOrders = Object.values(orders).sort((a,b) => a.id - b.id);
   autoAssignFreeStations(allOrders);
@@ -1023,7 +1091,6 @@ function _updateSingleStation(si) {
   const multiView = document.getElementById('multiView');
   if (!multiView) { renderKitchen(); return; }
 
-  // Reemplazar solo el panel de esta estación
   const panel = multiView.querySelector('[data-si="'+si+'"]');
   if (panel) {
     const oid = stationActive[String(si)];
@@ -1031,7 +1098,6 @@ function _updateSingleStation(si) {
     panel.replaceWith(renderActivePanel(si, activeOrder));
   }
 
-  // Actualizar franja de cola
   const strip = multiView.querySelector('[data-queue-strip]');
   if (strip) {
     strip.replaceWith(renderSharedQueueStrip(queueOrders));
@@ -1045,22 +1111,17 @@ function _updateSingleStation(si) {
   }
 }
 
-// Un clic = pedido completado, estación libre, siguiente de la cola sube solo
 async function completeStationOrder(orderId, si) {
   const order = orders[orderId];
   if (!order) return;
 
   const card = document.getElementById('active-order-' + orderId + '-' + si);
-  // 1. Flash de éxito
   if (card) { card.classList.add('completing-flash'); card.style.pointerEvents = 'none'; }
-  // 2. Optimistic — disparar sin esperar
   fetch('/api/pedidos/' + orderId + '/entregar', { method: 'PUT' }).catch(() => {});
-  // 3. Liberar estación y animar salida
   delete stationActive[String(si)];
   saveSetting('stationActive', JSON.stringify(stationActive));
   saveSetting('station_active', JSON.stringify(stationActive));
   if (card) { card.classList.remove('completing-flash'); card.classList.add('station-done'); }
-  // 4. Re-render — el nuevo activeCard usa station-promote (viene desde la cola)
   setTimeout(() => {
     delete orders[orderId];
     if (stationCfg.count >= 2) _updateSingleStation(si);
@@ -1075,6 +1136,7 @@ loadSettings().then(() => {
   connectWS();
   checkSupabase();
   setInterval(checkSupabase, 30000);
+  setInterval(loadPending, 5000);
 });
 
 // ── Auto-update ──
@@ -1098,10 +1160,11 @@ async function applyUpdate() {
 checkUpdate();
 setInterval(checkUpdate, 30 * 60 * 1000);
 </script>
+
 <!-- ═══ BANNER DE ACTUALIZACIÓN ═══ -->
-<div id="updateBanner" class="hidden fixed bottom-0 left-0 right-0 z-[100] bg-purple-950/97 border-t border-purple-500/50 backdrop-blur px-5 py-3 flex items-center justify-between gap-3 shadow-2xl">
+<div id="updateBanner" class="hidden fixed bottom-0 left-0 right-0 z-[100] border-t border-purple-500/40 backdrop-blur-xl px-5 py-3 flex items-center justify-between gap-3 shadow-2xl" style="background:rgba(46,16,101,.92)">
   <div class="flex items-center gap-3">
-    <span class="text-2xl">🔄</span>
+    <span class="text-xl">🔄</span>
     <div>
       <div class="text-white font-bold text-sm">Nueva versión disponible</div>
       <div id="updateVersion" class="text-purple-300 text-xs font-mono"></div>
@@ -1109,7 +1172,8 @@ setInterval(checkUpdate, 30 * 60 * 1000);
   </div>
   <div class="flex gap-2 shrink-0">
     <button id="updateBtn" onclick="applyUpdate()"
-      class="bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-extrabold px-4 py-2 rounded-xl transition-colors shadow-lg">
+      class="bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-extrabold px-4 py-2 rounded-xl transition-colors"
+      style="box-shadow:0 0 14px rgba(168,85,247,.4)">
       Actualizar ahora
     </button>
     <button onclick="document.getElementById('updateBanner').classList.add('hidden')"
@@ -1120,11 +1184,11 @@ setInterval(checkUpdate, 30 * 60 * 1000);
 </div>
 
 <!-- App Confirm Modal -->
-<div id="appConfirmModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/70 backdrop-blur-sm">
-  <div class="bg-gray-900 border border-gray-700/80 rounded-2xl p-6 max-w-xs w-full mx-4 shadow-2xl">
+<div id="appConfirmModal" class="hidden fixed inset-0 z-[300] flex items-center justify-center bg-black/75 backdrop-blur-md">
+  <div class="border border-white/8 rounded-2xl p-6 max-w-xs w-full mx-4 shadow-2xl" style="background:rgba(10,8,20,.96)">
     <p id="appConfirmMsg" class="text-white text-sm font-semibold leading-relaxed mb-5"></p>
     <div class="flex gap-3 justify-end">
-      <button onclick="_appCR(false)" class="px-4 py-2 rounded-xl bg-gray-800 text-gray-300 text-sm font-bold hover:bg-gray-700 transition-colors">Cancelar</button>
+      <button onclick="_appCR(false)" class="px-4 py-2 rounded-xl border border-white/8 text-gray-400 text-sm font-bold hover:bg-white/5 transition-colors">Cancelar</button>
       <button id="appConfirmOk" onclick="_appCR(true)" class="px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-500 transition-colors">Confirmar</button>
     </div>
   </div>
