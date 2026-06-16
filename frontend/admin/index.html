@@ -114,12 +114,92 @@ button.emoji-trigger{font-family:'Segoe UI Emoji','Apple Color Emoji',sans-serif
 #emojiPickerPanel{display:none;position:fixed;z-index:300;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8);width:352px}
 #emojiPickerPanel.open{display:block}
 emoji-picker{--background:#111827;--border-color:#374151;--indicator-color:#7c3aed;--input-border-color:#374151;--input-font-color:#fff;--input-placeholder-color:#6b7280;--category-font-color:#9ca3af;--emoji-size:1.5rem;--num-columns:8;width:352px;height:380px}
+/* ── Easing tokens (Emil Kowalski) ── */
+:root{
+  --ease-out-quint:cubic-bezier(.23,1,.32,1);
+  --ease-in-quint:cubic-bezier(.64,0,.78,0);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+}
+
 /* ── Animations ── */
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.fade-in{animation:fadeIn .3s ease forwards}
-.kpi-card{transition:transform .15s ease}
-.kpi-card:hover{transform:translateY(-2px)}
-.range-btn{transition:all .15s ease}
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.fade-in{animation:fadeIn 280ms var(--ease-out-quint) both}
+
+/* KPI stagger */
+.kpi-card:nth-child(1){animation-delay:0ms}
+.kpi-card:nth-child(2){animation-delay:60ms}
+.kpi-card:nth-child(3){animation-delay:120ms}
+.kpi-card:nth-child(4){animation-delay:180ms}
+.kpi-card:nth-child(5){animation-delay:240ms}
+
+/* KPI card hover lift */
+.kpi-card{
+  transition:transform 200ms var(--ease-out-quint),
+             border-color 200ms var(--ease-out-quint);
+  cursor:pointer;will-change:transform;
+}
+.kpi-card:hover{transform:translateY(-3px)}
+.kpi-card:active{transform:translateY(-1px)}
+
+/* Section entrance */
+@keyframes sectionIn{
+  from{opacity:0;transform:translateY(-5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+#sec-dash,#sec-catalogo,#sec-bases,#sec-notas,#sec-config,#sec-updates{
+  animation:sectionIn 200ms var(--ease-out-quint) both;
+}
+
+/* Sidebar item micro-interactions */
+.sidebar-item{
+  transition:background 150ms var(--ease-out-quint),
+             color 150ms var(--ease-out-quint),
+             transform 120ms var(--ease-out-quint)!important;
+}
+.sidebar-item:hover{transform:translateX(4px)}
+.sidebar-item.active{transform:translateX(4px)}
+
+/* Range button press */
+.range-btn{
+  transition:background 150ms var(--ease-out-quint),
+             color 150ms var(--ease-out-quint),
+             transform 100ms ease-out,
+             box-shadow 150ms ease-out;
+}
+.range-btn:active{transform:scale(.93)}
+
+/* PIN overlay button */
+#pinOverlay button{transition:transform 100ms ease-out,background 150ms ease-out}
+#pinOverlay button:active{transform:scale(.96)}
+
+/* PIN shake on error */
+@keyframes pinShake{
+  0%,100%{transform:translateX(0)}
+  20%,60%{transform:translateX(-7px)}
+  40%,80%{transform:translateX(7px)}
+}
+.pin-shake{animation:pinShake 300ms ease-out both}
+
+/* Generic button press feedback */
+button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]){
+  transition:transform 100ms ease-out,background 150ms ease-out,border-color 150ms ease-out,color 150ms ease-out;
+}
+button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{transform:scale(.97)}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  .fade-in,.kpi-card,
+  #sec-dash,#sec-catalogo,#sec-bases,#sec-notas,#sec-config,#sec-updates{
+    animation:none!important;
+  }
+  .sidebar-item,.range-btn,button{
+    transition:background 150ms linear,color 150ms linear!important;
+    transform:none!important;
+  }
+}
 /* ── Update progress ── */
 .upstate{display:none}
 .upstate.active{display:block}
@@ -1487,7 +1567,10 @@ customElements.whenDefined('emoji-picker').then(() => {
         showAdminContent();
       } else {
         document.getElementById('pinError').style.display='block';
-        document.getElementById('pinInput').value='';
+        const pi=document.getElementById('pinInput');
+        pi.value='';
+        pi.classList.add('pin-shake');
+        setTimeout(()=>{pi.classList.remove('pin-shake');},350);
         setTimeout(()=>{document.getElementById('pinError').style.display='none';},2000);
       }
     });

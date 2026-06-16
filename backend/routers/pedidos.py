@@ -7,7 +7,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, WebSocket, WebSoc
 from pydantic import BaseModel
 
 from ..database import get_conn
-from ..supabase import sync_to_supabase, sync_deliver_to_supabase
+from ..supabase import sync_to_supabase, sync_deliver_to_supabase, sync_prepare_to_supabase
 
 router = APIRouter()
 
@@ -132,6 +132,27 @@ def get_pendientes():
     return result
 
 
+@router.get("/pedidos/listos")
+def get_listos():
+    with get_conn() as conn:
+        pedidos = conn.execute(
+            "SELECT * FROM pedidos WHERE estado='preparado' ORDER BY fecha ASC").fetchall()
+        result = []
+        for p in pedidos:
+            pd = dict(p)
+            pd["items"] = [dict(d) for d in conn.execute("""
+                SELECT dp.producto_id, dp.cantidad, dp.observaciones,
+                       COALESCE(pr.nombre,'Producto eliminado') AS nombre,
+                       pr.categoria_id,
+                       COALESCE(c.color,'#8b5cf6') AS categoria_color
+                FROM detalle_pedidos dp
+                LEFT JOIN productos pr ON dp.producto_id=pr.id
+                LEFT JOIN categorias c ON pr.categoria_id=c.id
+                WHERE dp.pedido_id=?""", (p["id"],)).fetchall()]
+            result.append(pd)
+    return result
+
+
 @router.get("/pedidos/{id}")
 def get_pedido(id: int):
     with get_conn() as conn:
@@ -149,6 +170,30 @@ def get_pedido(id: int):
             WHERE dp.pedido_id = ?
         """, (id,)).fetchall()]
     return pd
+
+
+@router.put("/pedidos/{id}/preparar")
+async def preparar_pedido(id: int, background_tasks: BackgroundTasks):
+    with get_conn() as conn:
+        row = conn.execute("SELECT * FROM pedidos WHERE id=?", (id,)).fetchone()
+        if not row:
+            raise HTTPException(404, "Pedido no encontrado")
+        conn.execute("UPDATE pedidos SET estado='preparado' WHERE id=?", (id,))
+        conn.commit()
+        pd = dict(row)
+        pd["estado"] = "preparado"
+        pd["items"] = [dict(d) for d in conn.execute("""
+            SELECT dp.producto_id, dp.cantidad, dp.observaciones,
+                   COALESCE(pr.nombre,'Producto eliminado') AS nombre,
+                   pr.categoria_id,
+                   COALESCE(c.color,'#8b5cf6') AS categoria_color
+            FROM detalle_pedidos dp
+            LEFT JOIN productos pr ON dp.producto_id=pr.id
+            LEFT JOIN categorias c ON pr.categoria_id=c.id
+            WHERE dp.pedido_id=?""", (id,)).fetchall()]
+    await manager.broadcast({"type": "order_prepared", "order": pd})
+    background_tasks.add_task(sync_prepare_to_supabase, id)
+    return {"ok": True}
 
 
 @router.put("/pedidos/{id}/entregar")

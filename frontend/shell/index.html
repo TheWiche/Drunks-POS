@@ -4,100 +4,204 @@
 <meta charset="UTF-8">
 <title>Drunks POS</title>
 <style>
+/* ── Reset ── */
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:hidden;background:#0d0d1a}
+html,body{height:100%;overflow:hidden;background:#020617}
+
+/* ── Easing tokens (Emil Kowalski) ── */
+:root{
+  --ease-out-quint:cubic-bezier(.23,1,.32,1);
+  --ease-in-quint:cubic-bezier(.64,0,.78,0);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+}
+
+/* ── Shell layout ── */
 .shell{display:flex;flex-direction:column;height:100vh}
+
+/* ── Topbar glassmorphism ── */
 .topbar{
-  background:#0d0d1a;border-bottom:1px solid #1e1e35;
-  height:46px;display:flex;align-items:center;padding:0 14px;gap:6px;
-  flex-shrink:0;user-select:none;-webkit-user-select:none
+  background:rgba(2,6,23,.82);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  height:48px;display:flex;align-items:center;padding:0 12px;gap:4px;
+  flex-shrink:0;user-select:none;-webkit-user-select:none;
+  position:relative;z-index:50;
 }
-.logo{font-family:'Segoe UI',sans-serif;font-weight:800;font-size:.95rem;
-  color:#fff;display:flex;align-items:center;gap:6px;margin-right:14px;white-space:nowrap}
+
+/* ── Logo ── */
+.logo{
+  font-family:'Segoe UI',system-ui,sans-serif;font-weight:800;font-size:.9rem;
+  color:#f8fafc;display:flex;align-items:center;gap:7px;margin-right:10px;white-space:nowrap;
+  letter-spacing:-.01em;
+}
+.logo-icon{
+  width:26px;height:26px;border-radius:7px;flex-shrink:0;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 12px rgba(34,197,94,.35);
+}
+.logo-icon svg{width:14px;height:14px;fill:#fff}
+
+/* ── Nav buttons ── */
 .nav-btn{
-  font-family:'Segoe UI',sans-serif;font-size:.8rem;font-weight:600;
-  color:#8b8ba8;background:transparent;border:1px solid transparent;
-  border-radius:8px;padding:5px 13px;cursor:pointer;transition:.15s;
-  display:flex;align-items:center;gap:5px;white-space:nowrap
+  font-family:'Segoe UI',system-ui,sans-serif;font-size:.78rem;font-weight:600;
+  color:#64748b;background:transparent;border:1px solid transparent;
+  border-radius:8px;padding:5px 11px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
+  transition:color 150ms var(--ease-out-quint),
+             background 150ms var(--ease-out-quint),
+             border-color 150ms var(--ease-out-quint),
+             transform 100ms ease-out;
+  position:relative;
 }
-.nav-btn:hover{background:#1e1e35;color:#fff}
-.nav-btn.active{background:#2d1f6e;color:#c4b5fd;border-color:#7c3aed55}
+.nav-btn:hover{
+  color:#f1f5f9;
+  background:rgba(255,255,255,.06);
+  transform:translateY(-1px);
+}
+.nav-btn:active{transform:scale(.96) translateY(0)}
+.nav-btn.active{
+  color:#dcfce7;
+  background:rgba(34,197,94,.14);
+  border-color:rgba(34,197,94,.3);
+  box-shadow:0 0 0 1px rgba(34,197,94,.1) inset;
+}
+.nav-btn svg{width:14px;height:14px;flex-shrink:0;opacity:.8}
+.nav-btn.active svg{opacity:1}
+
+/* ── Spacer ── */
 .spacer{flex:1}
+
+/* ── Fullscreen button ── */
 .fs-btn{
-  font-size:.9rem;line-height:1;background:transparent;border:1px solid transparent;
-  border-radius:8px;padding:5px 9px;cursor:pointer;color:#8b8ba8;transition:.15s;
-  display:flex;align-items:center;justify-content:center
+  width:32px;height:32px;background:transparent;border:1px solid transparent;
+  border-radius:8px;cursor:pointer;color:#64748b;
+  display:flex;align-items:center;justify-content:center;
+  transition:color 150ms,background 150ms,transform 100ms ease-out;
 }
-.fs-btn:hover{background:#1e1e35;color:#fff}
-.upd-pill{
-  display:none;align-items:center;gap:7px;
-  background:#7c3aed22;border:1px solid #7c3aed55;border-radius:99px;
-  padding:4px 13px 4px 9px;cursor:pointer;
-  animation:pulse 2s infinite
-}
-.upd-pill:hover{background:#7c3aed44}
-.upd-dot{width:8px;height:8px;background:#7c3aed;border-radius:50%;flex-shrink:0}
-.upd-txt{font-size:.75rem;font-weight:700;color:#c4b5fd;font-family:'Segoe UI',sans-serif}
+.fs-btn:hover{background:rgba(255,255,255,.06);color:#f1f5f9;transform:translateY(-1px)}
+.fs-btn:active{transform:scale(.92)}
+.fs-btn svg{width:15px;height:15px}
+
+/* ── Pills: LAN y Update ── */
 .lan-pill{
   display:none;align-items:center;gap:6px;
-  background:#0f2a1a;border:1px solid #166534;border-radius:99px;
-  padding:4px 11px 4px 9px;cursor:pointer;user-select:all
+  background:rgba(20,83,45,.5);border:1px solid rgba(34,197,94,.25);border-radius:99px;
+  padding:4px 11px 4px 9px;cursor:pointer;user-select:all;
+  transition:background 150ms,transform 100ms ease-out;
 }
-.lan-pill:hover{background:#166534}
-.lan-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;flex-shrink:0}
-.lan-txt{font-size:.7rem;font-weight:600;color:#86efac;font-family:monospace}
-@keyframes pulse{
-  0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.4)}
-  50%{box-shadow:0 0 0 6px rgba(124,58,237,0)}
+.lan-pill:hover{background:rgba(34,197,94,.18);transform:scale(1.02)}
+.lan-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;flex-shrink:0;
+  box-shadow:0 0 6px rgba(34,197,94,.6)}
+.lan-txt{font-size:.68rem;font-weight:600;color:#86efac;font-family:'Courier New',monospace;letter-spacing:.02em}
+
+@keyframes updateSlideIn{
+  from{transform:translateY(-6px) scale(.9);opacity:0}
+  to{transform:translateY(0) scale(1);opacity:1}
 }
-#app-viewport{
-  position:relative;flex:1;overflow:hidden;
+.upd-pill{
+  display:none;align-items:center;gap:7px;
+  background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.35);border-radius:99px;
+  padding:4px 13px 4px 9px;cursor:pointer;
+  animation:updateSlideIn .4s var(--spring) both, updPulse 2.5s 1s infinite;
+  transition:background 150ms,transform 100ms ease-out;
 }
+.upd-pill:hover{background:rgba(34,197,94,.2);transform:scale(1.03)}
+.upd-pill:active{transform:scale(.97)}
+@keyframes updPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.3)}
+  60%{box-shadow:0 0 0 5px rgba(34,197,94,0)}
+}
+.upd-dot{width:8px;height:8px;background:#22c55e;border-radius:50%;flex-shrink:0;
+  box-shadow:0 0 6px rgba(34,197,94,.7)}
+.upd-txt{font-size:.73rem;font-weight:700;color:#86efac;font-family:'Segoe UI',sans-serif}
+
+/* ── Viewport e iframes ── */
+#app-viewport{position:relative;flex:1;overflow:hidden}
 .view-frame{
   position:absolute;inset:0;width:100%;height:100%;
-  border:none;opacity:0;transform:scale(0.975);
-  transition:opacity .22s ease,transform .22s ease;
+  border:none;opacity:0;transform:scale(.976) translateY(4px);
+  transition:opacity .24s var(--ease-out-quint),transform .24s var(--ease-out-quint);
   pointer-events:none;will-change:opacity,transform;
 }
-.view-frame.active{
-  opacity:1;transform:scale(1);pointer-events:auto;
+.view-frame.active{opacity:1;transform:scale(1) translateY(0);pointer-events:auto}
+.view-frame.exiting{
+  opacity:0;transform:scale(.976) translateY(-4px);
+  transition:opacity .18s var(--ease-in-quint),transform .18s var(--ease-in-quint);
+}
+
+/* ── Reduced motion ── */
+@media(prefers-reduced-motion:reduce){
+  .nav-btn,.fs-btn,.lan-pill,.upd-pill,.view-frame{transition:opacity 150ms linear!important;transform:none!important}
+  .upd-pill{animation:none!important}
 }
 </style>
 </head>
 <body>
 <div class="shell">
   <div class="topbar">
-    <div class="logo">🍺 Drunks POS</div>
-    <button class="nav-btn active" id="btn-vendedor" onclick="loadView('vendedor')">🛒 Vendedor</button>
-    <button class="nav-btn"        id="btn-cocina"   onclick="loadView('cocina')">👨‍🍳 Cocina</button>
-    <button class="nav-btn"        id="btn-admin"    onclick="loadView('admin')">🔐 Admin</button>
+
+    <!-- Logo -->
+    <div class="logo">
+      <div class="logo-icon">
+        <!-- Beer mug icon -->
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 3h11a2 2 0 0 1 2 2v1h1a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2H5zm2 2v12h9V5H7zm9 2v6h1a.5.5 0 0 0 .5-.5V8a.5.5 0 0 0-.5-.5h-1z"/></svg>
+      </div>
+      Drunks POS
+    </div>
+
+    <!-- Nav -->
+    <button class="nav-btn active" id="btn-vendedor" onclick="loadView('vendedor')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2a1 1 0 0 0-1 1v1H3a1 1 0 0 0-1 1v1c0 3.53 2.42 6.49 5.69 7.3L9 20H7a1 1 0 1 0 0 2h10a1 1 0 1 0 0-2h-2l1.31-6.7C19.58 12.49 22 9.53 22 6V5a1 1 0 0 0-1-1h-2V3a1 1 0 0 0-1-1H6zm0 4h12v1c0 2.76-2.24 5-5 5H11C8.24 12 6 9.76 6 7V6z"/></svg>
+      Vendedor
+    </button>
+    <button class="nav-btn" id="btn-cocina" onclick="loadView('cocina')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0 0 20A10 10 0 0 0 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+      Cocina
+    </button>
+    <button class="nav-btn" id="btn-entrega" onclick="loadView('entrega')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9 1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+      Entrega
+    </button>
+    <button class="nav-btn" id="btn-admin" onclick="loadView('admin')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4l5 2.18V11c0 3.5-2.33 6.79-5 7.93C9.33 17.79 7 14.5 7 11V7.18L12 5z"/></svg>
+      Admin
+    </button>
+
     <div class="spacer"></div>
-    <button class="fs-btn" id="btn-fs" onclick="toggleFullscreen()" title="Pantalla completa (F11)">⛶</button>
-    <div class="lan-pill" id="lan-pill" title="URL para acceso en red local — toca para copiar">
+
+    <!-- Fullscreen -->
+    <button class="fs-btn" id="btn-fs" onclick="toggleFullscreen()" title="Pantalla completa (F11)">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+    </button>
+
+    <!-- LAN pill -->
+    <div class="lan-pill" id="lan-pill" title="URL red local — clic para copiar">
       <div class="lan-dot"></div>
       <span class="lan-txt" id="lan-txt">red local</span>
     </div>
+
+    <!-- Update pill -->
     <div class="upd-pill" id="upd-pill" onclick="reqUpdate()">
       <div class="upd-dot"></div>
       <span class="upd-txt" id="upd-txt">Actualización disponible</span>
     </div>
+
   </div>
+
   <div id="app-viewport">
     <iframe id="view-vendedor" class="view-frame active" src="/vendedor"></iframe>
     <iframe id="view-cocina"   class="view-frame"        src="about:blank"></iframe>
+    <iframe id="view-entrega"  class="view-frame"        src="about:blank"></iframe>
     <iframe id="view-admin"    class="view-frame"        src="about:blank"></iframe>
   </div>
 </div>
-<script>
-// ── Estado global compartido (accesible desde vistas via window.parent.DrunksState) ──
-window.DrunksState = {
-  cart:      {},
-  userRole:  null,
-  lastRoute: 'vendedor',
-};
 
-// ── Router ──────────────────────────────────────────────────────────────────────
-var _cur = 'vendedor';
+<script>
+window.DrunksState = { cart:{}, userRole:null, lastRoute:'vendedor' };
+
+var _cur    = 'vendedor';
 var _loaded = new Set(['vendedor']);
 
 async function loadView(name) {
@@ -106,7 +210,6 @@ async function loadView(name) {
   var prevFrame = document.getElementById('view-' + _cur);
   var nextFrame = document.getElementById('view-' + name);
 
-  // Lazy load: la primera vez que se visita la vista, asignar src y esperar
   if (!_loaded.has(name)) {
     _loaded.add(name);
     await new Promise(function(resolve) {
@@ -115,13 +218,17 @@ async function loadView(name) {
     });
   }
 
-  // Actualizar botones de navegación
+  // Exit current — class drives the exit transition
+  prevFrame.classList.add('exiting');
+  var _p = prevFrame;
+  setTimeout(function() { _p.classList.remove('active', 'exiting'); }, 180);
+
+  // Buttons
   document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
   var btn = document.getElementById('btn-' + name);
   if (btn) btn.classList.add('active');
 
-  // Animación: salida del iframe actual, entrada del siguiente
-  prevFrame.classList.remove('active');
+  // Enter next after 1 rAF so exit starts first
   requestAnimationFrame(function() {
     requestAnimationFrame(function() {
       nextFrame.classList.add('active');
@@ -132,35 +239,34 @@ async function loadView(name) {
   });
 }
 
-// ── Badge LAN ───────────────────────────────────────────────────────────────────
-fetch('/api/sync/info').then(function(r) { return r.json(); }).then(function(d) {
+fetch('/api/sync/info').then(function(r){return r.json();}).then(function(d){
   if (d.local_ip && d.local_ip !== '127.0.0.1') {
     var url  = 'http://' + d.local_ip + ':' + d.port;
     var pill = document.getElementById('lan-pill');
     var txt  = document.getElementById('lan-txt');
     txt.textContent = url;
     pill.style.display = 'flex';
-    pill.onclick = function() { navigator.clipboard && navigator.clipboard.writeText(url); };
+    pill.onclick = function(){ navigator.clipboard && navigator.clipboard.writeText(url); };
   }
-}).catch(function() {});
+}).catch(function(){});
 
-// ── Actualización ───────────────────────────────────────────────────────────────
 function showUpdate(ver) {
   document.getElementById('upd-txt').textContent = 'v' + ver + ' disponible';
   document.getElementById('upd-pill').style.display = 'flex';
 }
 function reqUpdate() {
-  if (window.pywebview && window.pywebview.api)
-    window.pywebview.api.open_update_window();
+  if (window.pywebview && window.pywebview.api) window.pywebview.api.open_update_window();
 }
 
-// ── Pantalla completa ───────────────────────────────────────────────────────────
 var _isFs = false;
 function toggleFullscreen() {
   if (window.pywebview && window.pywebview.api) {
     window.pywebview.api.toggle_fullscreen();
     _isFs = !_isFs;
-    document.getElementById('btn-fs').textContent = _isFs ? '⊡' : '⛶';
+    var icon = _isFs
+      ? '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>'
+      : '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
+    document.getElementById('btn-fs').querySelector('svg').innerHTML = icon;
   }
 }
 document.addEventListener('keydown', function(e) {

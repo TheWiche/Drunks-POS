@@ -76,6 +76,13 @@ app.include_router(dashboard.router, prefix="/api")
 app.include_router(sync.router,      prefix="/api")
 
 
+@app.get("/entrega")
+def page_entrega(_=Depends(_cloud_auth)):
+    if IS_CLOUD:
+        return RedirectResponse("/admin", status_code=302)
+    return FileResponse(str(FRONTEND_DIR / "entrega" / "index.html"))
+
+
 @app.get("/vendedor")
 def page_vendedor(_=Depends(_cloud_auth)):
     if IS_CLOUD:

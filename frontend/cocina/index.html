@@ -72,17 +72,20 @@ html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[dat
 </style>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  body{background:#06060f;font-family:'Segoe UI',system-ui,sans-serif}
+  /* ── Easing tokens Emil Kowalski ── */
+  :root{--ease-out-quint:cubic-bezier(.23,1,.32,1);--ease-in-quint:cubic-bezier(.64,0,.78,0);--spring:cubic-bezier(.34,1.56,.64,1)}
 
-  /* ── Animaciones core ── */
-  @keyframes heroIn{from{transform:translateY(-30px) scale(.95);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
-  .hero-in{animation:heroIn .42s cubic-bezier(.175,.885,.32,1.275) both}
-  @keyframes promoteHero{0%{transform:translateY(72px) scale(.76);opacity:0}55%{transform:translateY(-6px) scale(1.015);opacity:1}100%{transform:none;opacity:1}}
-  .promote-hero{animation:promoteHero .52s cubic-bezier(.175,.885,.32,1.275) both}
-  @keyframes cardIn{from{transform:translateY(-18px) scale(.93);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
-  .card-in{animation:cardIn .32s cubic-bezier(.175,.885,.32,1.275) both}
-  @keyframes queueIn{from{transform:translateX(18px) scale(.95);opacity:0}to{transform:none;opacity:1}}
-  .queue-in{animation:queueIn .26s cubic-bezier(.175,.885,.32,1.275) both}
+  body{background:#020617;font-family:'Segoe UI',system-ui,sans-serif}
+
+  /* ── Animaciones core (easing mejorado) ── */
+  @keyframes heroIn{from{transform:translateY(-24px) scale(.94);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+  .hero-in{animation:heroIn .38s var(--ease-out-quint) both}
+  @keyframes promoteHero{0%{transform:translateY(60px) scale(.8);opacity:0}60%{transform:translateY(-4px) scale(1.01);opacity:1}100%{transform:none;opacity:1}}
+  .promote-hero{animation:promoteHero .46s var(--ease-out-quint) both}
+  @keyframes cardIn{from{transform:translateY(-16px) scale(.94);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+  .card-in{animation:cardIn .3s var(--ease-out-quint) both}
+  @keyframes queueIn{from{transform:translateX(16px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+  .queue-in{animation:queueIn .24s var(--ease-out-quint) both}
   #queueGrid>.queue-in:nth-child(2){animation-delay:.04s}
   #queueGrid>.queue-in:nth-child(3){animation-delay:.08s}
   #queueGrid>.queue-in:nth-child(4){animation-delay:.12s}
@@ -90,24 +93,23 @@ html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[dat
   #queueGrid>.queue-in:nth-child(n+6){animation-delay:.20s}
   @keyframes completeFlash{0%{box-shadow:none}35%{box-shadow:0 0 0 16px rgba(74,222,128,.28),0 0 50px rgba(74,222,128,.18),inset 0 0 24px rgba(74,222,128,.06)}80%{box-shadow:0 0 0 4px rgba(74,222,128,.1)}100%{box-shadow:none;opacity:.75}}
   .completing-flash{animation:completeFlash .3s ease-out both;pointer-events:none}
-  @keyframes completeExit{0%{transform:scale(1) translateY(0);opacity:1}10%{transform:scale(1.02) translateY(-3px)}100%{transform:scale(.88) translateY(-36px);opacity:0;max-height:0;padding:0;margin:0;overflow:hidden}}
-  .completing-exit{animation:completeExit .42s cubic-bezier(.55,0,1,.45) both;overflow:hidden}
+  @keyframes completeExit{0%{transform:scale(1) translateY(0);opacity:1}10%{transform:scale(1.02) translateY(-3px)}100%{transform:scale(.88) translateY(-32px);opacity:0;max-height:0;padding:0;margin:0;overflow:hidden}}
+  .completing-exit{animation:completeExit .36s var(--ease-in-quint) both;overflow:hidden}
   @keyframes stationDone{0%{transform:scale(1);opacity:1}12%{transform:scale(1.02)}100%{transform:translateY(-20px) scale(.9);opacity:0}}
-  .station-done{animation:stationDone .35s cubic-bezier(.55,0,1,.45) both}
-  @keyframes stationPromote{0%{transform:translateY(36px) scale(.88);opacity:0}60%{transform:translateY(-4px) scale(1.01)}100%{transform:none;opacity:1}}
-  .station-promote{animation:stationPromote .4s cubic-bezier(.175,.885,.32,1.275) both}
-  @keyframes pulseGreen{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.45)}60%{box-shadow:0 0 0 10px rgba(74,222,128,0)}}
+  .station-done{animation:stationDone .3s var(--ease-in-quint) both}
+  @keyframes stationPromote{0%{transform:translateY(28px) scale(.9);opacity:0}65%{transform:translateY(-3px) scale(1.01)}100%{transform:none;opacity:1}}
+  .station-promote{animation:stationPromote .36s var(--ease-out-quint) both}
+  @keyframes pulseGreen{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.4)}60%{box-shadow:0 0 0 8px rgba(74,222,128,0)}}
   .pulse-green{animation:pulseGreen 2s infinite}
   @keyframes badgePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
   .priority-badge{animation:badgePulse 2.5s ease infinite}
-  @keyframes activeCardIn{from{opacity:0;transform:translateY(-10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-  .active-card-in{animation:activeCardIn .35s cubic-bezier(.175,.885,.32,1.275)}
+  @keyframes activeCardIn{from{opacity:0;transform:translateY(-8px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .active-card-in{animation:activeCardIn .3s var(--ease-out-quint)}
 
-  /* ── Semáforo de tiempo ── */
-  @keyframes urgentPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0),0 20px 52px var(--acc-glow,rgba(147,51,234,.4)),0 0 0 2px var(--acc-border,rgba(147,51,234,.35))}50%{box-shadow:0 0 0 5px rgba(239,68,68,.35),0 0 32px rgba(239,68,68,.25),0 0 0 2px rgba(239,68,68,.5)}}
-  .timer-urgent{animation:urgentPulse 1.4s ease infinite!important;border-color:rgba(239,68,68,.55)!important}
-  @keyframes urgentCardPulse{0%,100%{border-color:rgba(239,68,68,.4)}50%{border-color:rgba(239,68,68,.85)}}
-  .timer-urgent-card{animation:urgentCardPulse 1.4s ease infinite!important}
+  /* ── Timer semáforo (solo transform+opacity) ── */
+  @keyframes urgentBorderPulse{0%,100%{opacity:.45}50%{opacity:1}}
+  .timer-urgent{animation:urgentBorderPulse 1.4s ease infinite!important;border-color:rgba(239,68,68,.6)!important}
+  .timer-urgent-card{border-color:rgba(239,68,68,.5)!important}
 
   /* ── Clases temáticas con CSS vars ── */
   .hero-glow{box-shadow:0 20px 52px var(--acc-glow,rgba(147,51,234,.4)),0 0 0 2px var(--acc-border,rgba(147,51,234,.35))}
@@ -119,55 +121,80 @@ html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}html[dat
   .queue-mini-card{min-width:148px;max-width:172px;flex-shrink:0}
   .station-col{display:flex;flex-direction:column;border-right:1px solid rgba(31,41,55,.6);min-width:300px;flex:1;height:100%}
   input:focus,select:focus{outline:none}
-  .view-btn{color:#4b5563;transition:all .15s ease;width:2.25rem;height:2.25rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center}
+  .view-btn{color:#4b5563;transition:color 150ms var(--ease-out-quint),background 150ms var(--ease-out-quint),transform 100ms ease-out;width:2.25rem;height:2.25rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center;cursor:pointer}
   .view-btn:not(.active):hover{background:rgba(255,255,255,.06);color:#d1d5db}
+  .view-btn:active{transform:scale(.9)}
+
+  /* ── Timer bar mejorada ── */
+  .timer-bar-track{height:5px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:7px}
+  .timer-fill{height:100%;border-radius:3px;transition:width .6s var(--ease-out-quint),background-color .6s ease}
+
+  /* ── Ripple en botón preparar ── */
+  .btn-preparar{position:relative;overflow:hidden;cursor:pointer}
+  .btn-preparar::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,.06);transform:scale(0);opacity:0;border-radius:inherit;transition:transform .4s var(--ease-out-quint),opacity .4s ease}
+  .btn-preparar:active::after{transform:scale(1);opacity:1;transition:none}
+
+  /* ── Reduced motion ── */
+  @media(prefers-reduced-motion:reduce){
+    .hero-in,.promote-hero,.card-in,.queue-in,.completing-exit,.station-done,.station-promote,.active-card-in{animation:none!important;opacity:1!important;transform:none!important}
+    .timer-urgent,.pulse-green,.priority-badge{animation:none!important}
+  }
 </style>
 </head>
 <body class="min-h-screen text-white">
 
 <!-- ═══ HEADER ═══ -->
-<div class="sticky top-0 z-30 border-b border-white/5 px-6 py-4 flex items-center justify-between" style="background:rgba(6,6,15,.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)">
+<div class="sticky top-0 z-30 px-4 py-3 flex items-center justify-between" style="background:rgba(2,6,23,.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.05)">
   <div class="flex items-center gap-3">
-    <div class="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-xl shrink-0" style="box-shadow:0 0 20px rgba(168,85,247,.5),0 0 40px rgba(168,85,247,.15)">🍹</div>
+    <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+         style="background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 0 16px rgba(124,58,237,.4)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z"/></svg>
+    </div>
     <div>
-      <h1 class="font-extrabold text-lg tracking-wider leading-none">DRUNKS <span class="text-purple-400 font-light text-sm">· COCINA</span></h1>
-      <div class="flex items-center gap-2 mt-0.5 flex-wrap">
-        <div id="wsDot" class="w-2 h-2 rounded-full bg-red-500 shrink-0"></div>
-        <span id="wsTxt" class="text-xs text-gray-600">Conectando...</span>
-        <span class="text-gray-800 text-xs">·</span>
-        <div id="sbDot" class="w-2 h-2 rounded-full bg-gray-700 shrink-0"></div>
-        <span id="sbTxt" class="text-xs text-gray-700">Nube...</span>
+      <div class="font-extrabold text-base tracking-wider leading-none text-white">COCINA</div>
+      <div class="flex items-center gap-2 mt-0.5">
+        <div id="wsDot" class="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></div>
+        <span id="wsTxt" class="text-[10px] text-gray-600">Conectando...</span>
+        <span class="text-gray-800 text-[10px]">·</span>
+        <div id="sbDot" class="w-1.5 h-1.5 rounded-full bg-gray-700 shrink-0"></div>
+        <span id="sbTxt" class="text-[10px] text-gray-700">Nube...</span>
       </div>
     </div>
   </div>
-  <div class="flex items-center gap-3">
-    <div class="text-center hidden sm:block">
-      <div class="text-3xl font-extrabold text-purple-400 tabular-nums leading-none" id="orderCount" style="text-shadow:0 0 20px rgba(168,85,247,.5)">0</div>
-      <div class="text-[9px] text-gray-700 tracking-[.2em] mt-0.5">ACTIVOS</div>
+  <div class="flex items-center gap-2">
+    <div class="text-center hidden sm:block mr-1">
+      <div class="text-2xl font-extrabold text-purple-400 tabular-nums leading-none" id="orderCount">0</div>
+      <div class="text-[8px] text-gray-700 tracking-[.2em] mt-0.5">ACTIVOS</div>
     </div>
-    <div id="viewModeBar" class="flex items-center border border-white/8 rounded-xl p-1 gap-0.5" style="background:rgba(255,255,255,.04)">
-      <button class="view-btn" id="vBtn-priority" onclick="setView('priority')" title="Prioridad — #1 destacado">
-        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0" width="16" height="8" rx="1.5"/><rect x="0" y="9.5" width="7.5" height="6.5" rx="1.2"/><rect x="8.5" y="9.5" width="7.5" height="6.5" rx="1.2"/></svg>
+    <div id="viewModeBar" class="flex items-center border border-white/8 rounded-xl p-0.5 gap-0.5" style="background:rgba(255,255,255,.03)">
+      <button class="view-btn" id="vBtn-priority" onclick="setView('priority')" title="Prioridad">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><rect x="0" y="0" width="16" height="8" rx="1.5"/><rect x="0" y="9.5" width="7.5" height="6.5" rx="1.2"/><rect x="8.5" y="9.5" width="7.5" height="6.5" rx="1.2"/></svg>
       </button>
-      <button class="view-btn" id="vBtn-duo" onclick="setView('duo')" title="Doble prioridad — #1 y #2">
-        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0" width="7.5" height="8.5" rx="1.5"/><rect x="8.5" y="0" width="7.5" height="8.5" rx="1.5"/><rect x="0" y="10" width="4.5" height="6" rx="1"/><rect x="5.75" y="10" width="4.5" height="6" rx="1"/><rect x="11.5" y="10" width="4.5" height="6" rx="1"/></svg>
+      <button class="view-btn" id="vBtn-duo" onclick="setView('duo')" title="Doble">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><rect x="0" y="0" width="7.5" height="8.5" rx="1.5"/><rect x="8.5" y="0" width="7.5" height="8.5" rx="1.5"/><rect x="0" y="10" width="4.5" height="6" rx="1"/><rect x="5.75" y="10" width="4.5" height="6" rx="1"/><rect x="11.5" y="10" width="4.5" height="6" rx="1"/></svg>
       </button>
-      <button class="view-btn" id="vBtn-grid" onclick="setView('grid')" title="Parrilla — todos iguales">
-        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0" width="7.5" height="7.5" rx="1.5"/><rect x="8.5" y="0" width="7.5" height="7.5" rx="1.5"/><rect x="0" y="8.5" width="7.5" height="7.5" rx="1.5"/><rect x="8.5" y="8.5" width="7.5" height="7.5" rx="1.5"/></svg>
+      <button class="view-btn" id="vBtn-grid" onclick="setView('grid')" title="Grilla">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><rect x="0" y="0" width="7.5" height="7.5" rx="1.5"/><rect x="8.5" y="0" width="7.5" height="7.5" rx="1.5"/><rect x="0" y="8.5" width="7.5" height="7.5" rx="1.5"/><rect x="8.5" y="8.5" width="7.5" height="7.5" rx="1.5"/></svg>
       </button>
-      <button class="view-btn" id="vBtn-compact" onclick="setView('compact')" title="Compacto — máxima densidad">
-        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor"><rect x="0" y="0.5" width="16" height="3" rx="1"/><rect x="0" y="4.5" width="16" height="3" rx="1"/><rect x="0" y="8.5" width="16" height="3" rx="1"/><rect x="0" y="12.5" width="16" height="3" rx="1"/></svg>
+      <button class="view-btn" id="vBtn-compact" onclick="setView('compact')" title="Compacto">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><rect x="0" y="0.5" width="16" height="3" rx="1"/><rect x="0" y="4.5" width="16" height="3" rx="1"/><rect x="0" y="8.5" width="16" height="3" rx="1"/><rect x="0" y="12.5" width="16" height="3" rx="1"/></svg>
       </button>
     </div>
-    <button onclick="toggleStationPanel()" title="Configurar Preparadores"
-      class="border border-white/8 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors hover:border-white/16"
-      style="background:rgba(255,255,255,.04)">👥</button>
-    <button onclick="toggleThemePicker()" title="Paleta de colores"
-      class="border border-white/8 w-11 h-11 rounded-xl text-lg flex items-center justify-center transition-colors hover:border-white/16"
-      style="background:rgba(255,255,255,.04)">🎨</button>
-    <button onclick="location.reload()" title="Recargar página"
-      class="border border-white/8 w-9 h-9 rounded-xl text-base flex items-center justify-center transition-all hover:border-white/20 active:scale-90"
-      style="background:rgba(255,255,255,.04)">↺</button>
+    <button onclick="toggleStationPanel()" title="Preparadores" aria-label="Configurar preparadores"
+      class="view-btn border border-white/8 w-9 h-9 rounded-xl transition-colors hover:border-white/16"
+      style="background:rgba(255,255,255,.04)">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+    </button>
+    <button onclick="toggleThemePicker()" title="Paleta de colores" aria-label="Paleta de colores"
+      class="view-btn border border-white/8 w-9 h-9 rounded-xl transition-colors hover:border-white/16"
+      style="background:rgba(255,255,255,.04)">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+    </button>
+    <button onclick="location.reload()" title="Recargar página" aria-label="Recargar"
+      class="view-btn border border-white/8 w-9 h-9 rounded-xl hover:border-white/20"
+      style="background:rgba(255,255,255,.04)">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+    </button>
   </div>
 </div>
 
@@ -537,9 +564,9 @@ function buildHeroCard(o) {
       <div class="px-6 py-4">${rows||'<div class="text-gray-700 text-sm text-center py-4">Sin detalle</div>'}</div>
       <div class="px-6 pb-6">
         <button data-id="${o.id}" onclick="completeOrder(parseInt(this.dataset.id))"
-          class="w-full font-extrabold py-5 rounded-2xl text-xl transition-all duration-200 border active:scale-95 relative overflow-hidden"
-          style="background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.5);color:#6ee7b7;box-shadow:0 0 24px rgba(52,211,153,.2)">
-          <span class="relative z-10">✓ LISTO — DESPACHAR</span>
+          class="btn-preparar w-full font-extrabold py-5 rounded-2xl text-xl transition-all duration-100 border"
+          style="background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.45);color:#86efac;box-shadow:0 0 22px rgba(34,197,94,.18)">
+          ✓ LISTO — MARCAR PREPARADO
         </button>
       </div>
     </div>`;
@@ -577,9 +604,9 @@ function buildQueueCard(o) {
     <div class="flex-1 px-4 py-3">${rows||'<div class="text-gray-700 text-xs text-center py-3">Sin detalle</div>'}</div>
     <div class="px-4 pb-4">
       <button data-id="${o.id}" onclick="completeOrder(parseInt(this.dataset.id))"
-        class="w-full font-bold py-3.5 rounded-xl text-base transition-all border active:scale-95"
-        style="background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.4);color:#6ee7b7">
-        ✓ LISTO
+        class="btn-preparar w-full font-bold py-3.5 rounded-xl text-base transition-all duration-100 border"
+        style="background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.4);color:#86efac">
+        ✓ LISTO — PREPARADO
       </button>
     </div>`;
   return div;
@@ -621,9 +648,9 @@ function buildMediumCard(o, priority) {
       <div class="flex-1 px-4 py-3">${rows||'<div class="text-gray-700 text-sm text-center py-3">Sin detalle</div>'}</div>
       <div class="px-4 pb-4">
         <button data-id="${o.id}" onclick="completeOrder(parseInt(this.dataset.id))"
-          class="w-full font-extrabold py-3.5 rounded-xl text-base transition-all border active:scale-95"
-          style="background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.45);color:#6ee7b7;box-shadow:0 0 16px rgba(52,211,153,.15)">
-          ✓ LISTO
+          class="btn-preparar w-full font-extrabold py-3.5 rounded-xl text-base transition-all duration-100 border"
+          style="background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.45);color:#86efac;box-shadow:0 0 14px rgba(34,197,94,.14)">
+          ✓ LISTO — PREPARADO
         </button>
       </div>
     </div>`;
@@ -690,7 +717,7 @@ async function completeOrder(id) {
   const card = document.getElementById('order-' + id);
   if (!card) return;
   card.classList.add('completing-flash'); card.style.pointerEvents = 'none';
-  fetch('/api/pedidos/' + id + '/entregar', { method: 'PUT' }).catch(() => {});
+  fetch('/api/pedidos/' + id + '/preparar', { method: 'PUT' }).catch(() => {});
   const heroSec = document.getElementById('heroSection');
   const isHero = !!(heroSec && card && heroSec.contains(card));
   const remaining = Object.values(orders).filter(o => o.id !== id).length;
@@ -974,9 +1001,9 @@ function buildActiveCard(order, stationItems, si) {
     <div class="px-3 pb-3 pt-1 shrink-0">
       <button data-oid="${order.id}" data-si="${si}"
         onclick="completeStationOrder(parseInt(this.dataset.oid),parseInt(this.dataset.si))"
-        class="w-full font-extrabold py-3.5 rounded-xl text-sm transition-all border active:scale-95 tracking-wide"
-        style="background:rgba(52,211,153,.16);border-color:rgba(52,211,153,.45);color:#6ee7b7;box-shadow:0 0 16px rgba(52,211,153,.15)">
-        ✓ LISTO — COMPLETAR PEDIDO
+        class="btn-preparar w-full font-extrabold py-3.5 rounded-xl text-sm transition-all duration-100 border tracking-wide"
+        style="background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.45);color:#86efac;box-shadow:0 0 14px rgba(34,197,94,.15)">
+        ✓ LISTO — MARCAR PREPARADO
       </button>
     </div>`;
   return div;

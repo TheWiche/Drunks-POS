@@ -56,7 +56,7 @@ async def sync_to_supabase(pedido_id: int, payload: dict):
         pass
 
 
-async def sync_deliver_to_supabase(pedido_id: int):
+async def _sync_estado_to_supabase(pedido_id: int, estado: str):
     if not SUPABASE_URL or not SUPABASE_KEY or not HTTPX_AVAILABLE:
         return
     try:
@@ -74,10 +74,18 @@ async def sync_deliver_to_supabase(pedido_id: int):
             await client.patch(
                 f"{SUPABASE_URL}/rest/v1/pedidos?sync_id=eq.{row['sync_id']}",
                 headers=headers,
-                json={"estado": "entregado"},
+                json={"estado": estado},
             )
     except Exception:
         pass
+
+
+async def sync_prepare_to_supabase(pedido_id: int):
+    await _sync_estado_to_supabase(pedido_id, "preparado")
+
+
+async def sync_deliver_to_supabase(pedido_id: int):
+    await _sync_estado_to_supabase(pedido_id, "entregado")
 
 
 def _push_config_bg(tabla: str) -> None:
