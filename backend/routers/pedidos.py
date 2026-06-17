@@ -25,6 +25,10 @@ class PedidoCreate(BaseModel):
     items:       List[OrderItem]
 
 
+class PrepararBody(BaseModel):
+    preparador: str = ""
+
+
 class ConnectionManager:
     def __init__(self):
         self._clients: list[WebSocket] = []
@@ -132,6 +136,49 @@ def get_pendientes():
     return result
 
 
+@router.get("/pedidos/activos")
+def get_activos():
+    """Devuelve pedidos pendientes + preparados (para la vista Entrega)."""
+    with get_conn() as conn:
+        pedidos = conn.execute(
+            "SELECT * FROM pedidos WHERE estado IN ('pendiente','preparado') ORDER BY fecha ASC"
+        ).fetchall()
+        result = []
+        for p in pedidos:
+            pd = dict(p)
+            pd["items"] = [dict(d) for d in conn.execute("""
+                SELECT dp.producto_id, dp.cantidad, dp.observaciones,
+                       COALESCE(pr.nombre,'Producto eliminado') AS nombre,
+                       pr.categoria_id,
+                       COALESCE(c.color,'#8b5cf6') AS categoria_color
+                FROM detalle_pedidos dp
+                LEFT JOIN productos pr ON dp.producto_id=pr.id
+                LEFT JOIN categorias c ON pr.categoria_id=c.id
+                WHERE dp.pedido_id=?""", (p["id"],)).fetchall()]
+            result.append(pd)
+    return result
+
+
+@router.get("/pedidos/entregados")
+def get_entregados():
+    """Últimos 30 pedidos entregados para historial en cocina."""
+    with get_conn() as conn:
+        pedidos = conn.execute(
+            "SELECT * FROM pedidos WHERE estado='entregado' ORDER BY fecha DESC LIMIT 30"
+        ).fetchall()
+        result = []
+        for p in pedidos:
+            pd = dict(p)
+            pd["items"] = [dict(d) for d in conn.execute("""
+                SELECT dp.cantidad, dp.observaciones,
+                       COALESCE(pr.nombre,'Producto eliminado') AS nombre
+                FROM detalle_pedidos dp
+                LEFT JOIN productos pr ON dp.producto_id=pr.id
+                WHERE dp.pedido_id=?""", (p["id"],)).fetchall()]
+            result.append(pd)
+    return result
+
+
 @router.get("/pedidos/listos")
 def get_listos():
     with get_conn() as conn:
@@ -173,12 +220,13 @@ def get_pedido(id: int):
 
 
 @router.put("/pedidos/{id}/preparar")
-async def preparar_pedido(id: int, background_tasks: BackgroundTasks):
+async def preparar_pedido(id: int, background_tasks: BackgroundTasks, body: PrepararBody = None):
+    preparador = (body.preparador if body else "") or ""
     with get_conn() as conn:
         row = conn.execute("SELECT * FROM pedidos WHERE id=?", (id,)).fetchone()
         if not row:
             raise HTTPException(404, "Pedido no encontrado")
-        conn.execute("UPDATE pedidos SET estado='preparado' WHERE id=?", (id,))
+        conn.execute("UPDATE pedidos SET estado='preparado', preparador=? WHERE id=?", (preparador, id))
         conn.commit()
         pd = dict(row)
         pd["estado"] = "preparado"

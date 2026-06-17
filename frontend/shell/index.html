@@ -3,135 +3,133 @@
 <head>
 <meta charset="UTF-8">
 <title>Drunks POS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ── Reset ── */
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:hidden;background:#020617}
-
-/* ── Easing tokens (Emil Kowalski) ── */
 :root{
+  --bg:#09090B;
+  --surface:#111113;
+  --border:#27272A;
+  --text:#FAFAFA;
+  --muted:#71717A;
+  --amber:#F59E0B;
+  --amber-dim:rgba(245,158,11,.12);
+  --amber-glow:rgba(245,158,11,.25);
+  --green:#22C55E;
   --ease-out-quint:cubic-bezier(.23,1,.32,1);
   --ease-in-quint:cubic-bezier(.64,0,.78,0);
   --spring:cubic-bezier(.34,1.56,.64,1);
 }
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Space Grotesk',system-ui,sans-serif}
 
-/* ── Shell layout ── */
 .shell{display:flex;flex-direction:column;height:100vh}
 
-/* ── Topbar glassmorphism ── */
+/* ── Topbar ── */
 .topbar{
-  background:rgba(2,6,23,.82);
-  backdrop-filter:blur(20px) saturate(160%);
-  -webkit-backdrop-filter:blur(20px) saturate(160%);
-  border-bottom:1px solid rgba(255,255,255,.06);
-  height:48px;display:flex;align-items:center;padding:0 12px;gap:4px;
+  background:rgba(9,9,11,.9);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:1px solid var(--border);
+  height:52px;display:flex;align-items:center;padding:0 16px;gap:2px;
   flex-shrink:0;user-select:none;-webkit-user-select:none;
   position:relative;z-index:50;
 }
 
 /* ── Logo ── */
 .logo{
-  font-family:'Segoe UI',system-ui,sans-serif;font-weight:800;font-size:.9rem;
-  color:#f8fafc;display:flex;align-items:center;gap:7px;margin-right:10px;white-space:nowrap;
-  letter-spacing:-.01em;
+  font-size:.9rem;font-weight:700;color:var(--text);
+  display:flex;align-items:center;gap:8px;margin-right:16px;
+  letter-spacing:-.02em;white-space:nowrap;
 }
-.logo-icon{
-  width:26px;height:26px;border-radius:7px;flex-shrink:0;
-  background:linear-gradient(135deg,#22c55e,#16a34a);
+.logo-mark{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,#F59E0B,#D97706);
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 12px rgba(34,197,94,.35);
+  box-shadow:0 0 0 1px rgba(245,158,11,.3),0 4px 12px rgba(245,158,11,.2);
 }
-.logo-icon svg{width:14px;height:14px;fill:#fff}
+.logo-mark svg{width:15px;height:15px;fill:#09090B}
+.logo-name{color:var(--text)}
+.logo-tag{color:var(--muted);font-weight:400;font-size:.75rem;margin-left:2px}
 
-/* ── Nav buttons ── */
+/* ── Divider ── */
+.topbar-div{width:1px;height:22px;background:var(--border);margin:0 8px;flex-shrink:0}
+
+/* ── Nav ── */
+.nav-wrap{display:flex;align-items:center;gap:1px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:3px}
+
 .nav-btn{
-  font-family:'Segoe UI',system-ui,sans-serif;font-size:.78rem;font-weight:600;
-  color:#64748b;background:transparent;border:1px solid transparent;
-  border-radius:8px;padding:5px 11px;cursor:pointer;
+  font-family:'Space Grotesk',system-ui,sans-serif;
+  font-size:.78rem;font-weight:600;letter-spacing:-.01em;
+  color:var(--muted);background:transparent;border:none;
+  border-radius:7px;padding:5px 12px;cursor:pointer;
   display:flex;align-items:center;gap:6px;white-space:nowrap;
-  transition:color 150ms var(--ease-out-quint),
-             background 150ms var(--ease-out-quint),
-             border-color 150ms var(--ease-out-quint),
-             transform 100ms ease-out;
+  transition:color 180ms var(--ease-out-quint),background 180ms var(--ease-out-quint);
   position:relative;
 }
-.nav-btn:hover{
-  color:#f1f5f9;
-  background:rgba(255,255,255,.06);
-  transform:translateY(-1px);
-}
-.nav-btn:active{transform:scale(.96) translateY(0)}
-.nav-btn.active{
-  color:#dcfce7;
-  background:rgba(34,197,94,.14);
-  border-color:rgba(34,197,94,.3);
-  box-shadow:0 0 0 1px rgba(34,197,94,.1) inset;
-}
-.nav-btn svg{width:14px;height:14px;flex-shrink:0;opacity:.8}
+.nav-btn svg{width:14px;height:14px;flex-shrink:0;transition:opacity 180ms}
+.nav-btn:hover{color:#D4D4D8;background:rgba(255,255,255,.06)}
+.nav-btn:active{transform:scale(.96)}
+.nav-btn.active{color:var(--bg);background:var(--amber);box-shadow:0 1px 6px var(--amber-glow)}
 .nav-btn.active svg{opacity:1}
 
 /* ── Spacer ── */
 .spacer{flex:1}
 
-/* ── Fullscreen button ── */
-.fs-btn{
-  width:32px;height:32px;background:transparent;border:1px solid transparent;
-  border-radius:8px;cursor:pointer;color:#64748b;
-  display:flex;align-items:center;justify-content:center;
-  transition:color 150ms,background 150ms,transform 100ms ease-out;
-}
-.fs-btn:hover{background:rgba(255,255,255,.06);color:#f1f5f9;transform:translateY(-1px)}
-.fs-btn:active{transform:scale(.92)}
-.fs-btn svg{width:15px;height:15px}
+/* ── Pills ── */
+@keyframes pillIn{from{opacity:0;transform:scale(.85) translateX(6px)}to{opacity:1;transform:scale(1) translateX(0)}}
 
-/* ── Pills: LAN y Update ── */
 .lan-pill{
   display:none;align-items:center;gap:6px;
-  background:rgba(20,83,45,.5);border:1px solid rgba(34,197,94,.25);border-radius:99px;
-  padding:4px 11px 4px 9px;cursor:pointer;user-select:all;
-  transition:background 150ms,transform 100ms ease-out;
+  background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:99px;
+  padding:4px 12px 4px 8px;cursor:pointer;
+  animation:pillIn .35s var(--spring) both;
+  transition:background 150ms,transform 100ms;
 }
-.lan-pill:hover{background:rgba(34,197,94,.18);transform:scale(1.02)}
-.lan-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;flex-shrink:0;
-  box-shadow:0 0 6px rgba(34,197,94,.6)}
-.lan-txt{font-size:.68rem;font-weight:600;color:#86efac;font-family:'Courier New',monospace;letter-spacing:.02em}
+.lan-pill:hover{background:rgba(34,197,94,.15);transform:scale(1.02)}
+.lan-dot{width:6px;height:6px;background:var(--green);border-radius:50%;flex-shrink:0;box-shadow:0 0 6px rgba(34,197,94,.6)}
+.lan-txt{font-size:.68rem;font-weight:600;color:#86EFAC;font-family:'Space Grotesk',monospace;letter-spacing:.01em}
 
-@keyframes updateSlideIn{
-  from{transform:translateY(-6px) scale(.9);opacity:0}
-  to{transform:translateY(0) scale(1);opacity:1}
-}
+@keyframes updPulse{0%,100%{box-shadow:0 0 0 0 var(--amber-glow)}60%{box-shadow:0 0 0 5px rgba(245,158,11,0)}}
 .upd-pill{
   display:none;align-items:center;gap:7px;
-  background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.35);border-radius:99px;
-  padding:4px 13px 4px 9px;cursor:pointer;
-  animation:updateSlideIn .4s var(--spring) both, updPulse 2.5s 1s infinite;
-  transition:background 150ms,transform 100ms ease-out;
+  background:var(--amber-dim);border:1px solid rgba(245,158,11,.35);border-radius:99px;
+  padding:4px 12px 4px 8px;cursor:pointer;
+  animation:pillIn .35s var(--spring) both, updPulse 2.5s 1s infinite;
+  transition:background 150ms,transform 100ms;
 }
-.upd-pill:hover{background:rgba(34,197,94,.2);transform:scale(1.03)}
+.upd-pill:hover{background:rgba(245,158,11,.2);transform:scale(1.03)}
 .upd-pill:active{transform:scale(.97)}
-@keyframes updPulse{
-  0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.3)}
-  60%{box-shadow:0 0 0 5px rgba(34,197,94,0)}
-}
-.upd-dot{width:8px;height:8px;background:#22c55e;border-radius:50%;flex-shrink:0;
-  box-shadow:0 0 6px rgba(34,197,94,.7)}
-.upd-txt{font-size:.73rem;font-weight:700;color:#86efac;font-family:'Segoe UI',sans-serif}
+.upd-dot{width:7px;height:7px;background:var(--amber);border-radius:50%;flex-shrink:0;box-shadow:0 0 6px var(--amber-glow)}
+.upd-txt{font-size:.73rem;font-weight:600;color:#FCD34D}
 
-/* ── Viewport e iframes ── */
+/* ── Fullscreen btn ── */
+.fs-btn{
+  width:32px;height:32px;background:transparent;border:1px solid var(--border);
+  border-radius:8px;cursor:pointer;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;
+  transition:color 150ms,background 150ms,border-color 150ms,transform 100ms;
+  margin-left:6px;
+}
+.fs-btn:hover{background:rgba(255,255,255,.06);color:var(--text);border-color:#3F3F46}
+.fs-btn:active{transform:scale(.92)}
+.fs-btn svg{width:14px;height:14px}
+
+/* ── Viewport + frames ── */
 #app-viewport{position:relative;flex:1;overflow:hidden}
 .view-frame{
   position:absolute;inset:0;width:100%;height:100%;
-  border:none;opacity:0;transform:scale(.976) translateY(4px);
-  transition:opacity .24s var(--ease-out-quint),transform .24s var(--ease-out-quint);
+  border:none;opacity:0;transform:scale(.982) translateY(5px);
+  transition:opacity .22s var(--ease-out-quint),transform .22s var(--ease-out-quint);
   pointer-events:none;will-change:opacity,transform;
 }
 .view-frame.active{opacity:1;transform:scale(1) translateY(0);pointer-events:auto}
 .view-frame.exiting{
-  opacity:0;transform:scale(.976) translateY(-4px);
-  transition:opacity .18s var(--ease-in-quint),transform .18s var(--ease-in-quint);
+  opacity:0;transform:scale(.982) translateY(-5px);
+  transition:opacity .16s var(--ease-in-quint),transform .16s var(--ease-in-quint);
 }
 
-/* ── Reduced motion ── */
 @media(prefers-reduced-motion:reduce){
   .nav-btn,.fs-btn,.lan-pill,.upd-pill,.view-frame{transition:opacity 150ms linear!important;transform:none!important}
   .upd-pill{animation:none!important}
@@ -142,51 +140,49 @@ html,body{height:100%;overflow:hidden;background:#020617}
 <div class="shell">
   <div class="topbar">
 
-    <!-- Logo -->
     <div class="logo">
-      <div class="logo-icon">
-        <!-- Beer mug icon -->
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 3h11a2 2 0 0 1 2 2v1h1a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2H5zm2 2v12h9V5H7zm9 2v6h1a.5.5 0 0 0 .5-.5V8a.5.5 0 0 0-.5-.5h-1z"/></svg>
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M5 3h12v2H5V3zm0 4h12l-1.5 9H6.5L5 7zm3 2v5h1V9H8zm3 0v5h1V9h-1zm3 0v5h1V9h-1z"/></svg>
       </div>
-      Drunks POS
+      <span class="logo-name">Drunks</span><span class="logo-tag">POS</span>
     </div>
 
-    <!-- Nav -->
-    <button class="nav-btn active" id="btn-vendedor" onclick="loadView('vendedor')">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2a1 1 0 0 0-1 1v1H3a1 1 0 0 0-1 1v1c0 3.53 2.42 6.49 5.69 7.3L9 20H7a1 1 0 1 0 0 2h10a1 1 0 1 0 0-2h-2l1.31-6.7C19.58 12.49 22 9.53 22 6V5a1 1 0 0 0-1-1h-2V3a1 1 0 0 0-1-1H6zm0 4h12v1c0 2.76-2.24 5-5 5H11C8.24 12 6 9.76 6 7V6z"/></svg>
-      Vendedor
-    </button>
-    <button class="nav-btn" id="btn-cocina" onclick="loadView('cocina')">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0 0 20A10 10 0 0 0 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
-      Cocina
-    </button>
-    <button class="nav-btn" id="btn-entrega" onclick="loadView('entrega')">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9 1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-      Entrega
-    </button>
-    <button class="nav-btn" id="btn-admin" onclick="loadView('admin')">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4l5 2.18V11c0 3.5-2.33 6.79-5 7.93C9.33 17.79 7 14.5 7 11V7.18L12 5z"/></svg>
-      Admin
-    </button>
+    <div class="topbar-div"></div>
+
+    <div class="nav-wrap">
+      <button class="nav-btn active" id="btn-vendedor" onclick="loadView('vendedor')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4V2H5v2H3a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-2V2h-2v2H7zm0 2h10v1H7V6zM4 8h16v10H4V8zm4 2v2h2v-2H8zm4 0v2h2v-2h-2zm4 0v2h2v-2h-2zm-8 4v2h2v-2H8zm4 0v2h2v-2h-2z"/></svg>
+        Vendedor
+      </button>
+      <button class="nav-btn" id="btn-cocina" onclick="loadView('cocina')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2.01 20 2v2h-2V2.01zM13 2H9v2h4V2zm6 4h-2v1c0 2.76-2.24 5-5 5s-5-2.24-5-5V6H5v1c0 3.53 2.61 6.43 6 6.92V22h2v-8.08c3.39-.49 6-3.39 6-6.92V6z"/></svg>
+        Cocina
+      </button>
+      <button class="nav-btn" id="btn-entrega" onclick="loadView('entrega')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9 1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+        Entrega
+      </button>
+      <button class="nav-btn" id="btn-admin" onclick="loadView('admin')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4 5 2.18V11c0 3.5-2.33 6.79-5 7.93C9.33 17.79 7 14.5 7 11V7.18L12 5z"/></svg>
+        Admin
+      </button>
+    </div>
 
     <div class="spacer"></div>
 
-    <!-- Fullscreen -->
-    <button class="fs-btn" id="btn-fs" onclick="toggleFullscreen()" title="Pantalla completa (F11)">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-    </button>
-
-    <!-- LAN pill -->
     <div class="lan-pill" id="lan-pill" title="URL red local — clic para copiar">
       <div class="lan-dot"></div>
       <span class="lan-txt" id="lan-txt">red local</span>
     </div>
 
-    <!-- Update pill -->
     <div class="upd-pill" id="upd-pill" onclick="reqUpdate()">
       <div class="upd-dot"></div>
       <span class="upd-txt" id="upd-txt">Actualización disponible</span>
     </div>
+
+    <button class="fs-btn" id="btn-fs" onclick="toggleFullscreen()" title="Pantalla completa (F11)">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+    </button>
 
   </div>
 
@@ -200,16 +196,13 @@ html,body{height:100%;overflow:hidden;background:#020617}
 
 <script>
 window.DrunksState = { cart:{}, userRole:null, lastRoute:'vendedor' };
-
-var _cur    = 'vendedor';
+var _cur = 'vendedor';
 var _loaded = new Set(['vendedor']);
 
 async function loadView(name) {
   if (_cur === name) return;
-
   var prevFrame = document.getElementById('view-' + _cur);
   var nextFrame = document.getElementById('view-' + name);
-
   if (!_loaded.has(name)) {
     _loaded.add(name);
     await new Promise(function(resolve) {
@@ -217,18 +210,12 @@ async function loadView(name) {
       nextFrame.src = '/' + name;
     });
   }
-
-  // Exit current — class drives the exit transition
   prevFrame.classList.add('exiting');
   var _p = prevFrame;
-  setTimeout(function() { _p.classList.remove('active', 'exiting'); }, 180);
-
-  // Buttons
+  setTimeout(function() { _p.classList.remove('active','exiting'); }, 160);
   document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
   var btn = document.getElementById('btn-' + name);
   if (btn) btn.classList.add('active');
-
-  // Enter next after 1 rAF so exit starts first
   requestAnimationFrame(function() {
     requestAnimationFrame(function() {
       nextFrame.classList.add('active');
@@ -241,10 +228,9 @@ async function loadView(name) {
 
 fetch('/api/sync/info').then(function(r){return r.json();}).then(function(d){
   if (d.local_ip && d.local_ip !== '127.0.0.1') {
-    var url  = 'http://' + d.local_ip + ':' + d.port;
+    var url = 'http://' + d.local_ip + ':' + d.port;
     var pill = document.getElementById('lan-pill');
-    var txt  = document.getElementById('lan-txt');
-    txt.textContent = url;
+    document.getElementById('lan-txt').textContent = url;
     pill.style.display = 'flex';
     pill.onclick = function(){ navigator.clipboard && navigator.clipboard.writeText(url); };
   }

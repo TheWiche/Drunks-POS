@@ -94,26 +94,37 @@ html[data-theme=gold] [class*=border-purple]{border-color:#eab308!important}
 html[data-theme=gold] [class*=from-purple]{--tw-gradient-from:#713f12!important}
 html[data-theme=gold] [class*=glow-purple]{box-shadow:0 0 18px rgba(234,179,8,.4)!important}
 /* ── Body ── */
-body{background:#06060f;font-family:'Segoe UI',system-ui,sans-serif}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#374151;border-radius:4px}
+body{background:#09090b;font-family:'Space Grotesk',system-ui,sans-serif}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#3f3f46;border-radius:4px}
 /* ── Sidebar ── */
-.sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;cursor:pointer;font-size:.875rem;font-weight:600;color:#6b7280;transition:all .15s ease;margin:1px 0;white-space:nowrap}
-.sidebar-item:hover{background:rgba(124,58,237,.12);color:#a78bfa}
-.sidebar-item.active{background:rgba(124,58,237,.2);color:#a78bfa}
-.sidebar-item .si-icon{font-size:1.1rem;width:22px;text-align:center;shrink:0}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;cursor:pointer;font-size:.875rem;font-weight:600;color:#71717a;transition:all .15s ease;margin:1px 0;white-space:nowrap}
+.sidebar-item:hover{background:rgba(245,158,11,.1);color:#fbbf24}
+.sidebar-item.active{background:rgba(245,158,11,.15);color:#f59e0b;border-left:2px solid #f59e0b;padding-left:12px}
+.sidebar-item .si-icon{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.sidebar-item .si-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 /* ── Tabs ── */
 .tab-btn{cursor:pointer}
-.tab-active{color:#a78bfa!important;border-bottom:2px solid #7c3aed!important}
+.tab-active{color:#f59e0b!important;border-bottom:2px solid #f59e0b!important}
 /* ── Dirty tracking ── */
 .dirty-row{background:rgba(234,179,8,.05)!important}
 .dirty-input{border-color:#ca8a04!important}
 /* ── Emoji picker ── */
 .emoji-trigger{cursor:pointer!important;caret-color:transparent}
-.emoji-trigger:focus{outline:none;border-color:#7c3aed!important}
+.emoji-trigger:focus{outline:none;border-color:#f59e0b!important}
 button.emoji-trigger{font-family:'Segoe UI Emoji','Apple Color Emoji',sans-serif;background:none}
 #emojiPickerPanel{display:none;position:fixed;z-index:300;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8);width:352px}
 #emojiPickerPanel.open{display:block}
-emoji-picker{--background:#111827;--border-color:#374151;--indicator-color:#7c3aed;--input-border-color:#374151;--input-font-color:#fff;--input-placeholder-color:#6b7280;--category-font-color:#9ca3af;--emoji-size:1.5rem;--num-columns:8;width:352px;height:380px}
+emoji-picker{--background:#18181b;--border-color:#3f3f46;--indicator-color:#f59e0b;--input-border-color:#3f3f46;--input-font-color:#fff;--input-placeholder-color:#71717a;--category-font-color:#a1a1aa;--emoji-size:1.5rem;--num-columns:8;width:352px;height:380px}
+/* ── Amber overrides for dark/default theme ── */
+html[data-theme=dark] [class*=bg-purple-6]{background:#d97706!important}
+html[data-theme=dark] [class*=bg-purple-7]{background:#b45309!important}
+html[data-theme=dark] [class*=bg-purple-8]{background:#92400e!important}
+html[data-theme=dark] [class*=bg-purple-9]{background:#78350f!important}
+html[data-theme=dark] [class*=text-purple]{color:#fbbf24!important}
+html[data-theme=dark] [class*=border-purple]{border-color:#f59e0b!important}
+html[data-theme=dark] [class*=from-purple]{--tw-gradient-from:#451a03!important}
+html[data-theme=dark] [class*=via-purple]{--tw-gradient-via:#78350f!important}
+html[data-theme=dark] [class*=glow-purple]{box-shadow:0 0 18px rgba(245,158,11,.35)!important}
 /* ── Easing tokens (Emil Kowalski) ── */
 :root{
   --ease-out-quint:cubic-bezier(.23,1,.32,1);
@@ -213,45 +224,64 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
   #printArea .total{font-size:15px;font-weight:bold}
 }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body class="min-h-screen text-white">
 
 <!-- PIN OVERLAY -->
-<div id="pinOverlay" class="fixed inset-0 z-[999] bg-gray-950 flex flex-col items-center justify-center gap-6">
-  <div class="w-14 h-14 rounded-2xl bg-purple-700 flex items-center justify-center text-3xl shadow-xl shadow-purple-950/50">🍹</div>
+<div id="pinOverlay" class="fixed inset-0 z-[999] bg-zinc-950 flex flex-col items-center justify-center gap-6">
+  <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shadow-xl" style="box-shadow:0 0 30px rgba(245,158,11,.2)">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  </div>
   <div class="text-center">
-    <h1 class="text-white font-extrabold text-2xl">Drunks Admin</h1>
-    <p class="text-gray-500 text-sm mt-1">Ingresa el PIN de administrador</p>
+    <h1 class="text-white font-extrabold text-2xl" style="font-family:'Space Grotesk',sans-serif">Drunks Admin</h1>
+    <p class="text-zinc-500 text-sm mt-1">Ingresa el PIN de administrador</p>
   </div>
   <input id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••"
-    class="bg-gray-900 border border-gray-700 focus:border-purple-500 rounded-2xl px-6 py-4 text-white text-center text-2xl tracking-[0.5em] w-52 outline-none transition-colors"
+    class="bg-zinc-900 border border-zinc-700 focus:border-amber-500 rounded-2xl px-6 py-4 text-white text-center text-2xl tracking-[0.5em] w-52 outline-none transition-colors"
     onkeydown="if(event.key==='Enter')checkPin()">
   <div id="pinError" style="display:none" class="text-red-400 text-sm font-semibold">PIN incorrecto</div>
-  <button onclick="checkPin()" class="bg-purple-700 hover:bg-purple-600 text-white font-bold px-8 py-3 rounded-2xl transition-colors shadow-lg">Entrar</button>
+  <button onclick="checkPin()" class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-8 py-3 rounded-2xl transition-colors shadow-lg">Entrar</button>
 </div>
 
 <!-- MAIN LAYOUT -->
 <div id="adminContent" class="hidden h-screen flex overflow-hidden">
 
   <!-- SIDEBAR -->
-  <nav class="w-56 shrink-0 flex flex-col bg-gray-950 border-r border-gray-800/60 py-4 px-3 overflow-y-auto">
+  <nav class="w-56 shrink-0 flex flex-col bg-zinc-950 border-r border-zinc-800/60 py-4 px-3 overflow-y-auto">
     <div class="flex items-center gap-2.5 px-2 mb-6">
-      <div class="w-9 h-9 rounded-xl bg-purple-700 flex items-center justify-center text-lg shadow-lg shadow-purple-950/50 shrink-0">🍹</div>
-      <div><div class="font-extrabold text-sm text-white leading-none">DRUNKS</div><div class="text-gray-600 text-[10px]">Panel Admin</div></div>
+      <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <div><div class="font-extrabold text-sm text-white leading-none">DRUNKS</div><div class="text-zinc-600 text-[10px]">Panel Admin</div></div>
     </div>
     <div class="flex-1 space-y-0.5">
-      <div id="nav-dash"       onclick="showSection('dash')"       class="sidebar-item active"><span class="si-icon">📊</span>Dashboard</div>
-      <div id="nav-catalogo"   onclick="showSection('catalogo')"   class="sidebar-item"><span class="si-icon">📦</span>Catálogo</div>
-      <div id="nav-bases"      onclick="showSection('bases')"      class="sidebar-item"><span class="si-icon">🍹</span>Bases</div>
-      <div id="nav-notas"      onclick="showSection('notas')"      class="sidebar-item"><span class="si-icon">📝</span>Notas Rápidas</div>
-      <div id="nav-config"     onclick="showSection('config')"     class="sidebar-item"><span class="si-icon">⚙️</span>Configuración</div>
-      <div id="nav-updates"    onclick="showSection('updates')"    class="sidebar-item"><span class="si-icon">🔄</span>Actualizaciones</div>
+      <div id="nav-dash" onclick="showSection('dash')" class="sidebar-item active">
+        <span class="si-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>Dashboard
+      </div>
+      <div id="nav-catalogo" onclick="showSection('catalogo')" class="sidebar-item">
+        <span class="si-icon"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>Catálogo
+      </div>
+      <div id="nav-bases" onclick="showSection('bases')" class="sidebar-item">
+        <span class="si-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>Bases
+      </div>
+      <div id="nav-notas" onclick="showSection('notas')" class="sidebar-item">
+        <span class="si-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>Notas Rápidas
+      </div>
+      <div id="nav-config" onclick="showSection('config')" class="sidebar-item">
+        <span class="si-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>Configuración
+      </div>
+      <div id="nav-updates" onclick="showSection('updates')" class="sidebar-item">
+        <span class="si-icon"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>Actualizaciones
+      </div>
     </div>
-    <div id="sbStatusBar" class="flex items-center gap-2 px-2 py-2 mt-4 border-t border-gray-800/60 pt-4">
-      <div id="sbDot" class="w-2 h-2 rounded-full bg-gray-600 shrink-0"></div>
-      <span id="sbTxt" class="text-gray-600 text-[11px] leading-tight">Comprobando nube...</span>
+    <div id="sbStatusBar" class="flex items-center gap-2 px-2 py-2 mt-4 border-t border-zinc-800/60 pt-4">
+      <div id="sbDot" class="w-2 h-2 rounded-full bg-zinc-600 shrink-0"></div>
+      <span id="sbTxt" class="text-zinc-600 text-[11px] leading-tight">Comprobando nube...</span>
     </div>
   </nav>
 
@@ -262,22 +292,22 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
     <div id="sec-dash" class="flex flex-col h-full overflow-hidden">
       <!-- Topbar -->
       <div class="shrink-0 bg-gray-950/97 backdrop-blur border-b border-gray-800 px-6 py-3.5 flex items-center justify-between">
-        <div><h2 class="font-extrabold text-base text-white leading-none">Dashboard <span class="text-purple-400 font-light text-sm">· Reportes</span></h2>
+        <div><h2 class="font-extrabold text-base text-white leading-none">Dashboard <span class="text-zinc-500 font-light text-sm">· Reportes</span></h2>
         <p id="lastUpdate" class="text-gray-600 text-xs mt-0.5">—</p></div>
         <div class="flex items-center gap-2">
-          <button onclick="toggleThemePicker()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-3 py-2 rounded-xl text-sm transition-colors">🎨</button>
-          <button id="exportBtnDash" onclick="exportExcel()" class="bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-lg flex items-center gap-1.5"><span>📥</span><span>Excel</span></button>
-          <button id="refreshBtn" onclick="refresh()" class="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors">↻</button>
+          <button onclick="toggleThemePicker()" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 px-3 py-2 rounded-xl text-sm transition-colors">🎨</button>
+          <button id="exportBtnDash" onclick="exportExcel()" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"><span>📥</span><span>Excel</span></button>
+          <button id="refreshBtn" onclick="refresh()" class="bg-amber-500 hover:bg-amber-400 text-black px-4 py-2 rounded-xl text-xs font-bold transition-colors">↻</button>
         </div>
       </div>
       <!-- Range -->
       <div class="shrink-0 bg-gray-950/80 border-b border-gray-800/50 px-6 py-2.5 flex items-center gap-2 flex-wrap">
         <span class="text-gray-600 text-[10px] tracking-[0.2em] font-bold mr-1">PERIODO</span>
         <button data-r="today" onclick="setRange('today')" class="range-btn px-4 py-1.5 rounded-full text-xs font-bold bg-gray-800 border border-gray-700 text-gray-400">Hoy</button>
-        <button data-r="week"  onclick="setRange('week')"  class="range-btn px-4 py-1.5 rounded-full text-xs font-bold bg-purple-600 text-white shadow-lg">Semana</button>
+        <button data-r="week"  onclick="setRange('week')"  class="range-btn px-4 py-1.5 rounded-full text-xs font-bold bg-amber-500 text-black shadow-lg">Semana</button>
         <button data-r="month" onclick="setRange('month')" class="range-btn px-4 py-1.5 rounded-full text-xs font-bold bg-gray-800 border border-gray-700 text-gray-400">Mes</button>
         <button data-r="all"   onclick="setRange('all')"   class="range-btn px-4 py-1.5 rounded-full text-xs font-bold bg-gray-800 border border-gray-700 text-gray-400">Todo</button>
-        <div id="spinner" class="hidden ml-2 flex items-center gap-1.5 text-gray-500 text-xs"><div class="w-2.5 h-2.5 rounded-full bg-purple-500 animate-ping"></div>cargando</div>
+        <div id="spinner" class="hidden ml-2 flex items-center gap-1.5 text-zinc-500 text-xs"><div class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></div>cargando</div>
       </div>
       <!-- Body -->
       <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
@@ -342,7 +372,7 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
     <!-- SECTION: CATALOGO -->
     <div id="sec-catalogo" class="hidden flex flex-col h-full overflow-hidden">
       <div class="shrink-0 bg-gray-950/97 border-b border-gray-800 px-6 py-3.5 flex items-center justify-between">
-        <h2 class="font-extrabold text-base text-white">Catálogo <span class="text-purple-400 font-light text-sm">· Productos y Categorías</span></h2>
+        <h2 class="font-extrabold text-base text-white">Catálogo <span class="text-amber-400 font-light text-sm">· Productos y Categorías</span></h2>
       </div>
       <!-- Tabs -->
       <div class="shrink-0 flex border-b border-gray-800 px-6 bg-gray-950/50">
@@ -353,7 +383,7 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
       <!-- Pane productos -->
       <div id="pane-prods" class="flex-1 overflow-y-auto px-6 pt-4 pb-4">
         <div class="flex justify-end mb-4">
-          <button onclick="addProd()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors">+ Nuevo Producto</button>
+          <button onclick="addProd()" class="bg-amber-500 hover:bg-amber-400 text-black px-4 py-2 rounded-xl text-sm font-bold transition-colors">+ Nuevo Producto</button>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm min-w-[580px]">
@@ -373,13 +403,13 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
             onclick="openEmojiPicker(this)"
             class="emoji-trigger w-14 text-center bg-gray-800 border border-gray-700 rounded-xl px-2 py-2.5 text-white text-lg transition-colors select-none">🏷️</button>
           <input id="newCatName" type="text" placeholder="Nueva categoria..."
-            class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors">
+            class="flex-1 bg-gray-800 border border-gray-700 focus:border-amber-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors">
           <label title="Color" class="cursor-pointer shrink-0">
             <input id="newCatColor" type="color" value="#8b5cf6" class="sr-only">
             <div id="newCatColorSwatch" onclick="document.getElementById('newCatColor').click();document.getElementById('newCatColor').oninput=function(){document.getElementById('newCatColorSwatch').style.background=this.value}"
               class="w-9 h-9 rounded-xl border-2 border-gray-600 hover:border-white cursor-pointer transition-colors" style="background:#8b5cf6"></div>
           </label>
-          <button onclick="addCat()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
+          <button onclick="addCat()" class="bg-amber-500 hover:bg-amber-400 text-black px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
         </div>
         <div id="catsList" class="space-y-2"></div>
       </div>
@@ -399,23 +429,23 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
     <!-- SECTION: BASES -->
     <div id="sec-bases" class="hidden flex flex-col h-full overflow-hidden">
       <div class="shrink-0 bg-gray-950/97 border-b border-gray-800 px-6 py-3.5">
-        <h2 class="font-extrabold text-base text-white">Bases <span class="text-purple-400 font-light text-sm">· Tipos e Items</span></h2>
+        <h2 class="font-extrabold text-base text-white">Bases <span class="text-amber-400 font-light text-sm">· Tipos e Items</span></h2>
       </div>
       <div class="flex-1 overflow-y-auto px-6 pt-5 pb-5">
         <!-- Tipos -->
         <div class="mb-6">
           <div class="flex items-center justify-between mb-3">
             <span class="text-white font-bold text-sm">Tipos de Base</span>
-            <button onclick="toggleNewTipoForm()" class="text-xs bg-gray-800 hover:bg-purple-700 text-gray-300 hover:text-white px-3 py-1.5 rounded-lg transition-colors">+ Nuevo tipo</button>
+            <button onclick="toggleNewTipoForm()" class="text-xs bg-zinc-800 hover:bg-amber-500 hover:text-black text-zinc-400 px-3 py-1.5 rounded-lg transition-colors">+ Nuevo tipo</button>
           </div>
           <div id="newTipoForm" class="hidden flex gap-2 mb-3 p-3 bg-gray-800/50 rounded-xl border border-gray-700">
             <button type="button" id="newTipoIcono" data-value="🍹"
               onclick="openEmojiPicker(this)"
               class="emoji-trigger bg-gray-900 border border-gray-700 rounded-lg px-2.5 py-2 text-white text-sm w-14 text-center transition-colors select-none">🍹</button>
             <input id="newTipoNombre" type="text" placeholder="Nombre del tipo (ej: Ron)"
-              class="flex-1 bg-gray-900 border border-gray-700 focus:border-purple-500 rounded-lg px-3 py-2 text-white text-sm transition-colors"
+              class="flex-1 bg-gray-900 border border-gray-700 focus:border-amber-500 rounded-lg px-3 py-2 text-white text-sm transition-colors"
               onkeydown="if(event.key==='Enter')addTipoBase()">
-            <button onclick="addTipoBase()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">Crear</button>
+            <button onclick="addTipoBase()" class="bg-amber-500 hover:bg-amber-400 text-black px-4 py-2 rounded-lg text-sm font-bold transition-colors">Crear</button>
             <button onclick="toggleNewTipoForm()" class="bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-2 rounded-lg text-sm transition-colors">✕</button>
           </div>
           <div id="tipoChips" class="flex flex-wrap gap-2"></div>
@@ -429,9 +459,9 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
             </div>
             <div class="flex gap-2">
               <input id="newBaseNombre" type="text" placeholder="Nombre del item..."
-                class="bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-lg px-3 py-1.5 text-white text-sm w-40 transition-colors"
+                class="bg-gray-800 border border-gray-700 focus:border-amber-500 rounded-lg px-3 py-1.5 text-white text-sm w-40 transition-colors"
                 onkeydown="if(event.key==='Enter')addBaseItem()">
-              <button onclick="addBaseItem()" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">+ Agregar</button>
+              <button onclick="addBaseItem()" class="bg-amber-500 hover:bg-amber-400 text-black px-3 py-1.5 rounded-lg text-sm font-bold transition-colors">+ Agregar</button>
             </div>
           </div>
           <div id="basesList" class="mb-2"></div>
@@ -445,17 +475,17 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
     <!-- SECTION: NOTAS -->
     <div id="sec-notas" class="hidden flex flex-col h-full overflow-hidden">
       <div class="shrink-0 bg-gray-950/97 border-b border-gray-800 px-6 py-3.5">
-        <h2 class="font-extrabold text-base text-white">Notas Rápidas <span class="text-purple-400 font-light text-sm">· Globales y por categoría</span></h2>
+        <h2 class="font-extrabold text-base text-white">Notas Rápidas <span class="text-amber-400 font-light text-sm">· Globales y por categoría</span></h2>
       </div>
       <div class="flex-1 overflow-y-auto px-6 pt-5 pb-5">
         <p class="text-gray-500 text-sm mb-4">Las notas con categoría aparecen al vendedor según el producto seleccionado.</p>
         <div class="flex gap-2 mb-5 flex-wrap sm:flex-nowrap">
           <input id="newNoteText" type="text" placeholder="Texto de la nota..."
-            class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm min-w-0 transition-colors">
-          <select id="newNoteCat" class="bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm shrink-0 transition-colors">
+            class="flex-1 bg-gray-800 border border-gray-700 focus:border-amber-500 rounded-xl px-3 py-2.5 text-white text-sm min-w-0 transition-colors">
+          <select id="newNoteCat" class="bg-gray-800 border border-gray-700 focus:border-amber-500 rounded-xl px-3 py-2.5 text-white text-sm shrink-0 transition-colors">
             <option value="">Global</option>
           </select>
-          <button onclick="addNote()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
+          <button onclick="addNote()" class="bg-amber-500 hover:bg-amber-400 text-black px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
         </div>
         <div id="notesList" class="flex flex-wrap gap-2.5"></div>
       </div>
@@ -464,7 +494,7 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
     <!-- SECTION: CONFIGURACION -->
     <div id="sec-config" class="hidden flex flex-col h-full overflow-hidden">
       <div class="shrink-0 bg-gray-950/97 border-b border-gray-800 px-6 py-3.5">
-        <h2 class="font-extrabold text-base text-white">Configuración <span class="text-purple-400 font-light text-sm">· Ajustes generales</span></h2>
+        <h2 class="font-extrabold text-base text-white">Configuración <span class="text-amber-400 font-light text-sm">· Ajustes generales</span></h2>
       </div>
       <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4 max-w-2xl">
         <!-- Nombre negocio -->
@@ -473,8 +503,8 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
           <p class="text-gray-500 text-xs mb-3">Aparece en facturas y encabezados.</p>
           <div class="flex gap-2">
             <input id="cfgNombre" type="text" placeholder="Drunks POS"
-              class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors">
-            <button onclick="saveNombre()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors shrink-0">Guardar</button>
+              class="flex-1 bg-gray-800 border border-gray-700 focus:border-amber-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors">
+            <button onclick="saveNombre()" class="bg-amber-500 hover:bg-amber-400 text-black px-5 py-2.5 rounded-xl text-sm font-bold transition-colors shrink-0">Guardar</button>
           </div>
         </div>
         <!-- PIN -->
@@ -483,10 +513,10 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
           <p class="text-gray-500 text-xs mb-3">Déjalo vacío para acceso libre sin PIN.</p>
           <div class="flex gap-2 flex-wrap sm:flex-nowrap">
             <input id="cfgPin1" type="password" inputmode="numeric" maxlength="6" placeholder="Nuevo PIN"
-              class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors min-w-0">
+              class="flex-1 bg-gray-800 border border-gray-700 focus:border-amber-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors min-w-0">
             <input id="cfgPin2" type="password" inputmode="numeric" maxlength="6" placeholder="Confirmar PIN"
-              class="flex-1 bg-gray-800 border border-gray-700 focus:border-purple-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors min-w-0">
-            <button onclick="savePin()" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors shrink-0">Actualizar PIN</button>
+              class="flex-1 bg-gray-800 border border-gray-700 focus:border-amber-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors min-w-0">
+            <button onclick="savePin()" class="bg-amber-500 hover:bg-amber-400 text-black px-5 py-2.5 rounded-xl text-sm font-bold transition-colors shrink-0">Actualizar PIN</button>
           </div>
           <p id="pinMsg" class="hidden text-xs mt-2"></p>
         </div>
@@ -548,7 +578,7 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
     <!-- SECTION: ACTUALIZACIONES -->
     <div id="sec-updates" class="hidden flex flex-col h-full overflow-hidden">
       <div class="shrink-0 bg-gray-950/97 border-b border-gray-800 px-6 py-3.5">
-        <h2 class="font-extrabold text-base text-white">Actualizaciones <span class="text-purple-400 font-light text-sm">· Reinstalación automática</span></h2>
+        <h2 class="font-extrabold text-base text-white">Actualizaciones <span class="text-amber-400 font-light text-sm">· Reinstalación automática</span></h2>
       </div>
       <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4 max-w-2xl">
         <!-- Versión instalada -->
@@ -556,7 +586,7 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-white font-bold text-sm mb-1">Versión instalada</h3>
-              <div id="upCurrentVersion" class="inline-flex items-center gap-2 bg-purple-900/40 border border-purple-700/40 text-purple-300 font-mono font-bold text-sm px-3 py-1 rounded-full">—</div>
+              <div id="upCurrentVersion" class="inline-flex items-center gap-2 bg-amber-900/30 border border-amber-700/40 text-amber-300 font-mono font-bold text-sm px-3 py-1 rounded-full">—</div>
             </div>
             <button id="upCheckBtn" onclick="checkUpdate(true)"
               class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
@@ -566,7 +596,7 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
         </div>
         <!-- Estados -->
         <div id="upstate-checking" class="upstate bg-gray-900 border border-gray-800 rounded-2xl p-5 flex items-center gap-3">
-          <div class="w-4 h-4 rounded-full bg-purple-500 animate-ping shrink-0"></div>
+          <div class="w-4 h-4 rounded-full bg-amber-500 animate-ping shrink-0"></div>
           <span class="text-gray-300 text-sm">Verificando actualizaciones...</span>
         </div>
         <div id="upstate-ok" class="upstate bg-gray-900 border border-green-800/50 rounded-2xl p-5 flex items-center gap-3">
@@ -574,15 +604,15 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
           <div><div class="text-white font-bold text-sm">Drunks está al día</div>
           <div class="text-gray-500 text-xs mt-0.5">No hay actualizaciones disponibles</div></div>
         </div>
-        <div id="upstate-available" class="upstate bg-gradient-to-br from-purple-900/40 to-indigo-900/30 border border-purple-600/40 rounded-2xl p-5">
+        <div id="upstate-available" class="upstate bg-amber-950/30 border border-amber-700/40 rounded-2xl p-5">
           <div class="flex items-start justify-between gap-4">
             <div>
-              <div class="text-purple-300 text-[10px] font-bold tracking-widest mb-1">NUEVA VERSION DISPONIBLE</div>
+              <div class="text-amber-400 text-[10px] font-bold tracking-widest mb-1">NUEVA VERSION DISPONIBLE</div>
               <div id="upVersionLabel" class="text-white font-extrabold text-2xl font-mono"></div>
-              <div class="text-gray-400 text-xs mt-1">Se descargará e instalará automáticamente</div>
+              <div class="text-zinc-400 text-xs mt-1">Se descargará e instalará automáticamente</div>
             </div>
             <button onclick="applyUpdate()"
-              class="bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white font-extrabold px-5 py-3 rounded-xl transition-colors shadow-lg shadow-purple-950/50 shrink-0 text-sm">
+              class="bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-black font-extrabold px-5 py-3 rounded-xl transition-colors shadow-lg shrink-0 text-sm">
               ⬇ Instalar ahora
             </button>
           </div>
@@ -590,11 +620,11 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
         <div id="upstate-downloading" class="upstate bg-gray-900 border border-gray-700 rounded-2xl p-5">
           <div class="text-white font-bold text-sm mb-3">Instalando actualización...</div>
           <div class="bg-gray-800 rounded-full h-3 mb-2 overflow-hidden">
-            <div id="upProgressBar" class="h-full bg-purple-600 rounded-full transition-all duration-300" style="width:0%"></div>
+            <div id="upProgressBar" class="h-full bg-amber-500 rounded-full transition-all duration-300" style="width:0%"></div>
           </div>
           <div class="flex items-center justify-between text-xs text-gray-400">
             <span id="upProgressMsg">Iniciando...</span>
-            <span id="upProgressPct" class="font-mono font-bold text-purple-400">0%</span>
+            <span id="upProgressPct" class="font-mono font-bold text-amber-400">0%</span>
           </div>
           <div class="mt-3 bg-yellow-900/20 border border-yellow-700/30 rounded-xl px-4 py-2.5 text-yellow-400 text-xs font-semibold">
             ⚠ No cierres la aplicación durante este proceso. La app se reiniciará automáticamente.
@@ -622,28 +652,31 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
 
 <!-- INVOICE MODAL -->
 <div id="invModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-  <div class="bg-gray-900 border border-purple-700/30 rounded-3xl w-full max-w-md shadow-2xl shadow-purple-950/50 overflow-hidden flex flex-col max-h-[90vh]">
-    <div class="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 px-6 pt-6 pb-5 shrink-0">
+  <div class="bg-zinc-900 border border-zinc-700/50 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="bg-zinc-800 border-b border-zinc-700 px-6 pt-6 pb-5 shrink-0">
       <div class="flex items-start justify-between mb-4">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-base">🍹</div>
-          <div><div class="text-purple-200 text-[10px] font-bold tracking-[0.2em]">DRUNKS POS</div>
-          <div class="text-white/50 text-[9px]">Sistema de Ventas</div></div>
+          <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1" ry="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+          </div>
+          <div><div class="text-zinc-300 text-[10px] font-bold tracking-[0.2em]">DRUNKS POS</div>
+          <div class="text-zinc-500 text-[9px]">Sistema de Ventas</div></div>
         </div>
-        <button onclick="closeInv()" class="text-purple-300 hover:text-white text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-all">×</button>
+        <button onclick="closeInv()" class="text-zinc-400 hover:text-white text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-700 transition-all">×</button>
       </div>
-      <div class="text-purple-300 text-[10px] tracking-[0.25em] font-bold mb-0.5">FACTURA</div>
+      <div class="text-amber-400 text-[10px] tracking-[0.25em] font-bold mb-0.5">FACTURA</div>
       <div id="inv-num" class="text-white font-extrabold text-3xl tracking-wider leading-none mb-3"></div>
       <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-        <div><span class="text-purple-300/70 text-[10px]">CLIENTE</span><div id="inv-cli" class="text-white font-bold leading-snug"></div></div>
-        <div><span class="text-purple-300/70 text-[10px]">MÉTODO</span><div id="inv-met" class="font-bold leading-snug"></div></div>
-        <div><span class="text-purple-300/70 text-[10px]">FECHA Y HORA</span><div id="inv-dt" class="text-purple-100 text-xs leading-snug"></div></div>
-        <div><span class="text-purple-300/70 text-[10px]">ESTADO</span><div id="inv-est" class="font-bold text-xs leading-snug"></div></div>
+        <div><span class="text-zinc-500 text-[10px]">CLIENTE</span><div id="inv-cli" class="text-white font-bold leading-snug"></div></div>
+        <div><span class="text-zinc-500 text-[10px]">MÉTODO</span><div id="inv-met" class="font-bold leading-snug"></div></div>
+        <div><span class="text-zinc-500 text-[10px]">FECHA Y HORA</span><div id="inv-dt" class="text-zinc-300 text-xs leading-snug"></div></div>
+        <div><span class="text-zinc-500 text-[10px]">ESTADO</span><div id="inv-est" class="font-bold text-xs leading-snug"></div></div>
+        <div id="inv-prep-row" class="hidden col-span-2"><span class="text-zinc-500 text-[10px]">PREPARADO POR</span><div id="inv-prep" class="text-amber-400 font-bold text-sm leading-snug"></div></div>
       </div>
     </div>
     <div class="flex-1 overflow-y-auto">
-      <div id="inv-loading" class="flex items-center justify-center py-12 text-gray-500 text-sm gap-2">
-        <div class="w-3 h-3 rounded-full bg-purple-500 animate-ping"></div>Cargando factura...
+      <div id="inv-loading" class="flex items-center justify-center py-12 text-zinc-500 text-sm gap-2">
+        <div class="w-3 h-3 rounded-full bg-amber-500 animate-ping"></div>Cargando factura...
       </div>
       <div id="inv-body" class="hidden px-6 py-4">
         <div class="text-gray-500 text-[10px] tracking-widest font-bold mb-3">PRODUCTOS PEDIDOS</div>
@@ -656,8 +689,8 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
         <span id="inv-total" class="text-white font-extrabold text-2xl tabular-nums"></span>
       </div>
       <div class="grid grid-cols-2 gap-2">
-        <button onclick="printInv()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold py-2.5 rounded-xl text-sm transition-colors">🖨 Imprimir</button>
-        <button onclick="closeInv()" class="bg-purple-700 hover:bg-purple-600 text-white font-bold py-2.5 rounded-xl text-sm transition-colors">Cerrar</button>
+        <button onclick="printInv()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold py-2.5 rounded-xl text-sm transition-colors">🖨 Imprimir</button>
+        <button onclick="closeInv()" class="bg-amber-500 hover:bg-amber-400 text-black font-bold py-2.5 rounded-xl text-sm transition-colors">Cerrar</button>
       </div>
     </div>
   </div>
@@ -706,21 +739,6 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
   </div>
 </div>
 
-<!-- THEME PICKER DROPDOWN -->
-<div id="themePicker" class="hidden fixed z-[90]" style="top:4.5rem;right:1rem">
-  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl shadow-black/60 w-52">
-    <div class="text-gray-500 text-[10px] tracking-[.2em] font-bold mb-3">PALETA DE COLORES</div>
-    <div class="space-y-0.5">
-      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span><span class="text-white text-sm font-semibold">Oscuro</span></button>
-      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span><span class="text-white text-sm font-semibold">Claro</span></button>
-      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span><span class="text-white text-sm font-semibold">Océano</span></button>
-      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span><span class="text-white text-sm font-semibold">Esmeralda</span></button>
-      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span><span class="text-white text-sm font-semibold">Ámbar</span></button>
-      <button data-theme="gold"    onclick="applyTheme('gold')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#ca8a04"></span><span class="text-white text-sm font-semibold">Dorado</span></button>
-    </div>
-  </div>
-</div>
-
 <!-- TOAST GLOBAL -->
 <div id="globalToast" style="display:none" class="fixed bottom-6 right-6 z-[200] px-5 py-3 rounded-2xl text-sm font-semibold shadow-2xl transition-all"></div>
 
@@ -734,7 +752,7 @@ let currentRange = 'week';
 const charts = {};
 Chart.defaults.color = '#6b7280';
 Chart.defaults.borderColor = '#1f2937';
-const PALETTE = ['#9333ea','#3b82f6','#22c55e','#f59e0b','#ef4444','#ec4899','#14b8a6','#8b5cf6'];
+const PALETTE = ['#f59e0b','#3b82f6','#22c55e','#8b5cf6','#ef4444','#ec4899','#14b8a6','#d97706'];
 const TOOLTIP = { backgroundColor:'#111827', borderColor:'#374151', borderWidth:1, titleColor:'#f9fafb', bodyColor:'#d1d5db', padding:10 };
 
 function fmt(n)  { return '$' + Math.round(n||0).toLocaleString('es-CO'); }
@@ -752,7 +770,7 @@ function setRange(r) {
   document.querySelectorAll('.range-btn').forEach(b => {
     const active = b.dataset.r === r;
     b.className = 'range-btn px-4 py-1.5 rounded-full text-xs font-bold ' +
-      (active ? 'bg-purple-600 text-white shadow-lg' : 'bg-gray-800 border border-gray-700 text-gray-400');
+      (active ? 'bg-amber-500 text-black shadow-lg' : 'bg-zinc-800 border border-zinc-700 text-zinc-400');
   });
   loadData();
 }
@@ -780,7 +798,7 @@ function renderKPIs(d) {
   const rangeLabels = {today:'Hoy',week:'Esta semana',month:'Este mes',all:'Historico'};
   const lbl = rangeLabels[d.range] || '';
   const cards = [
-    {icon:'💰',label:'Ventas '+lbl,value:fmt(d.ventas_periodo),sub:d.pedidos_periodo+' pedidos completados',color:'from-purple-900/40 to-purple-900/10 border-purple-700/30'},
+    {icon:'💰',label:'Ventas '+lbl,value:fmt(d.ventas_periodo),sub:d.pedidos_periodo+' pedidos completados',color:'from-amber-900/40 to-amber-900/10 border-amber-700/30'},
     {icon:'📅',label:'Ventas Hoy',value:fmt(d.ventas_hoy),sub:d.pedidos_hoy+' pedidos hoy',color:'from-blue-900/40 to-blue-900/10 border-blue-700/30'},
     {icon:'🧾',label:'Ticket Prom.',value:fmt(d.ticket_prom),sub:'Promedio por pedido',color:'from-green-900/40 to-green-900/10 border-green-700/30'},
     {icon:'📦',label:'Total General',value:fmtK(d.total_todo),sub:'Ingresos historicos',color:'from-amber-900/40 to-amber-900/10 border-amber-700/30'},
@@ -800,8 +818,8 @@ function renderRevenue(d) {
   const values = d.daily.map(x => x.total);
   document.getElementById('chartSubtitle').textContent = d.daily.length ? d.daily.length+' dias con ventas' : 'Sin datos';
   upsert('revenueChart','bar',{labels,datasets:[{label:'Ingresos',data:values,
-    backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,240);g.addColorStop(0,'rgba(147,51,234,.85)');g.addColorStop(1,'rgba(147,51,234,.1)');return g;},
-    borderColor:'#9333ea',borderWidth:1,borderRadius:6,hoverBackgroundColor:'#a855f7'}]},
+    backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,240);g.addColorStop(0,'rgba(245,158,11,.85)');g.addColorStop(1,'rgba(245,158,11,.1)');return g;},
+    borderColor:'#f59e0b',borderWidth:1,borderRadius:6,hoverBackgroundColor:'#fbbf24'}]},
     {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TOOLTIP,callbacks:{label:c=>' '+fmt(c.raw)}}},
     scales:{x:{ticks:{color:'#6b7280',maxRotation:40,font:{size:10}},grid:{color:'#111827'}},y:{ticks:{color:'#6b7280',callback:v=>fmtK(v),font:{size:10}},grid:{color:'#111827'}}}});
 }
@@ -828,7 +846,7 @@ function renderProducts(d) {
   if (!d.top_prods||!d.top_prods.length) return;
   const labels=d.top_prods.map(p=>p.nombre), vend=d.top_prods.map(p=>p.vendidos), rev=d.top_prods.map(p=>p.revenue);
   upsert('productsChart','bar',{labels,datasets:[
-    {label:'Unidades',data:vend,backgroundColor:'rgba(147,51,234,.75)',borderColor:'#9333ea',borderWidth:1,borderRadius:4,yAxisID:'y'},
+    {label:'Unidades',data:vend,backgroundColor:'rgba(245,158,11,.75)',borderColor:'#f59e0b',borderWidth:1,borderRadius:4,yAxisID:'y'},
     {label:'Ingresos',data:rev,backgroundColor:'rgba(59,130,246,.35)',borderColor:'#3b82f6',borderWidth:1,borderRadius:4,yAxisID:'y2',type:'line',tension:0.4,pointRadius:3,pointBackgroundColor:'#3b82f6'}]},
     {indexAxis:'y',responsive:true,maintainAspectRatio:false,
     plugins:{legend:{labels:{color:'#9ca3af',boxWidth:10,padding:12},position:'top'},tooltip:{...TOOLTIP,callbacks:{label:c=>c.datasetIndex===0?' '+c.raw+' uds':' '+fmt(c.raw)}}},
@@ -840,7 +858,7 @@ function renderHourly(d) {
   (d.hourly||[]).forEach(h=>{cnts[h.hora]=h.cnt;tots[h.hora]=h.total;});
   const labels=Array.from({length:24},(_,i)=>(i<10?'0':'')+i+'h');
   upsert('hourlyChart','bar',{labels,datasets:[{label:'Pedidos',data:cnts,
-    backgroundColor:cnts.map(v=>{const m=Math.max(...cnts,1),p=v/m;return p>0.8?'rgba(239,68,68,.85)':p>0.5?'rgba(245,158,11,.75)':'rgba(147,51,234,.6)';}),borderRadius:4}]},
+    backgroundColor:cnts.map(v=>{const m=Math.max(...cnts,1),p=v/m;return p>0.8?'rgba(239,68,68,.85)':p>0.5?'rgba(245,158,11,.85)':'rgba(245,158,11,.4)';}),borderRadius:4}]},
     {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TOOLTIP,callbacks:{label:c=>` ${c.raw} pedidos · ${fmt(tots[c.dataIndex])}`}}},
     scales:{x:{ticks:{color:'#6b7280',font:{size:9},maxRotation:0},grid:{display:false}},y:{ticks:{color:'#6b7280',font:{size:10},stepSize:1},grid:{color:'#111827'}}}});
 }
@@ -865,14 +883,14 @@ function renderTable(d) {
     const fecha=dt.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'2-digit'});
     const hora=dt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
     const factura=r.numero_factura||('#'+String(r.id).padStart(5,'0'));
-    return `<tr class="border-b border-gray-800/30 hover:bg-purple-900/10 transition-colors cursor-pointer" onclick="openInv(${r.id})">
-      <td class="py-2.5 pr-4"><span class="text-purple-400 text-xs font-extrabold tabular-nums tracking-wide font-mono">${factura}</span></td>
+    return `<tr class="border-b border-gray-800/30 hover:bg-amber-900/10 transition-colors cursor-pointer" onclick="openInv(${r.id})">
+      <td class="py-2.5 pr-4"><span class="text-amber-400 text-xs font-extrabold tabular-nums tracking-wide font-mono">${factura}</span></td>
       <td class="py-2.5 pr-4 text-white text-sm font-semibold">${esc(r.cliente)}</td>
       <td class="py-2.5 pr-4 text-gray-400 text-xs whitespace-nowrap">${r.metodo_pago==='Efectivo'?'💵':'📱'} ${r.metodo_pago}</td>
       <td class="py-2.5 pr-4 text-right"><span class="text-green-400 text-sm font-extrabold tabular-nums">${fmt(r.total)}</span></td>
       <td class="py-2.5 pr-4 text-center"><span class="text-[11px] font-bold px-2.5 py-1 rounded-full ${isPend?'bg-yellow-900/50 text-yellow-400':'bg-green-900/50 text-green-400'}">${isPend?'Pendiente':'Entregado'}</span></td>
       <td class="py-2.5 pr-4 text-gray-500 text-xs tabular-nums whitespace-nowrap">${fecha} ${hora}</td>
-      <td class="py-2.5 text-center"><span class="text-purple-500 hover:text-purple-300 text-sm transition-colors">👁</span></td>
+      <td class="py-2.5 text-center"><span class="text-amber-500 hover:text-amber-300 text-sm transition-colors">👁</span></td>
     </tr>`;
   }).join('');
 }
@@ -900,6 +918,14 @@ async function openInv(id) {
     metEl.textContent = (o.metodo_pago==='Efectivo'?'💵 ':'📱 ')+o.metodo_pago;
     metEl.className = 'font-bold leading-snug '+(o.metodo_pago==='Efectivo'?'text-green-400':'text-blue-400');
     document.getElementById('inv-dt').textContent = dt.toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'})+'  '+dt.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    const prepRow = document.getElementById('inv-prep-row');
+    const prepEl  = document.getElementById('inv-prep');
+    if (o.preparador) {
+      prepEl.textContent = o.preparador;
+      prepRow.classList.remove('hidden');
+    } else {
+      prepRow.classList.add('hidden');
+    }
     const estEl = document.getElementById('inv-est');
     estEl.textContent = entregado ? '✓ Entregado' : '⏳ Pendiente';
     estEl.className = 'font-bold text-xs leading-snug '+(entregado?'text-green-400':'text-yellow-400');
@@ -909,7 +935,7 @@ async function openInv(id) {
       const base=isBase(parts[0])?parts[0]:null;
       const notas=base?parts.slice(1).join(' | '):(item.observaciones||'');
       return `<div class="flex items-start gap-3 py-3">
-        <span class="bg-purple-800/60 text-purple-200 text-xs font-extrabold px-2.5 py-1 rounded-xl shrink-0 min-w-[2.5rem] text-center">${item.cantidad}x</span>
+        <span class="bg-amber-800/60 text-amber-200 text-xs font-extrabold px-2.5 py-1 rounded-xl shrink-0 min-w-[2.5rem] text-center">${item.cantidad}x</span>
         <div class="flex-1 min-w-0">
           <div class="text-white font-semibold text-sm leading-snug">${esc(item.nombre)}</div>
           ${base?'<div class="text-amber-400 text-xs mt-0.5 font-bold">📌 '+base+'</div>':''}
@@ -1061,7 +1087,7 @@ function buildBasesPopover(pid, assignedIds) {
     <div class="mb-2"><div class="text-[10px] font-bold text-gray-500 mb-1">${icono} ${tipo}</div>
     ${items.map(b=>`<label class="flex items-center gap-1.5 px-1 py-0.5 rounded hover:bg-gray-700 cursor-pointer">
       <input type="checkbox" value="${b.id}" ${assignedIds.includes(b.id)?'checked':''}
-        onchange="onBaseCheckChange(${pid},this)" class="accent-purple-500 w-3 h-3">
+        onchange="onBaseCheckChange(${pid},this)" class="accent-amber-500 w-3 h-3">
       <span class="text-white text-xs">${esc(b.nombre)}</span></label>`).join('')}</div>`).join('');
   return `<div id="basepop-${pid}" class="absolute z-50 right-0 top-full mt-1 bg-gray-900 border border-gray-700 rounded-xl p-3 shadow-2xl min-w-[160px] max-h-64 overflow-y-auto">
     ${groups||'<div class="text-gray-600 text-xs">Sin bases.</div>'}
@@ -1106,9 +1132,9 @@ async function loadProds() {
       const assignedIds=prodBaseMap[p.id]||[];
       const baseLabel=assignedIds.length?`<span id="baselbl-${p.id}" class="text-amber-400 text-[10px] font-bold">🍹 ${assignedIds.length} base${assignedIds.length>1?'s':''}</span>`:`<span id="baselbl-${p.id}" class="text-gray-600 text-[10px]">Sin base</span>`;
       return `<tr id="drow-${p.id}" class="border-b border-gray-800/50 hover:bg-gray-800/10 transition-colors ${dirty.prods.has(p.id)?'dirty-row':''}">
-        <td class="py-2.5 pr-3"><input id="pn-${p.id}" data-dirty-id="${p.id}" type="text" value="${esc(p.nombre)}" oninput="markDirty('prods',${p.id})" class="bg-gray-800 border ${dirty.prods.has(p.id)?'border-yellow-500 dirty-input':'border-gray-700'} focus:border-purple-500 rounded-lg px-2.5 py-1.5 text-white text-sm w-full transition-colors"></td>
-        <td class="py-2.5 pr-3"><select id="pc-${p.id}" data-dirty-id="${p.id}" onchange="markDirty('prods',${p.id})" class="bg-gray-800 border ${dirty.prods.has(p.id)?'border-yellow-500':'border-gray-700'} focus:border-purple-500 rounded-lg px-2 py-1.5 text-white text-sm w-36 transition-colors">${adminCats.map(c=>`<option value="${c.id}"${c.id===p.categoria_id?' selected':''}>${esc(c.nombre)}</option>`).join('')}</select></td>
-        <td class="py-2.5 pr-3"><input id="pp-${p.id}" data-dirty-id="${p.id}" type="number" value="${p.precio}" step="500" min="0" oninput="markDirty('prods',${p.id})" class="bg-gray-800 border ${dirty.prods.has(p.id)?'border-yellow-500 dirty-input':'border-gray-700'} focus:border-purple-500 rounded-lg px-2.5 py-1.5 text-white text-sm w-28 transition-colors"></td>
+        <td class="py-2.5 pr-3"><input id="pn-${p.id}" data-dirty-id="${p.id}" type="text" value="${esc(p.nombre)}" oninput="markDirty('prods',${p.id})" class="bg-gray-800 border ${dirty.prods.has(p.id)?'border-yellow-500 dirty-input':'border-gray-700'} focus:border-amber-500 rounded-lg px-2.5 py-1.5 text-white text-sm w-full transition-colors"></td>
+        <td class="py-2.5 pr-3"><select id="pc-${p.id}" data-dirty-id="${p.id}" onchange="markDirty('prods',${p.id})" class="bg-gray-800 border ${dirty.prods.has(p.id)?'border-yellow-500':'border-gray-700'} focus:border-amber-500 rounded-lg px-2 py-1.5 text-white text-sm w-36 transition-colors">${adminCats.map(c=>`<option value="${c.id}"${c.id===p.categoria_id?' selected':''}>${esc(c.nombre)}</option>`).join('')}</select></td>
+        <td class="py-2.5 pr-3"><input id="pp-${p.id}" data-dirty-id="${p.id}" type="number" value="${p.precio}" step="500" min="0" oninput="markDirty('prods',${p.id})" class="bg-gray-800 border ${dirty.prods.has(p.id)?'border-yellow-500 dirty-input':'border-gray-700'} focus:border-amber-500 rounded-lg px-2.5 py-1.5 text-white text-sm w-28 transition-colors"></td>
         <td class="py-2.5 pr-3 text-center"><button data-id="${p.id}" onclick="toggleProd(parseInt(this.dataset.id))" class="${p.disponible?'bg-green-700 hover:bg-green-600':'bg-red-800 hover:bg-red-700'} text-white text-xs px-3 py-1.5 rounded-lg font-bold transition-colors w-24">${p.disponible?'Activo':'Agotado'}</button></td>
         <td id="basetd-${p.id}" class="py-2.5 pr-3 text-center"><button onclick="openBasePop(${p.id})" class="flex flex-col items-center gap-0.5 w-full hover:bg-gray-800 rounded-lg px-2 py-1.5 transition-colors">${baseLabel}<span class="text-gray-600 text-[9px]">▼ elegir</span></button></td>
         <td class="py-2.5 text-center"><button data-id="${p.id}" onclick="deleteProd(parseInt(this.dataset.id))" class="bg-gray-700 hover:bg-red-800 text-white text-xs px-2.5 py-1.5 rounded-lg transition-colors">×</button></td>
@@ -1138,7 +1164,7 @@ function renderCats(cats) {
         onclick="openEmojiPicker(this)" oninput="markDirty('cats',${c.id})"
         class="emoji-trigger w-11 text-center text-lg bg-gray-900/70 border border-gray-600 hover:border-gray-500 rounded-lg outline-none transition-colors shrink-0 select-none">${esc(c.icono||'🏷️')}</button>
       <input id="cn-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.nombre)}" oninput="markDirty('cats',${c.id})"
-        class="flex-1 bg-transparent text-white font-semibold text-sm border-b ${dirty.cats.has(c.id)?'border-yellow-500':'border-transparent'} focus:border-purple-500 transition-colors">
+        class="flex-1 bg-transparent text-white font-semibold text-sm border-b ${dirty.cats.has(c.id)?'border-yellow-500':'border-transparent'} focus:border-amber-500 transition-colors">
       <label title="Color de tarjetas" class="shrink-0 cursor-pointer">
         <input id="cc-${c.id}" type="color" value="${c.color||'#8b5cf6'}"
           oninput="markDirty('cats',${c.id});document.getElementById('ccs-${c.id}').style.background=this.value"
@@ -1214,7 +1240,7 @@ function renderTipoChips() {
   el.innerHTML = allTipos.map(t => {
     const isActive=t.id===selectedTipoId;
     const itemCount=allBases2.filter(b=>b.tipo_id===t.id).length;
-    return `<button onclick="selectTipo(${t.id})" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-colors border ${isActive?'bg-purple-700 border-purple-500 text-white':'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:border-gray-600'}">
+    return `<button onclick="selectTipo(${t.id})" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-colors border ${isActive?'bg-amber-500 border-amber-400 text-black':'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:border-zinc-600'}">
       <span class="tipo-icono-${t.id}">${esc(t.icono)}</span>
       <span class="tipo-nombre-${t.id}">${esc(t.nombre)}</span>
       <span class="text-[10px] opacity-60">(${itemCount})</span>
@@ -1239,7 +1265,7 @@ function renderBaseItems() {
     <div class="bg-gray-800/60 border ${b.disponible?'border-gray-700':'border-red-900/50'} rounded-2xl p-3 flex flex-col gap-2 ${b.disponible?'':'opacity-70'}">
       <input id="bn-${b.id}" type="text" value="${esc(b.nombre)}"
         onblur="saveBaseItem(${b.id})" onkeydown="if(event.key==='Enter')this.blur()"
-        class="bg-transparent text-white font-bold text-sm text-center border-b border-transparent hover:border-gray-600 focus:border-purple-500 outline-none transition-colors w-full">
+        class="bg-transparent text-white font-bold text-sm text-center border-b border-transparent hover:border-gray-600 focus:border-amber-500 outline-none transition-colors w-full">
       <button data-id="${b.id}" onclick="toggleBaseItem(parseInt(this.dataset.id))"
         class="w-full font-extrabold text-xs py-2 rounded-xl transition-colors ${b.disponible?'bg-red-900/60 hover:bg-red-700 text-red-300 hover:text-white':'bg-green-900/60 hover:bg-green-700 text-green-300 hover:text-white'}">
         ${b.disponible?'⚠ AGOTADO':'✓ DISPONIBLE'}

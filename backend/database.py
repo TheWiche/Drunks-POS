@@ -69,6 +69,11 @@ def init_db():
         except Exception:
             pass
         try:
+            conn.execute("ALTER TABLE pedidos ADD COLUMN preparador TEXT NOT NULL DEFAULT ''")
+            conn.commit()
+        except Exception:
+            pass
+        try:
             rows = conn.execute("SELECT id FROM pedidos WHERE sync_id='' OR sync_id IS NULL").fetchall()
             for row in rows:
                 conn.execute("UPDATE pedidos SET sync_id=? WHERE id=?", (str(uuid.uuid4()), row["id"]))
