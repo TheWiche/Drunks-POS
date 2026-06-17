@@ -112,6 +112,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sys
 .status-pending{background:var(--orange-dim);border:1px solid var(--orange-border);color:#fdba74}
 .card-invoice{font-size:.6rem;font-weight:700;letter-spacing:.08em;color:var(--subtle);font-family:monospace}
 .card-client{font-size:1.1rem;font-weight:800;letter-spacing:-.02em;color:var(--text);margin-top:2px;line-height:1.2}
+.card-prep{font-size:.62rem;color:var(--amber);font-weight:700;margin-top:3px;opacity:.9;letter-spacing:.01em}
 .card-method{display:inline-flex;align-items:center;gap:4px;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:99px;margin-top:4px}
 
 /* ── Timer bar ── */
@@ -254,6 +255,7 @@ function _buildCard(o, delay) {
     + '<div class="card-status ' + (isReady ? 'status-ready' : 'status-pending') + '">' + (isReady ? 'LISTO' : 'PREPARANDO') + '</div>'
     + '<div class="card-invoice">' + esc(o.numero_factura||'#'+o.id) + '</div>'
     + '<div class="card-client">' + esc(o.cliente) + '</div>'
+    + (o.preparador ? '<div class="card-prep">Preparado por ' + esc(o.preparador) + '</div>' : '')
     + '<span class="card-method" style="background:'+methodCol+'">'+esc(o.metodo_pago)+'</span>'
     + '</div>'
     + '<div class="timer-track"><div class="timer-fill" style="width:'+info.pct+'%;background:'+info.color+'"></div></div>'
