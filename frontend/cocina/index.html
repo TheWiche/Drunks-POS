@@ -1147,7 +1147,7 @@ async function completeStationOrder(orderId, si) {
 
   const card = document.getElementById('active-order-' + orderId + '-' + si);
   if (card) { card.classList.add('completing-flash'); card.style.pointerEvents = 'none'; }
-  fetch('/api/pedidos/' + orderId + '/entregar', { method: 'PUT' }).catch(() => {});
+  fetch('/api/pedidos/' + orderId + '/preparar', { method: 'PUT' }).catch(() => {});
   delete stationActive[String(si)];
   saveSetting('stationActive', JSON.stringify(stationActive));
   saveSetting('station_active', JSON.stringify(stationActive));
