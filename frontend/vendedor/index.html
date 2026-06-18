@@ -981,6 +981,24 @@ checkUpdate();
 setInterval(checkUpdate, 30*60*1000);
 window.addEventListener('viewMounted', () => { loadProducts(); loadNotes(); });
 window.addEventListener('storage', e => { if (e.key === 'drunks_cats_ts') loadCats(); });
+
+// Sync config desde Supabase vía WS
+(function(){
+  var _cws, _cwt;
+  function _connectConfigWS(){
+    if(_cwt){clearTimeout(_cwt);_cwt=null;}
+    try{
+      var proto=location.protocol==='https:'?'wss':'ws';
+      _cws=new WebSocket(proto+'://'+location.host+'/api/ws');
+      _cws.onmessage=function(e){
+        try{var m=JSON.parse(e.data);if(m.type==='config_sync'){loadCats();loadProducts();}}catch(e){}
+      };
+      _cws.onclose=function(){_cwt=setTimeout(_connectConfigWS,5000);};
+      _cws.onerror=function(){_cws.close();};
+    }catch(e){_cwt=setTimeout(_connectConfigWS,5000);}
+  }
+  _connectConfigWS();
+})();
 </script>
 </body>
 </html>

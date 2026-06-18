@@ -551,7 +551,7 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
       <div class="shrink-0 bg-gray-950/97 border-b border-gray-800 px-6 py-3.5">
         <h2 class="font-extrabold text-base text-white">Actualizaciones <span class="text-amber-400 font-light text-sm">· Reinstalación automática</span></h2>
       </div>
-      <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4 max-w-2xl">
+      <div id="upContent" class="flex-1 overflow-y-auto px-6 py-5 space-y-4 max-w-2xl">
         <!-- Versión instalada -->
         <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5">
           <div class="flex items-center justify-between">
@@ -1577,12 +1577,39 @@ function outsideEp(e) {
   initPin();
 })();
 
+// ── Cloud mode: reemplaza sección de actualizaciones con tarjeta de instalación ──
+function _initCloudMode() {
+  if (['localhost','127.0.0.1'].includes(location.hostname)) return;
+  const h2 = document.querySelector('#sec-updates h2');
+  if (h2) h2.innerHTML = 'Instalar Drunks <span class="text-amber-400 font-light text-sm">· App para Windows</span>';
+  const nav = document.getElementById('nav-updates');
+  if (nav) { const t=nav.lastChild; if(t&&t.nodeType===3) t.textContent='Instalar'; }
+  const content = document.getElementById('upContent');
+  if (content) content.innerHTML = `
+    <div class="space-y-4 max-w-lg">
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 text-center">
+        <div class="text-6xl mb-4">🖥️</div>
+        <h3 class="text-white font-bold text-lg mb-2">Instala Drunks POS en tu computador</h3>
+        <p class="text-gray-400 text-sm mb-6 leading-relaxed">Descarga el instalador y ejecútalo en el PC del negocio. La app trabaja sin internet y se sincroniza automáticamente con esta página cuando hay conexión.</p>
+        <a href="https://github.com/TheWiche/Drunks-POS/releases/latest/download/Instalar_Drunks.exe"
+          class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-6 py-3.5 rounded-xl text-sm transition-colors shadow-lg">
+          ⬇️ Descargar instalador · Windows
+        </a>
+        <p class="text-gray-600 text-xs mt-3">Windows 10 / 11 · 64-bit</p>
+      </div>
+      <div class="bg-gray-900/50 border border-gray-800/50 rounded-2xl p-4 text-gray-600 text-xs leading-relaxed">
+        <strong class="text-gray-500">¿Cómo funciona la sincronización?</strong> Esta página web es el panel de administración en la nube. La app de escritorio se instala en el PC del local y se sincroniza automáticamente con esta página cuando hay internet: categorías, productos, bases y configuración viajan en ambas direcciones.
+      </div>
+    </div>`;
+}
+
 // ── Init ──
 loadSettings().then(() => {
   loadData();
   setInterval(loadData, 60000);
   checkSupabase();
   setInterval(checkSupabase, 30000);
+  _initCloudMode();
 });
 </script>
 <!-- /JS SISTEMA -->

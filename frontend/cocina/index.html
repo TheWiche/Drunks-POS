@@ -437,6 +437,7 @@ function connectWS(){
     ws.onmessage=function(e){
       var msg=JSON.parse(e.data);
       if(msg.type==='new_order'){ orders[msg.order.id]=msg.order; renderView(); }
+      else if(msg.type==='config_sync'){ loadPendientes(); }
     };
   }catch(e){setDot('err');wsTimer=setTimeout(connectWS,3000);}
 }

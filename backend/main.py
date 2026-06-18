@@ -26,13 +26,26 @@ async def lifespan(app: FastAPI):
     asyncio.create_task(sync_pending_loop())
     if IS_CLOUD:
         asyncio.create_task(_cloud_sync_loop())
+    else:
+        asyncio.create_task(_desktop_config_sync_loop())
     yield
 
 
 async def _cloud_sync_loop():
     while True:
-        await asyncio.sleep(300)
-        pull_config_from_supabase()
+        await asyncio.sleep(60)
+        await pull_config_from_supabase()
+        await pedidos.manager.broadcast({"type": "config_sync"})
+
+
+async def _desktop_config_sync_loop():
+    from .config import SUPABASE_URL, SUPABASE_KEY
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return
+    while True:
+        await asyncio.sleep(30)
+        await pull_config_from_supabase()
+        await pedidos.manager.broadcast({"type": "config_sync"})
 
 
 app = FastAPI(title="Drunks POS", lifespan=lifespan)
