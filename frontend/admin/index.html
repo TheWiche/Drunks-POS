@@ -1067,6 +1067,7 @@ async function saveAll() {
     if (!n) { errors++; continue; }
     try { const r=await fetch('/api/categorias/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:n,icono})}); if(r.ok){dirty.cats.delete(id);ok++;}else errors++; } catch(e){errors++;}
   }
+  localStorage.setItem('drunks_cats_ts', Date.now());
   updateSaveBar();
   if (errors===0) adminToast('Todo guardado ('+ok+' cambios)');
   else adminToast(errors+' errores. '+ok+' guardados.', false);
@@ -1167,7 +1168,6 @@ function renderCats(cats) {
         class="emoji-trigger w-11 text-center text-lg bg-gray-900/70 border border-gray-600 hover:border-gray-500 rounded-lg outline-none transition-colors shrink-0 select-none">${esc(c.icono||'🏷️')}</button>
       <input id="cn-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.nombre)}" oninput="markDirty('cats',${c.id})"
         class="flex-1 bg-transparent text-white font-semibold text-sm border-b ${dirty.cats.has(c.id)?'border-yellow-500':'border-transparent'} focus:border-amber-500 transition-colors">
-      <span class="w-3 h-3 rounded-full shrink-0" style="background:${c.color||'#FF7A18'}"></span>
       <button data-id="${c.id}" onclick="deleteCat(parseInt(this.dataset.id))" class="bg-gray-700 hover:bg-red-800 text-white text-xs px-2 py-1.5 rounded-lg transition-colors shrink-0">×</button>
     </div>`).join('') : '<div class="text-gray-600 text-sm text-center py-6">Sin categorias.</div>';
 }

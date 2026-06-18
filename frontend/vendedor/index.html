@@ -193,6 +193,11 @@ input:focus{outline:none}
   pointer-events:none;
 }
 
+/* ── Grid col switcher ── */
+.gcol-btn{display:flex;align-items:center;justify-content:center;width:28px;height:24px;border-radius:6px;border:none;background:transparent;cursor:pointer;color:var(--subtle);transition:color 120ms,background 120ms}
+.gcol-btn:hover{color:var(--text);background:var(--interactive-hover)}
+.gcol-btn.active{background:var(--amber);color:#09090B}
+
 /* ── Reduced motion ── */
 @media(prefers-reduced-motion:reduce){
   .card-tap{transition:opacity 150ms linear!important;transform:none!important}
@@ -251,8 +256,21 @@ input:focus{outline:none}
 </div>
 
 <!-- ═══ PRODUCTOS ═══ -->
-<div class="px-3 pt-3 pb-1">
-  <div id="prodsGrid" class="grid grid-cols-2 gap-3"></div>
+<div class="flex justify-end px-3 pt-2 pb-0.5">
+  <div class="flex items-center rounded-lg p-0.5" style="background:var(--interactive-bg);border:1px solid var(--interactive-border)">
+    <button id="gcb-2" onclick="setGridCols(2)" class="gcol-btn" title="2 columnas">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="14" rx="1.5"/><rect x="9" y="1" width="6" height="14" rx="1.5"/></svg>
+    </button>
+    <button id="gcb-3" onclick="setGridCols(3)" class="gcol-btn" title="3 columnas">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="4" height="14" rx="1.5"/><rect x="6" y="1" width="4" height="14" rx="1.5"/><rect x="11" y="1" width="4" height="14" rx="1.5"/></svg>
+    </button>
+    <button id="gcb-4" onclick="setGridCols(4)" class="gcol-btn" title="4 columnas">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="0.5" y="1" width="3" height="14" rx="1.5"/><rect x="4.5" y="1" width="3" height="14" rx="1.5"/><rect x="8.5" y="1" width="3" height="14" rx="1.5"/><rect x="12.5" y="1" width="3" height="14" rx="1.5"/></svg>
+    </button>
+  </div>
+</div>
+<div class="px-3 pt-1 pb-1">
+  <div id="prodsGrid" class="grid gap-3"></div>
 </div>
 
 <!-- ═══ CARRITO ═══ -->
@@ -534,11 +552,28 @@ function _refreshProdCard(prodId) {
   el.outerHTML = _buildProdCardHTML(p);
 }
 
+let gridCols = parseInt(localStorage.getItem('drunks_grid_cols') || '2');
+
+function setGridCols(n) {
+  gridCols = n;
+  localStorage.setItem('drunks_grid_cols', n);
+  const grid = document.getElementById('prodsGrid');
+  grid.style.gridTemplateColumns = `repeat(${n},1fr)`;
+  [2,3,4].forEach(c => document.getElementById('gcb-'+c)?.classList.toggle('active', c===n));
+  renderProds();
+}
+
+function _initGridCols() {
+  const grid = document.getElementById('prodsGrid');
+  grid.style.gridTemplateColumns = `repeat(${gridCols},1fr)`;
+  [2,3,4].forEach(c => document.getElementById('gcb-'+c)?.classList.toggle('active', c===gridCols));
+}
+
 function renderProds() {
   const grid = document.getElementById('prodsGrid');
   const list = activeCat !== null ? products.filter(p => p.categoria_id === activeCat) : products;
   if (!list.length) {
-    grid.innerHTML = `<div class="col-span-2 text-center text-sm py-12" style="color:var(--subtle)">Sin productos en esta categoría</div>`;
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;font-size:.875rem;padding:3rem 0;color:var(--subtle)">Sin productos en esta categoría</div>`;
     return;
   }
   grid.innerHTML = list.map(_buildProdCardHTML).join('');
@@ -941,9 +976,11 @@ function appConfirm(msg, okLabel='Confirmar') {
 }
 
 loadSettings().then(init);
+_initGridCols();
 checkUpdate();
 setInterval(checkUpdate, 30*60*1000);
 window.addEventListener('viewMounted', () => { loadProducts(); loadNotes(); });
+window.addEventListener('storage', e => { if (e.key === 'drunks_cats_ts') loadCats(); });
 </script>
 </body>
 </html>
