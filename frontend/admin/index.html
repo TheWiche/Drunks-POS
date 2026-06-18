@@ -4,127 +4,128 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Drunks · Admin</title>
-<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('drunksPalette')||'dark')</script>
-<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
+<script>var _t=localStorage.getItem('drunksPalette');document.documentElement.setAttribute('data-theme',_t==='light'?'light':'dark')</script>
 <style>
 /* ── Temas ── */
-html[data-theme=light] body{background:#f0ebff!important;color:#1e1b4b!important}
-html[data-theme=light] [class*=bg-gray-95]{background:#eee9ff!important}
-html[data-theme=light] [class*=bg-gray-90]{background:#fff!important}
-html[data-theme=light] [class*=bg-gray-8]{background:#ede9fe!important}
-html[data-theme=light] [class*=bg-gray-7]{background:#ddd6fe!important}
-html[data-theme=light] [class*=border-gray-8]{border-color:#c4b5fd!important}
-html[data-theme=light] [class*=border-gray-7]{border-color:#ddd6fe!important}
-html[data-theme=light] [class*=bg-black]{background:rgba(80,50,180,.55)!important}
-html[data-theme=light] .text-white{color:#1e1b4b!important}
-html[data-theme=light] [class*=text-gray-]{color:#5b21b6!important}
-html[data-theme=ocean] body{background:#020b18!important}
-html[data-theme=ocean] [class*=bg-purple-6]{background:#2563eb!important}
-html[data-theme=ocean] [class*=bg-purple-7]{background:#1d4ed8!important}
-html[data-theme=ocean] [class*=bg-purple-8]{background:#1e40af!important}
-html[data-theme=ocean] [class*=bg-purple-9]{background:#1e3a8a!important}
-html[data-theme=ocean] [class*=text-purple]{color:#60a5fa!important}
-html[data-theme=ocean] [class*=border-purple]{border-color:#3b82f6!important}
-html[data-theme=ocean] [class*=from-purple]{--tw-gradient-from:#1e3a8a!important}
-html[data-theme=ocean] [class*=via-purple]{--tw-gradient-via:#1d4ed8!important}
-html[data-theme=ocean] [class*=glow-purple]{box-shadow:0 0 18px rgba(37,99,235,.4)!important}
-html[data-theme=emerald] body{background:#020f0b!important}
-html[data-theme=emerald] [class*=bg-purple-6]{background:#0d9488!important}
-html[data-theme=emerald] [class*=bg-purple-7]{background:#0f766e!important}
-html[data-theme=emerald] [class*=bg-purple-8]{background:#115e59!important}
-html[data-theme=emerald] [class*=bg-purple-9]{background:#134e4a!important}
-html[data-theme=emerald] [class*=text-purple]{color:#2dd4bf!important}
-html[data-theme=emerald] [class*=border-purple]{border-color:#14b8a6!important}
-html[data-theme=emerald] [class*=from-purple]{--tw-gradient-from:#134e4a!important}
-html[data-theme=emerald] [class*=via-purple]{--tw-gradient-via:#0f766e!important}
-html[data-theme=emerald] [class*=glow-purple]{box-shadow:0 0 18px rgba(13,148,136,.4)!important}
-html[data-theme=amber] body{background:#0d0800!important}
-html[data-theme=amber] [class*=bg-purple-6]{background:#d97706!important}
-html[data-theme=amber] [class*=bg-purple-7]{background:#b45309!important}
-html[data-theme=amber] [class*=bg-purple-8]{background:#92400e!important}
-html[data-theme=amber] [class*=bg-purple-9]{background:#78350f!important}
-html[data-theme=amber] [class*=text-purple]{color:#fbbf24!important}
-html[data-theme=amber] [class*=border-purple]{border-color:#f59e0b!important}
-html[data-theme=amber] [class*=from-purple]{--tw-gradient-from:#78350f!important}
-html[data-theme=amber] [class*=via-purple]{--tw-gradient-via:#b45309!important}
-html[data-theme=amber] [class*=glow-purple]{box-shadow:0 0 18px rgba(217,119,6,.4)!important}
-html[data-theme=neon] body{background:#040804!important}
-html[data-theme=neon] [class*=bg-purple-6]{background:#16a34a!important}
-html[data-theme=neon] [class*=bg-purple-7]{background:#15803d!important}
-html[data-theme=neon] [class*=bg-purple-8]{background:#166534!important}
-html[data-theme=neon] [class*=bg-purple-9]{background:#14532d!important}
-html[data-theme=neon] [class*=text-purple]{color:#4ade80!important}
-html[data-theme=neon] [class*=border-purple]{border-color:#22c55e!important}
-html[data-theme=neon] [class*=from-purple]{--tw-gradient-from:#14532d!important}
-html[data-theme=neon] [class*=glow-purple]{box-shadow:0 0 18px rgba(74,222,128,.4)!important}
-html[data-theme=rose] body{background:#0f0208!important}
-html[data-theme=rose] [class*=bg-purple-6]{background:#e11d48!important}
-html[data-theme=rose] [class*=bg-purple-7]{background:#be123c!important}
-html[data-theme=rose] [class*=bg-purple-8]{background:#9f1239!important}
-html[data-theme=rose] [class*=bg-purple-9]{background:#881337!important}
-html[data-theme=rose] [class*=text-purple]{color:#fb7185!important}
-html[data-theme=rose] [class*=border-purple]{border-color:#f43f5e!important}
-html[data-theme=rose] [class*=from-purple]{--tw-gradient-from:#881337!important}
-html[data-theme=rose] [class*=glow-purple]{box-shadow:0 0 18px rgba(244,63,94,.4)!important}
-html[data-theme=violet] body{background:#06030f!important}
-html[data-theme=violet] [class*=bg-purple-6]{background:#6d28d9!important}
-html[data-theme=violet] [class*=bg-purple-7]{background:#5b21b6!important}
-html[data-theme=violet] [class*=bg-purple-8]{background:#4c1d95!important}
-html[data-theme=violet] [class*=bg-purple-9]{background:#3b0764!important}
-html[data-theme=violet] [class*=text-purple]{color:#a78bfa!important}
-html[data-theme=violet] [class*=border-purple]{border-color:#7c3aed!important}
-html[data-theme=violet] [class*=from-purple]{--tw-gradient-from:#3b0764!important}
-html[data-theme=violet] [class*=glow-purple]{box-shadow:0 0 18px rgba(124,58,237,.5)!important}
-html[data-theme=slate] body{background:#0a0c10!important}
-html[data-theme=slate] [class*=bg-purple-6]{background:#475569!important}
-html[data-theme=slate] [class*=bg-purple-7]{background:#334155!important}
-html[data-theme=slate] [class*=bg-purple-8]{background:#1e293b!important}
-html[data-theme=slate] [class*=bg-purple-9]{background:#0f172a!important}
-html[data-theme=slate] [class*=text-purple]{color:#94a3b8!important}
-html[data-theme=slate] [class*=border-purple]{border-color:#64748b!important}
-html[data-theme=slate] [class*=from-purple]{--tw-gradient-from:#0f172a!important}
-html[data-theme=slate] [class*=glow-purple]{box-shadow:0 0 18px rgba(100,116,139,.3)!important}
-html[data-theme=gold] body{background:#0d0900!important}
-html[data-theme=gold] [class*=bg-purple-6]{background:#ca8a04!important}
-html[data-theme=gold] [class*=bg-purple-7]{background:#a16207!important}
-html[data-theme=gold] [class*=bg-purple-8]{background:#854d0e!important}
-html[data-theme=gold] [class*=bg-purple-9]{background:#713f12!important}
-html[data-theme=gold] [class*=text-purple]{color:#fde047!important}
-html[data-theme=gold] [class*=border-purple]{border-color:#eab308!important}
-html[data-theme=gold] [class*=from-purple]{--tw-gradient-from:#713f12!important}
-html[data-theme=gold] [class*=glow-purple]{box-shadow:0 0 18px rgba(234,179,8,.4)!important}
+/* ── Brand tokens ── */
+:root{--accent:#FF7A18;--accent-dim:rgba(255,122,24,.12);--accent-border:rgba(255,122,24,.28)}
+html[data-theme=light]{--accent:#FF6B35;--accent-dim:rgba(255,107,53,.12);--accent-border:rgba(255,107,53,.28)}
+/* ── Tailwind amber → brand orange ── */
+.bg-amber-500{background-color:#FF7A18!important}
+.bg-amber-400{background-color:#FF8A38!important}
+.hover\:bg-amber-400:hover{background-color:#FF8A38!important}
+.hover\:bg-amber-500:hover{background-color:#FF7A18!important}
+.focus\:border-amber-500:focus{border-color:#FF7A18!important}
+.text-amber-400,.text-amber-500{color:#FF7A18!important}
+.border-amber-500{border-color:#FF7A18!important}
 /* ── Body ── */
-body{background:#09090b;font-family:'Space Grotesk',system-ui,sans-serif}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#3f3f46;border-radius:4px}
+body{background:#0B1120;font-family:'Space Grotesk',system-ui,sans-serif}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}
 /* ── Sidebar ── */
 .sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;cursor:pointer;font-size:.875rem;font-weight:600;color:#71717a;transition:all .15s ease;margin:1px 0;white-space:nowrap}
-.sidebar-item:hover{background:rgba(245,158,11,.1);color:#fbbf24}
-.sidebar-item.active{background:rgba(245,158,11,.15);color:#f59e0b;border-left:2px solid #f59e0b;padding-left:12px}
+.sidebar-item:hover{background:rgba(255,122,24,.1);color:#FF7A18}
+.sidebar-item.active{background:rgba(255,122,24,.15);color:#FF7A18;border-left:2px solid #FF7A18;padding-left:12px}
 .sidebar-item .si-icon{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .sidebar-item .si-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 /* ── Tabs ── */
 .tab-btn{cursor:pointer}
-.tab-active{color:#f59e0b!important;border-bottom:2px solid #f59e0b!important}
+.tab-active{color:#FF7A18!important;border-bottom:2px solid #FF7A18!important}
 /* ── Dirty tracking ── */
-.dirty-row{background:rgba(234,179,8,.05)!important}
-.dirty-input{border-color:#ca8a04!important}
+.dirty-row{background:rgba(255,122,24,.05)!important}
+.dirty-input{border-color:#FF7A18!important}
 /* ── Emoji picker ── */
-.emoji-trigger{cursor:pointer!important;caret-color:transparent}
-.emoji-trigger:focus{outline:none;border-color:#f59e0b!important}
-button.emoji-trigger{font-family:'Segoe UI Emoji','Apple Color Emoji',sans-serif;background:none}
-#emojiPickerPanel{display:none;position:fixed;z-index:300;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8);width:352px}
+.emoji-trigger{cursor:pointer!important;caret-color:transparent;font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif}
+.emoji-trigger:focus{outline:none;border-color:#FF7A18!important}
+#emojiPickerPanel{display:none;position:fixed;z-index:300;border-radius:14px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06);
+  background:#1A2235;border:1px solid #2D3E55;width:280px;padding:10px}
 #emojiPickerPanel.open{display:block}
-emoji-picker{--background:#18181b;--border-color:#3f3f46;--indicator-color:#f59e0b;--input-border-color:#3f3f46;--input-font-color:#fff;--input-placeholder-color:#71717a;--category-font-color:#a1a1aa;--emoji-size:1.5rem;--num-columns:8;width:352px;height:380px}
-/* ── Amber overrides for dark/default theme ── */
-html[data-theme=dark] [class*=bg-purple-6]{background:#d97706!important}
-html[data-theme=dark] [class*=bg-purple-7]{background:#b45309!important}
-html[data-theme=dark] [class*=bg-purple-8]{background:#92400e!important}
-html[data-theme=dark] [class*=bg-purple-9]{background:#78350f!important}
-html[data-theme=dark] [class*=text-purple]{color:#fbbf24!important}
-html[data-theme=dark] [class*=border-purple]{border-color:#f59e0b!important}
-html[data-theme=dark] [class*=from-purple]{--tw-gradient-from:#451a03!important}
-html[data-theme=dark] [class*=via-purple]{--tw-gradient-via:#78350f!important}
-html[data-theme=dark] [class*=glow-purple]{box-shadow:0 0 18px rgba(245,158,11,.35)!important}
+.ep-section-label{font-size:.55rem;font-weight:800;letter-spacing:.12em;color:#4B5E7A;padding:4px 2px 5px;font-family:'Space Grotesk',sans-serif}
+.ep-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px}
+.ep-btn{font-size:1.3rem;line-height:1;padding:5px 4px;border-radius:8px;cursor:pointer;border:none;background:transparent;transition:background 100ms;font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif;text-align:center}
+.ep-btn:hover{background:rgba(255,122,24,.15)}
+/* ── Light mode ── */
+html[data-theme=light] body{background:#F8F9FB!important;color:#1F2937!important}
+html[data-theme=light] .bg-amber-500{background-color:#FF6B35!important}
+html[data-theme=light] .bg-amber-400{background-color:#FF7A18!important}
+html[data-theme=light] .hover\:bg-amber-400:hover{background-color:#FF7A18!important}
+html[data-theme=light] .text-amber-400,.text-amber-500{color:#FF6B35!important}
+html[data-theme=light] .sidebar-item:hover{background:rgba(255,107,53,.1);color:#FF6B35}
+html[data-theme=light] .sidebar-item.active{background:rgba(255,107,53,.15);color:#FF6B35;border-left-color:#FF6B35}
+html[data-theme=light] .tab-active{color:#FF6B35!important;border-bottom-color:#FF6B35!important}
+html[data-theme=light] [class*=bg-zinc-95]{background:#F0F4F8!important}
+html[data-theme=light] .bg-zinc-950{background:#F8F9FB!important}
+html[data-theme=light] [class*=bg-zinc-9]{background:#FFFFFF!important}
+html[data-theme=light] [class*=bg-gray-9]{background:#FFFFFF!important}
+html[data-theme=light] [class*=bg-zinc-8]{background:#F3F4F6!important}
+html[data-theme=light] [class*=bg-gray-8]{background:#F3F4F6!important}
+html[data-theme=light] [class*=bg-zinc-7]{background:#E5E7EB!important}
+html[data-theme=light] [class*=bg-gray-7]{background:#E5E7EB!important}
+html[data-theme=light] [class*=border-zinc-8]{border-color:#E5E7EB!important}
+html[data-theme=light] [class*=border-gray-8]{border-color:#E5E7EB!important}
+html[data-theme=light] [class*=border-zinc-7]{border-color:#D1D5DB!important}
+html[data-theme=light] [class*=border-gray-7]{border-color:#D1D5DB!important}
+html[data-theme=light] .text-white{color:#1F2937!important}
+html[data-theme=light] [class*=text-zinc-4]{color:#6B7280!important}
+html[data-theme=light] [class*=text-gray-4]{color:#6B7280!important}
+html[data-theme=light] [class*=text-zinc-5]{color:#64748B!important}
+html[data-theme=light] [class*=text-gray-5]{color:#64748B!important}
+html[data-theme=light] [class*=text-zinc-3]{color:#374151!important}
+html[data-theme=light] [class*=text-gray-3]{color:#374151!important}
+html[data-theme=light] #emojiPickerPanel{background:#FFFFFF;border-color:#E5E7EB;box-shadow:0 12px 40px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.06)}
+html[data-theme=light] .ep-section-label{color:#94A3B8}
+html[data-theme=light] .ep-btn:hover{background:rgba(255,107,53,.12)}
+/* ── Extra light mode overrides ── */
+html[data-theme=light] [class*=bg-zinc-6]{background:#E5E7EB!important}
+html[data-theme=light] [class*=border-zinc-6]{border-color:#D1D5DB!important}
+html[data-theme=light] [class*=text-zinc-6]{color:#6B7280!important}
+html[data-theme=light] [class*=text-gray-6]{color:#6B7280!important}
+html[data-theme=light] [class*=text-gray-7]{color:#374151!important}
+html[data-theme=light] [class*=text-zinc-7]{color:#374151!important}
+html[data-theme=light] [class*=bg-black]{background:rgba(0,0,0,.4)!important}
+html[data-theme=light] .bg-gray-950\/50{background:rgba(241,245,249,.97)!important}
+html[data-theme=light] .bg-gray-950\/80{background:rgba(241,245,249,.97)!important}
+html[data-theme=light] .bg-gray-950\/97{background:rgba(241,245,249,.99)!important}
+html[data-theme=light] #pinOverlay{background:#F8F9FB!important}
+html[data-theme=light] .sidebar-item{color:#64748B}
+/* ── Admin: comprehensive light mode overrides ── */
+/* Borders */
+html[data-theme=light] [class*=border-zinc-9]{border-color:#E5E7EB!important}
+html[data-theme=light] [class*=border-gray-9]{border-color:#E5E7EB!important}
+html[data-theme=light] [class*=divide-zinc]{border-color:#E5E7EB!important}
+html[data-theme=light] [class*=divide-gray]{border-color:#E5E7EB!important}
+/* Inputs / form elements */
+html[data-theme=light] input:not([type=checkbox]):not([type=radio]),
+html[data-theme=light] textarea,
+html[data-theme=light] select{background:#F8F9FB!important;border-color:#D1D5DB!important;color:#1F2937!important}
+html[data-theme=light] input::placeholder,
+html[data-theme=light] textarea::placeholder{color:#94A3B8!important}
+html[data-theme=light] input:focus,html[data-theme=light] textarea:focus{border-color:#FF6B35!important}
+/* Text brightness */
+html[data-theme=light] [class*=text-zinc-2]{color:#374151!important}
+html[data-theme=light] [class*=text-gray-2]{color:#374151!important}
+html[data-theme=light] [class*=text-zinc-1]{color:#111827!important}
+html[data-theme=light] [class*=text-gray-1]{color:#111827!important}
+/* Ring / outline */
+html[data-theme=light] [class*=ring-zinc]{--tw-ring-color:#D1D5DB}
+html[data-theme=light] [class*=ring-gray]{--tw-ring-color:#D1D5DB}
+/* Buttons that use zinc/gray class bg */
+html[data-theme=light] button[class*=bg-zinc]{background:#F3F4F6!important;color:#374151!important}
+html[data-theme=light] button[class*=bg-gray]{background:#F3F4F6!important;color:#374151!important}
+/* Overlays and modals */
+html[data-theme=light] [class*=bg-zinc-950\/]{background:rgba(241,245,249,.98)!important}
+html[data-theme=light] [class*=bg-gray-950\/]{background:rgba(241,245,249,.98)!important}
+html[data-theme=light] [class*=bg-black\/]{background:rgba(0,0,0,.4)!important}
+/* Interactive backgrounds — hover states */
+html[data-theme=light] [class*=hover\:bg-zinc]:hover{background:#E5E7EB!important}
+html[data-theme=light] [class*=hover\:bg-gray]:hover{background:#E5E7EB!important}
+html[data-theme=light] [class*=hover\:bg-white\/]:hover{background:rgba(0,0,0,.04)!important}
+/* Tables */
+html[data-theme=light] [class*=even\:bg-zinc]:nth-child(even),
+html[data-theme=light] [class*=odd\:bg-zinc]:nth-child(odd){background:#F9FAFB!important}
+/* Shadow in light mode */
+html[data-theme=light] [class*=shadow]{box-shadow:0 1px 8px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04)!important}
+/* Easing tokens (Emil Kowalski) */
 /* ── Easing tokens (Emil Kowalski) ── */
 :root{
   --ease-out-quint:cubic-bezier(.23,1,.32,1);
@@ -295,7 +296,7 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
         <div><h2 class="font-extrabold text-base text-white leading-none">Dashboard <span class="text-zinc-500 font-light text-sm">· Reportes</span></h2>
         <p id="lastUpdate" class="text-gray-600 text-xs mt-0.5">—</p></div>
         <div class="flex items-center gap-2">
-          <button onclick="toggleThemePicker()" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 px-3 py-2 rounded-xl text-sm transition-colors">🎨</button>
+          <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="Modo claro/oscuro" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 w-9 h-9 rounded-xl flex items-center justify-center transition-colors"><svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg></button>
           <button id="exportBtnDash" onclick="exportExcel()" class="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5"><span>📥</span><span>Excel</span></button>
           <button id="refreshBtn" onclick="refresh()" class="bg-amber-500 hover:bg-amber-400 text-black px-4 py-2 rounded-xl text-xs font-bold transition-colors">↻</button>
         </div>
@@ -404,11 +405,6 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
             class="emoji-trigger w-14 text-center bg-gray-800 border border-gray-700 rounded-xl px-2 py-2.5 text-white text-lg transition-colors select-none">🏷️</button>
           <input id="newCatName" type="text" placeholder="Nueva categoria..."
             class="flex-1 bg-gray-800 border border-gray-700 focus:border-amber-500 rounded-xl px-3 py-2.5 text-white text-sm transition-colors">
-          <label title="Color" class="cursor-pointer shrink-0">
-            <input id="newCatColor" type="color" value="#8b5cf6" class="sr-only">
-            <div id="newCatColorSwatch" onclick="document.getElementById('newCatColor').click();document.getElementById('newCatColor').oninput=function(){document.getElementById('newCatColorSwatch').style.background=this.value}"
-              class="w-9 h-9 rounded-xl border-2 border-gray-600 hover:border-white cursor-pointer transition-colors" style="background:#8b5cf6"></div>
-          </label>
           <button onclick="addCat()" class="bg-amber-500 hover:bg-amber-400 text-black px-5 py-2.5 rounded-xl text-sm font-bold shrink-0">Agregar</button>
         </div>
         <div id="catsList" class="space-y-2"></div>
@@ -519,31 +515,6 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
             <button onclick="savePin()" class="bg-amber-500 hover:bg-amber-400 text-black px-5 py-2.5 rounded-xl text-sm font-bold transition-colors shrink-0">Actualizar PIN</button>
           </div>
           <p id="pinMsg" class="hidden text-xs mt-2"></p>
-        </div>
-        <!-- Tema -->
-        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-          <h3 class="text-white font-bold text-sm mb-1">Paleta de colores</h3>
-          <p class="text-gray-500 text-xs mb-3">Aplica a todas las vistas del sistema.</p>
-          <div class="grid grid-cols-5 gap-2">
-            <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-gray-800 transition-colors border border-transparent"><span class="w-6 h-6 rounded-full border border-gray-600" style="background:#06060f"></span><span class="text-white text-xs">Oscuro</span></button>
-            <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-gray-800 transition-colors border border-transparent"><span class="w-6 h-6 rounded-full border border-gray-600" style="background:#f0ebff"></span><span class="text-white text-xs">Claro</span></button>
-            <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-gray-800 transition-colors border border-transparent"><span class="w-6 h-6 rounded-full" style="background:#2563eb"></span><span class="text-white text-xs">Océano</span></button>
-            <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-gray-800 transition-colors border border-transparent"><span class="w-6 h-6 rounded-full" style="background:#0d9488"></span><span class="text-white text-xs">Esmeralda</span></button>
-            <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-gray-800 transition-colors border border-transparent"><span class="w-6 h-6 rounded-full" style="background:#d97706"></span><span class="text-white text-xs">Ámbar</span></button>
-            <button data-theme="neon"    onclick="applyTheme('neon')"    class="theme-opt flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-gray-800 transition-colors border border-transparent"><span class="w-6 h-6 rounded-full" style="background:#16a34a"></span><span class="text-white text-xs">Neon</span></button>
-            <button data-theme="rose"    onclick="applyTheme('rose')"    class="theme-opt flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-gray-800 transition-colors border border-transparent"><span class="w-6 h-6 rounded-full" style="background:#e11d48"></span><span class="text-white text-xs">Rosa</span></button>
-            <button data-theme="violet"  onclick="applyTheme('violet')"  class="theme-opt flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-gray-800 transition-colors border border-transparent"><span class="w-6 h-6 rounded-full" style="background:#6d28d9"></span><span class="text-white text-xs">Violeta</span></button>
-            <button data-theme="slate"   onclick="applyTheme('slate')"   class="theme-opt flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-gray-800 transition-colors border border-transparent"><span class="w-6 h-6 rounded-full" style="background:#475569"></span><span class="text-white text-xs">Slate</span></button>
-            <button data-theme="gold"    onclick="applyTheme('gold')"    class="theme-opt flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-gray-800 transition-colors border border-transparent"><span class="w-6 h-6 rounded-full" style="background:#ca8a04"></span><span class="text-white text-xs">Dorado</span></button>
-          </div>
-          <div class="mt-3 flex items-center gap-2">
-            <span class="text-gray-500 text-xs">Color personalizado:</span>
-            <input id="customColorPicker" type="color" value="#9333ea" style="display:none"
-              oninput="applyCustomTheme(this.value)"
-              class="w-8 h-8 rounded-lg border border-gray-600 bg-transparent cursor-pointer">
-            <button onclick="document.getElementById('customColorPicker').style.display='inline-block';document.getElementById('customColorPicker').click()"
-              class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-lg transition-colors">🎨 Custom</button>
-          </div>
         </div>
         <!-- Supabase -->
         <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5">
@@ -722,20 +693,52 @@ button:not(.emoji-trigger):not(.range-btn):not([onclick*="checkPin"]):active{tra
 
 <!-- EMOJI PICKER PANEL -->
 <div id="emojiPickerPanel">
-  <emoji-picker></emoji-picker>
-</div>
-<!-- THEME PICKER DROPDOWN -->
-<div id="themePicker" class="hidden fixed z-[90]" style="top:4.5rem;right:1rem">
-  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-2xl shadow-black/60 w-52">
-    <div class="text-gray-500 text-[10px] tracking-[.2em] font-bold mb-3">PALETA DE COLORES</div>
-    <div class="space-y-0.5">
-      <button data-theme="dark"    onclick="applyTheme('dark')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#06060f"></span><span class="text-white text-sm font-semibold">Oscuro</span></button>
-      <button data-theme="light"   onclick="applyTheme('light')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0 border border-gray-600" style="background:#f0ebff"></span><span class="text-white text-sm font-semibold">Claro</span></button>
-      <button data-theme="ocean"   onclick="applyTheme('ocean')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#2563eb"></span><span class="text-white text-sm font-semibold">Océano</span></button>
-      <button data-theme="emerald" onclick="applyTheme('emerald')" class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#0d9488"></span><span class="text-white text-sm font-semibold">Esmeralda</span></button>
-      <button data-theme="amber"   onclick="applyTheme('amber')"   class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#d97706"></span><span class="text-white text-sm font-semibold">Ámbar</span></button>
-      <button data-theme="gold"    onclick="applyTheme('gold')"    class="theme-opt w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-800 transition-colors"><span class="w-5 h-5 rounded-full shrink-0" style="background:#ca8a04"></span><span class="text-white text-sm font-semibold">Dorado</span></button>
-    </div>
+  <div class="ep-section-label">BEBIDAS</div>
+  <div class="ep-grid">
+    <button class="ep-btn" onclick="pickEmoji('🍺')">🍺</button>
+    <button class="ep-btn" onclick="pickEmoji('🍻')">🍻</button>
+    <button class="ep-btn" onclick="pickEmoji('🍹')">🍹</button>
+    <button class="ep-btn" onclick="pickEmoji('🍸')">🍸</button>
+    <button class="ep-btn" onclick="pickEmoji('🥂')">🥂</button>
+    <button class="ep-btn" onclick="pickEmoji('🥃')">🥃</button>
+    <button class="ep-btn" onclick="pickEmoji('🍾')">🍾</button>
+    <button class="ep-btn" onclick="pickEmoji('🧉')">🧉</button>
+    <button class="ep-btn" onclick="pickEmoji('🍷')">🍷</button>
+    <button class="ep-btn" onclick="pickEmoji('🧃')">🧃</button>
+    <button class="ep-btn" onclick="pickEmoji('🥤')">🥤</button>
+    <button class="ep-btn" onclick="pickEmoji('🫗')">🫗</button>
+    <button class="ep-btn" onclick="pickEmoji('🍵')">🍵</button>
+    <button class="ep-btn" onclick="pickEmoji('☕')">☕</button>
+  </div>
+  <div class="ep-section-label">INGREDIENTES</div>
+  <div class="ep-grid">
+    <button class="ep-btn" onclick="pickEmoji('🍋')">🍋</button>
+    <button class="ep-btn" onclick="pickEmoji('🌶️')">🌶️</button>
+    <button class="ep-btn" onclick="pickEmoji('🍓')">🍓</button>
+    <button class="ep-btn" onclick="pickEmoji('🫐')">🫐</button>
+    <button class="ep-btn" onclick="pickEmoji('🥭')">🥭</button>
+    <button class="ep-btn" onclick="pickEmoji('🍑')">🍑</button>
+    <button class="ep-btn" onclick="pickEmoji('🍊')">🍊</button>
+    <button class="ep-btn" onclick="pickEmoji('🍒')">🍒</button>
+    <button class="ep-btn" onclick="pickEmoji('🍍')">🍍</button>
+    <button class="ep-btn" onclick="pickEmoji('🥝')">🥝</button>
+    <button class="ep-btn" onclick="pickEmoji('🍉')">🍉</button>
+    <button class="ep-btn" onclick="pickEmoji('🌿')">🌿</button>
+    <button class="ep-btn" onclick="pickEmoji('🧊')">🧊</button>
+    <button class="ep-btn" onclick="pickEmoji('🍫')">🍫</button>
+  </div>
+  <div class="ep-section-label">ESPECIALES</div>
+  <div class="ep-grid">
+    <button class="ep-btn" onclick="pickEmoji('✨')">✨</button>
+    <button class="ep-btn" onclick="pickEmoji('⭐')">⭐</button>
+    <button class="ep-btn" onclick="pickEmoji('🔥')">🔥</button>
+    <button class="ep-btn" onclick="pickEmoji('💎')">💎</button>
+    <button class="ep-btn" onclick="pickEmoji('👑')">👑</button>
+    <button class="ep-btn" onclick="pickEmoji('🎉')">🎉</button>
+    <button class="ep-btn" onclick="pickEmoji('⚡')">⚡</button>
+    <button class="ep-btn" onclick="pickEmoji('🎯')">🎯</button>
+    <button class="ep-btn" onclick="pickEmoji('💫')">💫</button>
+    <button class="ep-btn" onclick="pickEmoji('🏷️')">🏷️</button>
   </div>
 </div>
 
@@ -1061,9 +1064,8 @@ async function saveAll() {
     const n=document.getElementById('cn-'+id)?.value.trim();
     const _ciEl=document.getElementById('ci-'+id);
     const icono=(_ciEl?.dataset.value?.trim()||_ciEl?.textContent?.trim()||'🏷️');
-    const color=document.getElementById('cc-'+id)?.value||'#8b5cf6';
     if (!n) { errors++; continue; }
-    try { const r=await fetch('/api/categorias/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:n,icono,color})}); if(r.ok){dirty.cats.delete(id);ok++;}else errors++; } catch(e){errors++;}
+    try { const r=await fetch('/api/categorias/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:n,icono})}); if(r.ok){dirty.cats.delete(id);ok++;}else errors++; } catch(e){errors++;}
   }
   updateSaveBar();
   if (errors===0) adminToast('Todo guardado ('+ok+' cambios)');
@@ -1165,14 +1167,7 @@ function renderCats(cats) {
         class="emoji-trigger w-11 text-center text-lg bg-gray-900/70 border border-gray-600 hover:border-gray-500 rounded-lg outline-none transition-colors shrink-0 select-none">${esc(c.icono||'🏷️')}</button>
       <input id="cn-${c.id}" data-dirty-id="${c.id}" type="text" value="${esc(c.nombre)}" oninput="markDirty('cats',${c.id})"
         class="flex-1 bg-transparent text-white font-semibold text-sm border-b ${dirty.cats.has(c.id)?'border-yellow-500':'border-transparent'} focus:border-amber-500 transition-colors">
-      <label title="Color de tarjetas" class="shrink-0 cursor-pointer">
-        <input id="cc-${c.id}" type="color" value="${c.color||'#8b5cf6'}"
-          oninput="markDirty('cats',${c.id});document.getElementById('ccs-${c.id}').style.background=this.value"
-          class="sr-only">
-        <div id="ccs-${c.id}" onclick="document.getElementById('cc-${c.id}').click()"
-          class="w-7 h-7 rounded-lg border-2 border-gray-600 hover:border-white cursor-pointer transition-colors"
-          style="background:${c.color||'#8b5cf6'}"></div>
-      </label>
+      <span class="w-3 h-3 rounded-full shrink-0" style="background:${c.color||'#FF7A18'}"></span>
       <button data-id="${c.id}" onclick="deleteCat(parseInt(this.dataset.id))" class="bg-gray-700 hover:bg-red-800 text-white text-xs px-2 py-1.5 rounded-lg transition-colors shrink-0">×</button>
     </div>`).join('') : '<div class="text-gray-600 text-sm text-center py-6">Sin categorias.</div>';
 }
@@ -1183,11 +1178,9 @@ async function deleteCat(id) {
 }
 async function addCat() {
   const inp=document.getElementById('newCatName'), ico=document.getElementById('newCatIcono');
-  const colorEl=document.getElementById('newCatColor');
   const n=inp.value.trim(); if(!n) return;
   const icono=(ico?.dataset.value?.trim()||ico?.textContent?.trim()||'🏷️');
-  const color=colorEl?.value||'#8b5cf6';
-  try{const r=await fetch('/api/categorias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:n,icono,color})});if(r.ok){inp.value='';if(ico){ico.dataset.value='';ico.textContent='🏷️';}if(colorEl)colorEl.value='#8b5cf6';adminToast('Creada');loadCats();}}catch(e){}
+  try{const r=await fetch('/api/categorias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:n,icono,color:'#FF7A18'})});if(r.ok){inp.value='';if(ico){ico.dataset.value='';ico.textContent='🏷️';}adminToast('Creada');loadCats();}}catch(e){}
 }
 
 // ── Notas ──
@@ -1413,48 +1406,27 @@ function saveSetting(key, value) {
 async function loadSettings() {
   try {
     const s = await fetch('/api/settings').then(r=>r.json());
-    if (s.palette||s.drunksPalette) applyTheme(s.palette||s.drunksPalette);
+    var pal = s.palette||s.drunksPalette||localStorage.getItem('drunksPalette')||'dark';
+    if (!['dark','light'].includes(pal)) pal='dark';
+    applyTheme(pal);
     Object.entries(s).forEach(([k,v])=>localStorage.setItem(k,v));
   } catch(e) { applyTheme(localStorage.getItem('drunksPalette')||'dark'); }
 }
 
 // ── Temas ──
+function toggleTheme() {
+  var t = document.documentElement.getAttribute('data-theme')||'dark';
+  applyTheme(t==='light'?'dark':'light');
+}
 function applyTheme(t) {
-  const theme = t||'dark';
-  if (theme.startsWith('custom:')) { applyCustomTheme(theme.split(':')[1]); return; }
-  document.documentElement.setAttribute('data-theme', theme);
-  saveSetting('drunksPalette', theme); saveSetting('palette', theme);
-  document.querySelectorAll('.theme-opt[data-theme]').forEach(b => {
-    const on = b.dataset.theme===theme;
-    b.style.background = on ? 'rgba(147,51,234,.2)' : '';
-    b.style.outline    = on ? '1px solid rgba(147,51,234,.5)' : '';
-    b.style.borderColor = on ? 'rgba(147,51,234,.5)' : '';
-  });
-  const picker = document.getElementById('customColorPicker');
-  if (picker) picker.style.display='none';
+  t = (t==='light')?'light':'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  saveSetting('drunksPalette', t); saveSetting('palette', t);
+  var btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.innerHTML = t==='dark'
+    ? '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8z"/></svg>';
 }
-
-function applyCustomTheme(hex) {
-  let style = document.getElementById('custom-theme-style');
-  if (!style) { style=document.createElement('style'); style.id='custom-theme-style'; document.head.appendChild(style); }
-  const h = hex||'#9333ea';
-  style.textContent = `html[data-theme="custom"] body{background:#06060f}
-    html[data-theme="custom"] [class*=bg-purple-6]{background-color:${h}!important}
-    html[data-theme="custom"] [class*=bg-purple-7]{background-color:${h}cc!important}
-    html[data-theme="custom"] [class*=text-purple]{color:${h}!important}
-    html[data-theme="custom"] [class*=border-purple]{border-color:${h}!important}`;
-  document.documentElement.setAttribute('data-theme','custom');
-  saveSetting('drunksPalette','custom:'+h); saveSetting('palette','custom:'+h);
-  document.querySelectorAll('.theme-opt[data-theme]').forEach(b=>{b.style.background='';b.style.outline='';b.style.borderColor='';});
-  const picker=document.getElementById('customColorPicker');
-  if(picker){picker.style.display='inline-block';picker.value=h;}
-}
-
-function toggleThemePicker() { document.getElementById('themePicker').classList.toggle('hidden'); }
-document.addEventListener('click', e => {
-  if (!e.target.closest('#themePicker') && !e.target.closest('[onclick*="toggleThemePicker"]'))
-    document.getElementById('themePicker')?.classList.add('hidden');
-});
 
 // ── Supabase status ──
 async function checkSupabase(fromBtn=false) {
@@ -1565,9 +1537,6 @@ function outsideEp(e) {
     closeEmojiPicker();
 }
 
-customElements.whenDefined('emoji-picker').then(() => {
-  document.querySelector('emoji-picker').addEventListener('emoji-click', e => pickEmoji(e.detail.unicode));
-});
 
 // ── PIN protection ──
 (function() {

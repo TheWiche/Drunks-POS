@@ -99,6 +99,17 @@ def init_db():
         except Exception:
             pass
 
+        # Apply default emojis to seed categories that still have the generic icon
+        try:
+            defaults = [("🍺", "Micheladas"), ("🍹", "Mojitos"), ("✨", "Especiales")]
+            for icono, nombre in defaults:
+                conn.execute(
+                    "UPDATE categorias SET icono=? WHERE nombre=? AND (icono IS NULL OR icono='🏷️' OR icono='')",
+                    (icono, nombre))
+            conn.commit()
+        except Exception:
+            pass
+
         conn.execute("""
             CREATE TABLE IF NOT EXISTS pedidos (
                 id             INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -202,8 +213,8 @@ def init_db():
             pass
 
         if conn.execute("SELECT COUNT(*) FROM categorias").fetchone()[0] == 0:
-            conn.executemany("INSERT INTO categorias (nombre) VALUES (?)", [
-                ("Micheladas",), ("Mojitos",), ("Especiales",)
+            conn.executemany("INSERT INTO categorias (nombre, icono) VALUES (?,?)", [
+                ("Micheladas", "🍺"), ("Mojitos", "🍹"), ("Especiales", "✨")
             ])
             conn.commit()
 
