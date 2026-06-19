@@ -62,7 +62,7 @@ class _UpdateProgressWindow:
         from tkinter import ttk
         self._tk = tk
         self._root = tk.Tk()
-        self._root.title("Drunks POS — Actualizando")
+        self._root.title("Drunks RIOH — Actualizando")
         self._root.geometry("420x160")
         self._root.resizable(False, False)
         self._root.protocol("WM_DELETE_WINDOW", lambda: None)  # no cerrar manualmente
@@ -285,11 +285,11 @@ if __name__ == "__main__":
             <p style="color:#8b8ba8;font-size:.82rem">Revisa <b>drunks_error.log</b> en la carpeta de instalación.</p>
         </body></html>"""
         _main_window = webview.create_window(
-            "Drunks POS — Error", html=error_html, width=860, height=520
+            "Drunks RIOH — Error", html=error_html, width=860, height=520
         )
     else:
         _main_window = webview.create_window(
-            "Drunks POS",
+            "Drunks RIOH",
             f"http://{LOCAL_HOST}:{PORT}/app",
             width=1366, height=768,
             min_size=(1024, 600),

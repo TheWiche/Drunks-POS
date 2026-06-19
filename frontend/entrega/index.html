@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
-<title>Drunks · Entrega</title>
+<title>Drunks RIOH · Entrega</title>
 <script>var _t=localStorage.getItem('drunksPalette');document.documentElement.setAttribute('data-theme',_t==='light'?'light':'dark')</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -55,8 +55,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sys
   border-bottom:1px solid var(--border);
   padding:0 16px;height:52px;display:flex;align-items:center;gap:10px;
 }
-.logo-mark{width:28px;height:28px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,#FF8A38,var(--amber));display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(255,122,24,.2)}
-.logo-mark svg{width:14px;height:14px;fill:#0B1120}
+.logo-mark{width:28px;height:28px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,#2ECEB5,#1A9E8F);display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(38,198,170,.25)}
 .count-chip{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--amber-dim);border:1px solid var(--amber-border);color:var(--amber);display:none}
 .ws-pill{display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;background:var(--interactive-bg);border:1px solid var(--border)}
 .ws-dot{width:6px;height:6px;border-radius:50%;background:var(--subtle);flex-shrink:0;transition:background 300ms,box-shadow 300ms}
@@ -193,10 +192,20 @@ html,body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sys
 <!-- Header -->
 <header class="header">
   <div class="logo-mark">
-    <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9 1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+      <path d="M13 8c0-2.76-2.46-5-5.5-5S2 5.24 2 8h2l1-1 1 1h4"/>
+      <path d="M13 7.14A5.82 5.82 0 0 1 16.5 6c3.04 0 5.5 2.24 5.5 5h-3l-1-1-1 1h-3"/>
+      <path d="M5.89 9.71c-2.15 2.15-2.3 5.47-.35 7.43l4.24-4.25.7-.7.71-.71 2.12-2.12c-1.95-1.96-5.27-1.8-7.42.35z"/>
+      <path d="M11 15.5c.5 2.5-.17 4.5-1 6.5h4c2-5.5-.5-10-2-10.5"/>
+    </svg>
   </div>
   <div style="line-height:1">
-    <div style="font-size:.88rem;font-weight:700;letter-spacing:-.01em">Entrega</div>
+    <div style="font-size:.85rem;font-weight:800;letter-spacing:-.02em">DRUNKS</div>
+    <div style="display:flex;align-items:center;gap:3px;color:var(--amber);margin-top:2px">
+      <span style="height:1px;width:7px;background:currentColor;display:inline-block;flex-shrink:0"></span>
+      <span style="font-size:.42rem;font-weight:700;letter-spacing:.13em">RIOH</span>
+      <span style="height:1px;width:7px;background:currentColor;display:inline-block;flex-shrink:0"></span>
+    </div>
   </div>
   <span id="countChip" class="count-chip"></span>
   <div style="flex:1"></div>
@@ -235,7 +244,22 @@ var orders = {};
 var ws = null;
 
 function saveSetting(k,v){localStorage.setItem(k,v);fetch('/api/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({[k]:v})}).catch(function(){});}
-function toggleTheme(){var t=document.documentElement.getAttribute('data-theme')||'dark';applyTheme(t==='light'?'dark':'light');}
+function toggleTheme(){
+  var t=document.documentElement.getAttribute('data-theme')||'dark';
+  var newT=t==='light'?'dark':'light';
+  var btn=document.getElementById('themeToggleBtn');
+  var x=50,y=50;
+  if(btn){var r=btn.getBoundingClientRect();x=((r.left+r.width/2)/window.innerWidth*100).toFixed(1);y=((r.top+r.height/2)/window.innerHeight*100).toFixed(1);}
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:9999;pointer-events:none;will-change:clip-path;background:'+(newT==='dark'?'#0B1120':'#F8F9FB')+';clip-path:circle(0% at '+x+'% '+y+'%)';
+  document.body.appendChild(overlay);
+  requestAnimationFrame(function(){requestAnimationFrame(function(){overlay.style.transition='clip-path .55s cubic-bezier(.4,0,.2,1)';overlay.style.clipPath='circle(150% at '+x+'% '+y+'%)';});});
+  setTimeout(function(){
+    applyTheme(newT);
+    try{if(window.top!==window)window.top.document.documentElement.setAttribute('data-theme',newT);}catch(_){}
+  },180);
+  setTimeout(function(){overlay.style.transition='opacity .2s ease';overlay.style.opacity='0';setTimeout(function(){overlay.remove();},220);},490);
+}
 function applyTheme(t){
   t=(t==='light')?'light':'dark';
   document.documentElement.setAttribute('data-theme',t);

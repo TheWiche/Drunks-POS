@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
-<title>Drunks · Cocina</title>
+<title>Drunks RIOH · Cocina</title>
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('drunksPalette')||'dark');if(!['dark','light'].includes(localStorage.getItem('drunksPalette')))document.documentElement.setAttribute('data-theme','dark')</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -59,8 +59,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Space 
   background:var(--bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
   border-bottom:1px solid var(--border);position:relative;z-index:40;flex-shrink:0;
 }
-.logo-mark{width:28px;height:28px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,var(--amber),#D97706);display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(245,158,11,.2)}
-.logo-mark svg{width:14px;height:14px;fill:#09090B}
+.logo-mark{width:28px;height:28px;border-radius:8px;flex-shrink:0;background:linear-gradient(135deg,#2ECEB5,#1A9E8F);display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(38,198,170,.25)}
 .ws-pill{display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;background:var(--interactive-bg);border:1px solid var(--border)}
 .ws-dot{width:6px;height:6px;border-radius:50%;background:var(--subtle);flex-shrink:0;transition:background 300ms,box-shadow 300ms}
 .ws-dot.on{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.6)}
@@ -175,10 +174,20 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Space 
 <!-- HEADER -->
 <header class="header">
   <div class="logo-mark">
-    <svg viewBox="0 0 24 24"><path d="M5 3h12v2H5V3zm0 4h12l-1.5 9H6.5L5 7zm3 2v5h1V9H8zm3 0v5h1V9h-1zm3 0v5h1V9h-1z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px">
+      <path d="M13 8c0-2.76-2.46-5-5.5-5S2 5.24 2 8h2l1-1 1 1h4"/>
+      <path d="M13 7.14A5.82 5.82 0 0 1 16.5 6c3.04 0 5.5 2.24 5.5 5h-3l-1-1-1 1h-3"/>
+      <path d="M5.89 9.71c-2.15 2.15-2.3 5.47-.35 7.43l4.24-4.25.7-.7.71-.71 2.12-2.12c-1.95-1.96-5.27-1.8-7.42.35z"/>
+      <path d="M11 15.5c.5 2.5-.17 4.5-1 6.5h4c2-5.5-.5-10-2-10.5"/>
+    </svg>
   </div>
   <div style="line-height:1">
-    <div style="font-size:.88rem;font-weight:700;letter-spacing:-.01em">Cocina</div>
+    <div style="font-size:.85rem;font-weight:800;letter-spacing:-.02em">DRUNKS</div>
+    <div style="display:flex;align-items:center;gap:3px;color:var(--amber);margin-top:2px">
+      <span style="height:1px;width:7px;background:currentColor;display:inline-block;flex-shrink:0"></span>
+      <span style="font-size:.42rem;font-weight:700;letter-spacing:.13em">RIOH</span>
+      <span style="height:1px;width:7px;background:currentColor;display:inline-block;flex-shrink:0"></span>
+    </div>
   </div>
   <div class="ws-pill">
     <div id="wsDot" class="ws-dot"></div>

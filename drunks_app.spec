@@ -43,6 +43,7 @@ exe = EXE(
     a.scripts,
     [],
     name='Drunks',
+    icon='icon.ico',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

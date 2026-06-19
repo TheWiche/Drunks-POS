@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>Drunks · Vendedor</title>
+<title>Drunks RIOH · Vendedor</title>
 <script>var _t=localStorage.getItem('drunksPalette');document.documentElement.setAttribute('data-theme',_t==='light'?'light':'dark')</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -217,12 +217,21 @@ input:focus{outline:none}
     <!-- Logo -->
     <div class="flex items-center gap-2.5 shrink-0">
       <div class="w-8 h-8 rounded-xl flex items-center justify-center"
-           style="background:linear-gradient(135deg,#FF8A38,var(--amber));box-shadow:0 0 14px var(--amber-glow)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="#09090B"><path d="M5 3h12v2H5V3zm0 4h12l-1.5 9H6.5L5 7zm3 2v5h1V9H8zm3 0v5h1V9h-1zm3 0v5h1V9h-1z"/></svg>
+           style="background:linear-gradient(135deg,#2ECEB5,#1A9E8F);box-shadow:0 0 14px rgba(38,198,170,.3)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 8c0-2.76-2.46-5-5.5-5S2 5.24 2 8h2l1-1 1 1h4"/>
+          <path d="M13 7.14A5.82 5.82 0 0 1 16.5 6c3.04 0 5.5 2.24 5.5 5h-3l-1-1-1 1h-3"/>
+          <path d="M5.89 9.71c-2.15 2.15-2.3 5.47-.35 7.43l4.24-4.25.7-.7.71-.71 2.12-2.12c-1.95-1.96-5.27-1.8-7.42.35z"/>
+          <path d="M11 15.5c.5 2.5-.17 4.5-1 6.5h4c2-5.5-.5-10-2-10.5"/>
+        </svg>
       </div>
-      <div>
-        <div class="text-[9px] font-black tracking-[.22em] leading-none" style="color:var(--amber)">DRUNKS</div>
-        <div class="text-[8px] tracking-widest mt-0.5" style="color:var(--subtle)">VENDEDOR</div>
+      <div style="line-height:1">
+        <div class="text-[9px] font-black tracking-[.22em] leading-none" style="color:var(--text)">DRUNKS</div>
+        <div class="flex items-center gap-1 mt-1" style="color:var(--amber)">
+          <span style="height:1px;width:7px;background:currentColor;display:inline-block;flex-shrink:0"></span>
+          <span style="font-size:.42rem;font-weight:700;letter-spacing:.14em">RIOH</span>
+          <span style="height:1px;width:7px;background:currentColor;display:inline-block;flex-shrink:0"></span>
+        </div>
       </div>
     </div>
     <!-- Palette + Total -->
@@ -935,7 +944,34 @@ async function loadSettings() {
 
 function toggleTheme() {
   var t = document.documentElement.getAttribute('data-theme') || 'dark';
-  applyTheme(t === 'light' ? 'dark' : 'light');
+  var newT = t === 'light' ? 'dark' : 'light';
+  var btn = document.getElementById('themeToggleBtn');
+  var x = 50, y = 50;
+  if (btn) {
+    var r = btn.getBoundingClientRect();
+    x = ((r.left + r.width / 2) / window.innerWidth * 100).toFixed(1);
+    y = ((r.top + r.height / 2) / window.innerHeight * 100).toFixed(1);
+  }
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;pointer-events:none;will-change:clip-path;' +
+    'background:' + (newT === 'dark' ? '#0B1120' : '#F8F9FB') + ';' +
+    'clip-path:circle(0% at ' + x + '% ' + y + '%)';
+  document.body.appendChild(overlay);
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      overlay.style.transition = 'clip-path .55s cubic-bezier(.4,0,.2,1)';
+      overlay.style.clipPath = 'circle(150% at ' + x + '% ' + y + '%)';
+    });
+  });
+  setTimeout(function() {
+    applyTheme(newT);
+    try { if (window.top !== window) window.top.document.documentElement.setAttribute('data-theme', newT); } catch(_) {}
+  }, 180);
+  setTimeout(function() {
+    overlay.style.transition = 'opacity .2s ease';
+    overlay.style.opacity = '0';
+    setTimeout(function() { overlay.remove(); }, 220);
+  }, 490);
 }
 function applyTheme(t) {
   t = (t === 'light') ? 'light' : 'dark';

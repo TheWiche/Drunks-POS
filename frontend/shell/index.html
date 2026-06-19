@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Drunks POS</title>
+<title>Drunks RIOH</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -61,25 +61,32 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Space Gr
 }
 .topbar::after{
   content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,122,24,.18),transparent);
+  background:linear-gradient(90deg,transparent,rgba(38,198,170,.18),transparent);
   pointer-events:none;
 }
 
 /* ── Logo ── */
 .logo{
-  font-size:.9rem;font-weight:700;color:var(--text);
   display:flex;align-items:center;gap:9px;margin-right:14px;
-  letter-spacing:-.02em;white-space:nowrap;
+  white-space:nowrap;
 }
 .logo-mark{
   width:30px;height:30px;border-radius:9px;flex-shrink:0;
-  background:linear-gradient(145deg,#FF8A38,#FF7A18);
+  background:linear-gradient(145deg,#2ECEB5,#1A9E8F);
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 0 1px rgba(255,122,24,.35),0 0 18px rgba(255,122,24,.25),0 2px 8px rgba(0,0,0,.4);
+  box-shadow:0 0 0 1px rgba(38,198,170,.35),0 0 18px rgba(38,198,170,.25),0 2px 8px rgba(0,0,0,.4);
 }
-.logo-mark svg{width:15px;height:15px;fill:#0B1120}
-.logo-name{color:var(--text);font-weight:800;letter-spacing:-.03em}
-.logo-tag{color:var(--muted);font-weight:400;font-size:.72rem;margin-left:2px}
+.logo-text{display:flex;flex-direction:column;justify-content:center;line-height:1}
+.logo-name{color:var(--text);font-weight:800;letter-spacing:-.03em;font-size:.9rem}
+.logo-rioh{
+  display:flex;align-items:center;gap:3px;
+  font-size:.46rem;font-weight:700;letter-spacing:.15em;
+  color:var(--amber);margin-top:2px;
+}
+.logo-rioh::before,.logo-rioh::after{
+  content:'';display:block;width:8px;height:1px;
+  background:var(--amber);flex-shrink:0;
+}
 
 /* ── Divider ── */
 .topbar-div{width:1px;height:22px;background:var(--border);margin:0 8px;flex-shrink:0}
@@ -163,7 +170,11 @@ html[data-theme=light] .lan-txt{color:#166534}
   transition:opacity .16s var(--ease-in-quint),transform .16s var(--ease-in-quint);
 }
 
+html,body{transition:background-color .35s ease}
+.topbar{transition:background .35s ease,border-color .35s ease}
+
 @media(prefers-reduced-motion:reduce){
+  html,body,.topbar{transition:none!important}
   .nav-btn,.fs-btn,.lan-pill,.upd-pill,.view-frame{transition:opacity 150ms linear!important;transform:none!important}
   .upd-pill{animation:none!important}
 }
@@ -175,9 +186,17 @@ html[data-theme=light] .lan-txt{color:#166534}
 
     <div class="logo">
       <div class="logo-mark">
-        <svg viewBox="0 0 24 24"><path d="M5 3h12v2H5V3zm0 4h12l-1.5 9H6.5L5 7zm3 2v5h1V9H8zm3 0v5h1V9h-1zm3 0v5h1V9h-1z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px">
+          <path d="M13 8c0-2.76-2.46-5-5.5-5S2 5.24 2 8h2l1-1 1 1h4"/>
+          <path d="M13 7.14A5.82 5.82 0 0 1 16.5 6c3.04 0 5.5 2.24 5.5 5h-3l-1-1-1 1h-3"/>
+          <path d="M5.89 9.71c-2.15 2.15-2.3 5.47-.35 7.43l4.24-4.25.7-.7.71-.71 2.12-2.12c-1.95-1.96-5.27-1.8-7.42.35z"/>
+          <path d="M11 15.5c.5 2.5-.17 4.5-1 6.5h4c2-5.5-.5-10-2-10.5"/>
+        </svg>
       </div>
-      <span class="logo-name">Drunks</span><span class="logo-tag">POS</span>
+      <div class="logo-text">
+        <span class="logo-name">DRUNKS</span>
+        <div class="logo-rioh">RIOH</div>
+      </div>
     </div>
 
     <div class="topbar-div"></div>
@@ -290,6 +309,11 @@ function toggleFullscreen() {
 }
 document.addEventListener('keydown', function(e) {
   if (e.key === 'F11') { e.preventDefault(); toggleFullscreen(); }
+});
+window.addEventListener('storage', function(e) {
+  if (e.key === 'drunksPalette') {
+    document.documentElement.setAttribute('data-theme', e.newValue === 'light' ? 'light' : 'dark');
+  }
 });
 </script>
 </body>

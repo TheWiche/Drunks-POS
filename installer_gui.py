@@ -14,7 +14,7 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 
 GITHUB_REPO     = "TheWiche/Drunks-POS"
-APP_NAME        = "Drunks POS"
+APP_NAME        = "Drunks RIOH"
 DEFAULT_INSTALL = r"C:\Drunks POS"
 
 
@@ -186,7 +186,7 @@ class InstallerApp:
 
     def _create_shortcut(self, dest: Path):
         desktop = Path(os.path.expandvars("%USERPROFILE%")) / "Desktop"
-        lnk     = str(desktop / "Drunks POS.lnk")
+        lnk     = str(desktop / "Drunks RIOH.lnk")
         target  = str(dest / "Drunks.exe")
         wd      = str(dest)
         ps = (
@@ -194,7 +194,7 @@ class InstallerApp:
             f"$l=$s.CreateShortcut('{lnk}');"
             f"$l.TargetPath='{target}';"
             f"$l.WorkingDirectory='{wd}';"
-            f"$l.Description='Drunks POS';"
+            f"$l.Description='Drunks RIOH';"
             f"$l.Save()"
         )
         subprocess.run(
