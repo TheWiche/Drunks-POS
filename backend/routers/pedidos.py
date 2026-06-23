@@ -111,6 +111,7 @@ async def clear_historial():
     with get_conn() as conn:
         conn.execute("DELETE FROM detalle_pedidos")
         conn.execute("DELETE FROM pedidos")
+        conn.execute("DELETE FROM sqlite_sequence WHERE name='pedidos'")
         conn.commit()
     await clear_supabase_pedidos()
     return {"ok": True}
