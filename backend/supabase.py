@@ -12,7 +12,7 @@ except ImportError:
     HTTPX_AVAILABLE = False
 
 _CFG_COLS = {
-    "categorias":    ("id", "nombre"),
+    "categorias":    ("id", "nombre", "icono", "color"),
     "tipos_base":    ("id", "nombre", "icono"),
     "productos":     ("id", "categoria_id", "nombre", "precio", "disponible", "tiene_base"),
     "bases":         ("id", "nombre", "tipo", "tipo_id", "disponible"),

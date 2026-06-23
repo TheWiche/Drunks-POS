@@ -1076,8 +1076,9 @@ async function saveAll() {
     const n=document.getElementById('cn-'+id)?.value.trim();
     const _ciEl=document.getElementById('ci-'+id);
     const icono=(_ciEl?.dataset.value?.trim()||_ciEl?.textContent?.trim()||'🏷️');
+    const color=document.getElementById('drow-'+id)?.dataset.color||'#FF7A18';
     if (!n) { errors++; continue; }
-    try { const r=await fetch('/api/categorias/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:n,icono})}); if(r.ok){dirty.cats.delete(id);ok++;}else errors++; } catch(e){errors++;}
+    try { const r=await fetch('/api/categorias/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre:n,icono,color})}); if(r.ok){dirty.cats.delete(id);ok++;}else errors++; } catch(e){errors++;}
   }
   localStorage.setItem('drunks_cats_ts', Date.now());
   updateSaveBar();
@@ -1174,7 +1175,7 @@ async function loadCats() {
 }
 function renderCats(cats) {
   document.getElementById('catsList').innerHTML = cats.length ? cats.map(c=>`
-    <div id="drow-${c.id}" class="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-xl px-3 py-2.5 ${dirty.cats.has(c.id)?'dirty-row border-yellow-700/40':''}">
+    <div id="drow-${c.id}" data-color="${esc(c.color||'#FF7A18')}" class="flex items-center gap-2 bg-gray-800/50 border border-gray-700 rounded-xl px-3 py-2.5 ${dirty.cats.has(c.id)?'dirty-row border-yellow-700/40':''}">
       <button type="button" id="ci-${c.id}" data-dirty-id="${c.id}" data-value="${esc(c.icono||'🏷️')}"
         onclick="openEmojiPicker(this)" oninput="markDirty('cats',${c.id})"
         class="emoji-trigger w-11 text-center text-lg bg-gray-900/70 border border-gray-600 hover:border-gray-500 rounded-lg outline-none transition-colors shrink-0 select-none">${esc(c.icono||'🏷️')}</button>
