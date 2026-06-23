@@ -247,7 +247,7 @@ async def download_from_supabase():
                     "(cliente,metodo_pago,total,estado,fecha,sincronizado,numero_factura,sync_id) "
                     "VALUES (?,?,?,?,?,1,?,?)",
                     (p["cliente"], p["metodo_pago"], float(p.get("total") or 0),
-                     p.get("estado", "pendiente"), p["fecha"], nf, sid),
+                     "entregado", p["fecha"], nf, sid),
                 )
                 pedido_id = cur.lastrowid
                 items = []
