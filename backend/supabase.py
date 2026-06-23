@@ -159,6 +159,25 @@ async def pull_config_from_supabase() -> None:
         pass
 
 
+async def clear_supabase_pedidos() -> None:
+    """Elimina todos los pedidos de la tabla pedidos en Supabase."""
+    if not SUPABASE_URL or not SUPABASE_KEY or not HTTPX_AVAILABLE:
+        return
+    try:
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Prefer": "return=minimal",
+        }
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            await client.delete(
+                f"{SUPABASE_URL}/rest/v1/pedidos?fecha=not.is.null",
+                headers=headers,
+            )
+    except Exception:
+        pass
+
+
 async def sync_pending_loop():
     while True:
         await asyncio.sleep(300)

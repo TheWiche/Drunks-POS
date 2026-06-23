@@ -7,7 +7,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, WebSocket, WebSoc
 from pydantic import BaseModel
 
 from ..database import get_conn
-from ..supabase import sync_to_supabase, sync_deliver_to_supabase, sync_prepare_to_supabase
+from ..supabase import sync_to_supabase, sync_deliver_to_supabase, sync_prepare_to_supabase, clear_supabase_pedidos
 
 router = APIRouter()
 
@@ -107,11 +107,12 @@ async def create_pedido(data: PedidoCreate, background_tasks: BackgroundTasks):
 
 
 @router.delete("/pedidos/historial")
-def clear_historial():
+async def clear_historial():
     with get_conn() as conn:
         conn.execute("DELETE FROM detalle_pedidos")
         conn.execute("DELETE FROM pedidos")
         conn.commit()
+    await clear_supabase_pedidos()
     return {"ok": True}
 
 
